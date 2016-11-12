@@ -1,0 +1,14 @@
+#!/bin/bash
+
+export PYTHONPATH=.
+export FLASK_APP=p2k16_web
+export FLASK_DEBUG=1
+
+if [[ ! -d env ]]
+then
+    virtualenv env
+fi
+
+env/bin/pip install -r requirements.txt
+
+exec env/bin/flask run

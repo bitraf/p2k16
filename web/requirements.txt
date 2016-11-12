@@ -1,0 +1,5 @@
+flask
+Flask-Bower
+psycopg2
+sqlalchemy
+sqlalchemy-migrate

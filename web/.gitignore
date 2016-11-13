@@ -1,2 +1,4 @@
 env*
 *.pyc
+bower_components
+.idea

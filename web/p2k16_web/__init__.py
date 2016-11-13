@@ -1,27 +1,10 @@
-from flask import Flask, render_template
-from flask_bower import Bower
-from flask import jsonify
+import flask_bower
 
-from p2k16.database import Base, init_db, db_session
-from p2k16.models import User
+import p2k16.database
+import p2k16_web.views
 
-app = Flask(__name__)
-Bower(app)
+app = p2k16.app
 
-init_db()
+app.register_blueprint(p2k16_web.views.api)
 
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.remove()
-
-
-@app.route('/data/user')
-def data_user():
-    users = [{"id": user.id, "email": user.email} for user in User.query.all()]
-    return jsonify(users)
-
-
-@app.route('/')
-def index():
-    return render_template('index.html')
+flask_bower.Bower(app)

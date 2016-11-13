@@ -1,5 +1,11 @@
 flask
+flask-login
+flask-bcrypt
 Flask-Bower
+Flask-SQLAlchemy
+Flask-Testing
 psycopg2
 sqlalchemy
 sqlalchemy-migrate
+
+nose

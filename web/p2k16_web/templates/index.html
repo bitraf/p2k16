@@ -1,8 +1,10 @@
 <html>
 <head>
     <script src="{{ url_for('bower.static', filename='angular/angular.js') }}"></script>
+    <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
+    <link href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
 </head>
-<body>
+<body ng-app="p2k16.app">
 woot!
 </body>
 </html>

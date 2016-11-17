@@ -1,4 +1,20 @@
+# Getting started
 
+Creating the database:
+
+    # sudo -i postgres psql
+
+    CREATE USER "p2k16" ENCRYPTED PASSWORD 'p2k16';
+    CREATE USER "p2k16-web" ENCRYPTED PASSWORD 'p2k16-web';
+    CREATE DATABASE "p2k16" OWNER "p2k16";
+
+Running the application:
+
+    # ./run-p2k16-web
+
+This will fail unless you have the required applications installed.
+
+# Thoughs
 
 
 * Office users, support companies that give access to more than one user

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 export PYTHONPATH=.
 export FLASK_APP=p2k16_web.server
 export FLASK_DEBUG=1

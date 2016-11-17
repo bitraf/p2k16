@@ -12,4 +12,6 @@ fi
 
 env/bin/pip install -r requirements.txt
 
+bower install
+
 exec env/bin/flask run

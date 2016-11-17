@@ -1,0 +1,19 @@
+{
+  "name": "p2k16-web",
+  "authors": [
+    "Trygve Laugstøl <trygvis@inamo.no>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "p2k16-web/static/bower_components",
+    "test",
+    "tests"
+  ]
+}

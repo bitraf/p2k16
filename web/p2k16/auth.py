@@ -7,6 +7,7 @@ login_manager = flask_login.LoginManager()
 
 class AuthenticatedUser(flask_login.UserMixin):
     def __init__(self, user):
+        self.id = user.id
         self.user = user
 
 

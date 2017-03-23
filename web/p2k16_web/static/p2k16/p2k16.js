@@ -15,6 +15,27 @@
         }
     ];
 
-    var deps = [];
-    angular.module('p2k16.app', deps);
+    function config($routeProvider) {
+        $routeProvider.when("/", {
+            controller: FrontPageController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/front-page.html'
+        }).otherwise("/")
+    }
+
+    function run() {
+
+    }
+
+    function FrontPageController() {
+        var self = this;
+
+        self.user = window.user;
+    }
+
+    var deps = ['ngRoute'];
+    angular.module('p2k16.app', deps)
+        .config(config)
+        .run(run)
+        .controller(FrontPageController);
 })();

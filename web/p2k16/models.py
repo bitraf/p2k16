@@ -32,15 +32,15 @@ class User(Base):
         self._password = flask_bcrypt.generate_password_hash(plaintext)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User:%r, username=%s>' % (self.id, self.username)
 
 
 def find_user_by_id(id):
     return User.query.filter(User.id == id).one_or_none()
 
 
-def find_user_by_email(email):
-    return User.query.filter(User.email == email).one_or_none()
+def find_user_by_username(username):
+    return User.query.filter(User.username == username).one_or_none()
 
 
 class AuthEvent(Base):
@@ -57,7 +57,7 @@ class AuthEvent(Base):
         self.timestamp = None
 
     def __repr__(self):
-        return '<AuthEvent %r>' % self.user_id
+        return '<AuthEvent:%r, user=%s>' % (self.id, self.user_id)
 
 
 class Membership(Base):

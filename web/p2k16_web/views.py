@@ -3,13 +3,17 @@ import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 
 from p2k16 import auth
-from p2k16.models import User, find_user_by_id
+from p2k16.models import User, find_user_by_id, find_user_by_username
 
 api = Blueprint('api', __name__, template_folder='templates')
 
 
 def user_to_json(user):
-    return {"id": user.id, "email": user.email}
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
+    }
 
 
 @api.route('/data/user')
@@ -32,7 +36,15 @@ def data_user_port(user_id):
 
 @api.route('/')
 def index():
-    return render_template('index.html')
+    user = flask_login.current_user.is_authenticated and user_to_json(flask_login.current_user.user)
+
+    return render_template('index.html', user=user)
+
+
+@api.route('/logout', methods=['GET'])
+def logout():
+    flask_login.logout_user()
+    return flask.redirect(flask.url_for('api.index'))
 
 
 @api.route('/login', methods=['GET', 'POST'])
@@ -40,23 +52,19 @@ def login():
     if flask.request.method == 'GET':
         return '''
                <form action='login' method='POST'>
-                <input type='text' name='email' id='email' placeholder='email'></input>
+                <input type='text' name='username' id='username' placeholder='username'></input>
                 <input type='password' name='pw' id='pw' placeholder='password'></input>
                 <input type='submit' name='submit'></input>
                </form>
                '''
 
-    email = flask.request.form['email']
-    users = User.query.all()
-    # print(users)
-    users = dict([(user.email, user) for user in users])
-    # print(users)
-    # print(users['trygvis@inamo.no'])
+    username = flask.request.form['username']
+    user = find_user_by_username(username)
 
-    if flask.request.form['pw'] == users[email].password:
-        authenticated_user = auth.AuthenticatedUser(users[email].id, email)
+    if flask.request.form['pw'] == user.password:
+        authenticated_user = auth.AuthenticatedUser(user)
         flask_login.login_user(authenticated_user)
-        return flask.redirect(flask.url_for('api.protected'))
+        return flask.redirect(flask.url_for('api.index'))
 
     return 'Bad login'
 
@@ -64,5 +72,5 @@ def login():
 @api.route('/protected')
 @flask_login.login_required
 def protected():
-    u = flask_login.current_user
-    return 'Logged in as: ' + str(u.id) + ", email=" + u.email
+    u = flask_login.current_user.user
+    return 'Logged in as: ' + str(u.id) + ", username=" + u.username

@@ -6,9 +6,8 @@ login_manager = flask_login.LoginManager()
 
 
 class AuthenticatedUser(flask_login.UserMixin):
-    def __init__(self, id, email):
-        self.id = id
-        self.email = email
+    def __init__(self, user):
+        self.user = user
 
 
 @login_manager.user_loader
@@ -19,7 +18,7 @@ def user_loader(user_id):
     if user is None:
         return
 
-    return AuthenticatedUser(user.id, user.email)
+    return AuthenticatedUser(user)
 
 
 @login_manager.request_loader

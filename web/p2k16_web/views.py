@@ -3,7 +3,7 @@ import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 
 from p2k16 import auth
-from p2k16.models import User, find_user_by_id, find_user_by_username
+from p2k16.models import User
 
 api = Blueprint('api', __name__, template_folder='templates')
 
@@ -24,7 +24,7 @@ def data_user():
 
 @api.route('/data/user/<int:user_id>', methods=['POST'])
 def data_user_port(user_id):
-    user = find_user_by_id(user_id)
+    user = User.find_user_by_id(user_id)
 
     if user is None:
         abort(404)
@@ -59,7 +59,7 @@ def login():
                '''
 
     username = flask.request.form['username']
-    user = find_user_by_username(username)
+    user = User.find_user_by_username(username)
 
     if flask.request.form['pw'] == user.password:
         authenticated_user = auth.AuthenticatedUser(user)

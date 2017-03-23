@@ -4,10 +4,10 @@ from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from p2k16.database import Base
+from p2k16.database import db
 
 
-class User(Base):
+class User(db.Model):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
@@ -17,6 +17,7 @@ class User(Base):
 
     auth_events = relationship("AuthEvent", back_populates="user")
     membership = relationship("Membership", back_populates="user")
+    group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
 
     def __init__(self, username, email, password=None):
         self.username = username
@@ -34,16 +35,63 @@ class User(Base):
     def __repr__(self):
         return '<User:%r, username=%s>' % (self.id, self.username)
 
+    @staticmethod
+    def find_user_by_id(id):
+        return User.query.filter(User.id == id).one_or_none()
 
-def find_user_by_id(id):
-    return User.query.filter(User.id == id).one_or_none()
+    @staticmethod
+    def find_user_by_username(username):
+        return User.query.filter(User.username == username).one_or_none()
 
 
-def find_user_by_username(username):
-    return User.query.filter(User.username == username).one_or_none()
+class Group(db.Model):
+    __tablename__ = 'group'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+    description = Column(String(50), unique=True, nullable=False)
+    members = relationship("GroupMember", back_populates="group")
+
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+        return '<Group:%s>' % self.id
+
+    @staticmethod
+    def find_by_id(id) -> "Group":
+        return Group.query.filter(Group.id == id).one_or_none()
+
+    @staticmethod
+    def find_by_name(name) -> "Group":
+        return Group.query.filter(Group.name == name).one_or_none()
 
 
-class AuthEvent(Base):
+class GroupMember(db.Model):
+    __tablename__ = 'group_member'
+
+    id = Column(Integer, primary_key=True)
+    group_id = Column(String(50), ForeignKey('group.id'), unique=True, nullable=False)
+    user_id = Column(String(50), ForeignKey('user.id'), unique=True, nullable=False)
+    issuer_id = Column(String(50), ForeignKey('user.id'), nullable=False)
+
+    db.UniqueConstraint(group_id, user_id)
+
+    group = relationship("Group")
+    user = relationship("User", foreign_keys=[user_id])
+    issuer = relationship("User", foreign_keys=[issuer_id])
+
+    def __init__(self, group: Group, user: User, issuer: User):
+        self.group_id = group.id
+        self.user_id = user.id
+        self.issuer_id = issuer.id
+
+    def __repr__(self):
+        return '<GroupMember:%s, group=%s, user=%s>' % (self.id, self.group_id, self.user_id)
+
+
+class AuthEvent(db.Model):
     __tablename__ = 'auth_event'
 
     id = Column(Integer, primary_key=True)
@@ -60,7 +108,7 @@ class AuthEvent(Base):
         return '<AuthEvent:%r, user=%s>' % (self.id, self.user_id)
 
 
-class Membership(Base):
+class Membership(db.Model):
     __tablename__ = 'membership'
 
     id = Column(Integer, primary_key=True)

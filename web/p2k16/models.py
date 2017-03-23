@@ -1,3 +1,4 @@
+from datetime import datetime
 import flask_bcrypt
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -14,7 +15,8 @@ class User(Base):
     email = Column(String(120), unique=True, nullable=False)
     _password = Column('password', String(100))
 
-    logins = relationship("Login", back_populates="user")
+    auth_events = relationship("AuthEvent", back_populates="user")
+    membership = relationship("Membership", back_populates="user")
 
     def __init__(self, username, email, password=None):
         self.username = username
@@ -41,18 +43,39 @@ def find_user_by_email(email):
     return User.query.filter(User.email == email).one_or_none()
 
 
-class Login(Base):
-    __tablename__ = 'login'
+class AuthEvent(Base):
+    __tablename__ = 'auth_event'
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     timestamp = Column(DateTime, nullable=False)
     location = Column(String(50), nullable=False)
 
-    user = relationship("User", back_populates="logins")
+    user = relationship("User", back_populates="auth_events")
 
     def __init__(self):
         self.timestamp = None
 
     def __repr__(self):
-        return '<User %r>' % self.name
+        return '<AuthEvent %r>' % self.user_id
+
+
+class Membership(Base):
+    __tablename__ = 'membership'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    first_membership = Column(DateTime, nullable=False)
+    start_membership = Column(DateTime, nullable=False)
+    fee = Column(Integer, nullable=False)
+
+    user = relationship("User", back_populates="membership")
+
+    def __init__(self, user, fee):
+        self.user_id = user.id
+        self.fee = fee
+        self.first_membership = datetime.now()
+        self.start_membership = self.first_membership
+
+    def __repr__(self):
+        return '<Membership:%r, fee=%r>' % (self.user_id, self.fee)

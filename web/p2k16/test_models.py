@@ -36,6 +36,17 @@ class UserTest(TestCase):
         users = User.query.all()
         print("users: " + str(users))
 
+    def test_authentication_test(self):
+        session = p2k16.database.db.session
+        user = User('trygvis', 'trygvis@inamo.no', '123')
+        session.add(user)
+        session.flush()
+
+        membership = Membership(user, 500)
+        session.add(membership)
+        session.flush()
+        session.commit()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

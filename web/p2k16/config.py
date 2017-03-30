@@ -1,6 +1,5 @@
 import os
 
-
 def from_env(app=None):
     print("Loading config from environment")
 
@@ -13,3 +12,5 @@ def from_env(app=None):
         secret_key = os.getenv('SECRET_KEY')
         app.config['SECRET_KEY'] = secret_key
         print("Found env variable SECRET_KEY = {}".format(secret_key))
+
+    return app

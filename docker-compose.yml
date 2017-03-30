@@ -5,6 +5,7 @@ web:
     P2K16_DB_URL: "postgresql://p2k16:thisIsMy1stSecretCMSdbpwd@postgres/p2k16"
     FLASK_DEBUG: "1"
     SECRET_KEY: 'secret key'
+    P2K16_CONFIG: '/usr/src/app/config-docker.cfg'
   ports:
     - "5000:5000"
   links:

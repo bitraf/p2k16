@@ -4,6 +4,7 @@ from flask import abort, Blueprint, render_template, jsonify, request
 
 from p2k16 import auth
 from p2k16.models import User
+from p2k16 import app
 
 api = Blueprint('api', __name__, template_folder='templates')
 
@@ -60,6 +61,7 @@ def login():
 
     username = flask.request.form['username']
     user = User.find_user_by_username(username)
+    app.logger.info("user {} logged inn.")
 
     if flask.request.form['pw'] == user.password:
         authenticated_user = auth.AuthenticatedUser(user)

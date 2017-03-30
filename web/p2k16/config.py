@@ -6,7 +6,7 @@ def from_env(app=None):
     if os.getenv('P2K16_DB_URL') is not None:
         db_url = os.getenv('P2K16_DB_URL')
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-        print("Found env variable P2K15_DB_URL = {}".format(db_url))
+        print("Found env variable P2K16_DB_URL = {}".format(db_url))
 
     if os.getenv('SECRET_KEY') is not None:
         secret_key = os.getenv('SECRET_KEY')

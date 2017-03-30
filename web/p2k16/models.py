@@ -8,7 +8,7 @@ from p2k16.database import db
 
 
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
@@ -52,23 +52,7 @@ class User(db.Model):
 
 
 class Group(db.Model):
-    __tablename__ = 'group'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-    description = Column(String(50), unique=True, nullable=False)
-    members = relationship("GroupMember", back_populates="group")
-
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-    def __repr__(self):
-        return '<Group:%s>' % self.id
-
-
-class Group(db.Model):
-    __tablename__ = 'group'
+    __tablename__ = 'user_group'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
@@ -95,9 +79,9 @@ class GroupMember(db.Model):
     __tablename__ = 'group_member'
 
     id = Column(Integer, primary_key=True)
-    group_id = Column(String(50), ForeignKey('group.id'), unique=True, nullable=False)
-    user_id = Column(String(50), ForeignKey('user.id'), unique=True, nullable=False)
-    issuer_id = Column(String(50), ForeignKey('user.id'), nullable=False)
+    group_id = Column(Integer, ForeignKey('user_group.id'), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    issuer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     db.UniqueConstraint(group_id, user_id)
 
@@ -118,7 +102,7 @@ class AuthEvent(db.Model):
     __tablename__ = 'auth_event'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
+    user_id = Column(Integer, ForeignKey('users.id'))
     timestamp = Column(DateTime, nullable=False)
     location = Column(String(50), nullable=False)
 
@@ -135,7 +119,7 @@ class Membership(db.Model):
     __tablename__ = 'membership'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     first_membership = Column(DateTime, nullable=False)
     start_membership = Column(DateTime, nullable=False)
     fee = Column(Integer, nullable=False)

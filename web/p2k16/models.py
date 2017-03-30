@@ -66,6 +66,22 @@ class Group(db.Model):
     def __repr__(self):
         return '<Group:%s>' % self.id
 
+
+class Group(db.Model):
+    __tablename__ = 'group'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+    description = Column(String(50), unique=True, nullable=False)
+    members = relationship("GroupMember", back_populates="group")
+
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+        return '<Group:%s>' % self.id
+
     @staticmethod
     def find_by_id(id) -> "Group":
         return Group.query.filter(Group.id == id).one_or_none()

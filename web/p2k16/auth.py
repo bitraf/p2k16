@@ -1,25 +1,24 @@
 import flask_login
 
-from p2k16.models import User, find_user_by_id
+from p2k16.models import User
 
 login_manager = flask_login.LoginManager()
 
 
 class AuthenticatedUser(flask_login.UserMixin):
-    def __init__(self, id, email):
-        self.id = id
-        self.email = email
+    def __init__(self, user):
+        self.id = user.id
+        self.user = user
 
 
 @login_manager.user_loader
 def user_loader(user_id):
-    print("Loading user id=" + user_id)
-    user = find_user_by_id(user_id)
+    user = User.find_user_by_id(user_id)
 
     if user is None:
         return
 
-    return AuthenticatedUser(user.id, user.email)
+    return AuthenticatedUser(user)
 
 
 @login_manager.request_loader

@@ -1,10 +1,28 @@
 <html>
 <head>
     <script src="{{ url_for('static', filename='bower_components/angular/angular.js') }}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-route/angular-route.js') }}"></script>
     <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
     <link href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
+    {% if current_user.is_authenticated %}
+        <script>
+        var user={{ user|tojson|safe }};
+        </script>
+    {% endif %}
+
 </head>
-<body ng-app="p2k16.app">
-woot!
-</body>
+
+{% if current_user.is_authenticated %}
+
+    <body ng-app="p2k16.app" ng-view>
+    <a href="/logout">log out</a>
+    </body>
+
+{% else %}
+
+    <body>
+    <a href="/login">log in</a>
+    </body>
+
+{% endif %}
 </html>

@@ -1,4 +1,9 @@
-from p2k16 import P2k16UserException
+import string
+from typing import Optional
+
+import flask
+
+from p2k16 import P2k16UserException, P2k16TechnicalException, app
 from p2k16.models import User, Group, GroupMember
 from p2k16.database import db
 
@@ -35,3 +40,22 @@ def add_user_to_group(user_id, group_id, admin_id):
         raise P2k16UserException('User %s is not an administrator of %s' % (admin.username, group.description))
 
     db.session.add(GroupMember(group, user, admin))
+
+
+def reset_password(username: string) -> Optional[User]:
+    app.logger.info('Resetting password for {}'.format(username))
+
+    user = User.find_user_by_username(username)
+
+    if user is None:
+        user = User.find_user_by_email(username)
+
+    if user is None:
+        return None
+
+    user.create_new_reset_token()
+
+    url = flask.url_for('api.reset_password', key=user.reset_token, _external=True)
+    app.logger.info('Reset URL: {}'.format(url))
+
+    # TODO: send email

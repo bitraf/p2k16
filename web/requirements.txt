@@ -4,6 +4,7 @@ flask-bcrypt
 Flask-Bower
 Flask-SQLAlchemy
 Flask-Testing
+flask-mail
 psycopg2
 sqlalchemy
 sqlalchemy-migrate

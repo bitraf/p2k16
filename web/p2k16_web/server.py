@@ -3,8 +3,6 @@ import p2k16_web
 from p2k16.models import *
 from p2k16 import default_data
 
-# engine = p2k16.database.create_engine('postgresql://p2k16-web:p2k16-web@localhost/p2k16')
-
 app = p2k16_web.app
 
 print("Creating database")

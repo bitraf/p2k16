@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+  <body>
+  <div class="container">
+
+    <div class="row">
+      {% if show_message == '' %}
+        <form class="form-horizontal" action='/login' method='POST'>
+          <div class="form-group">
+            <label for="username" class="col-sm-2">
+              Username
+            </label>
+            <div class="col-sm-4">
+              <input class="form-control" type='text' name='username' id='username' placeholder='Username'
+                     value='{{ username }}'/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="username" class="col-sm-2">
+              Password
+            </label>
+            <div class="col-sm-4">
+              <input class="form-control" type='password' name='password' id='password' placeholder='Password'/>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-4 col-sm-offset-2">
+              <button class="btn btn-default" type='submit' name='submit'>Log in</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      {% elif show_message == 'bad-login' %}
+        <div class="alert alert-danger">
+          Bad username or password.
+        </div>
+        <p>
+          If you want to reset your password, please submit this form. If you don't receive an email ask
+          <a href="mailto:post@bitraf.no">post@bitraf.no</a> for assistance.
+        </p>
+        <form class="form-horizontal" action='/reset-password' method='POST'>
+          <input type="hidden" name="username" value="{{ username }}"/>
+          <button class="btn btn-default" type='submit' name='submit'>
+            Send password reset email for <strong>{{ username }}</strong>
+          </button>
+        </form>
+      {% elif show_message == 'recovery' %}
+
+        <div class="alert alert-info">
+          If we found the username or email, you have a new email. If this doesn't work, please contact
+          <a href="mailto:post@bitraf.no">post@bitraf.no</a> for assistance.
+        </div>
+      {% endif %}
+
+  </div>
+  </body>
+{% endblock %}

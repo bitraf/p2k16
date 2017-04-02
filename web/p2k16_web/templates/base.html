@@ -1,0 +1,16 @@
+<html>
+<head>
+  <script src="{{ url_for('static', filename='bower_components/angular/angular.js') }}"></script>
+  <script src="{{ url_for('static', filename='bower_components/angular-route/angular-route.js') }}"></script>
+  <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
+  {% if user and current_user.is_authenticated %}
+    <script>
+        var user ={{ user|tojson|safe }};
+    </script>
+  {% endif %}
+
+</head>
+{% block content %}{% endblock %}
+</html>

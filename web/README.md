@@ -34,3 +34,9 @@ p2k12.bitraf.no authenticates people, on authentication it creates the user in p
 
 p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
+# TODOs before dropping p2k12
+
+* Use proper password hashing
+* Implement recover password feature so people can create passwords in p2k16
+* Migrate data from p2k12 database
+* Implement SQL migrations

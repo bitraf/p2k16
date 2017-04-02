@@ -1,4 +1,5 @@
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 import flask_bcrypt
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -14,15 +15,18 @@ class User(db.Model):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     _password = Column('password', String(100))
-    first_name = Column(String(50), unique=True, nullable=False)
-    last_name = Column(String(50), unique=True, nullable=False)
+    first_name = Column(String(50), unique=True, nullable=True)
+    last_name = Column(String(50), unique=True, nullable=True)
     phone = Column(String(50), unique=True, nullable=True)
+
+    reset_token = Column(String(50))
+    reset_token_validity = Column(DateTime)
 
     auth_events = relationship("AuthEvent", back_populates="user")
     membership = relationship("Membership", back_populates="user")
     group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
 
-    def __init__(self, username, email, first_name, last_name, phone=None, password=None):
+    def __init__(self, username, email, first_name=None, last_name=None, phone=None, password=None):
         self.username = username
         self.email = email
         self._password = password
@@ -30,6 +34,9 @@ class User(db.Model):
         self.last_name = last_name
         self.phone = phone
 
+    def create_new_reset_token(self):
+        self.reset_token = str(uuid.uuid4())
+        self.reset_token_validity = datetime.now() + timedelta(hours = 24)
 
     @hybrid_property
     def password(self):
@@ -49,6 +56,10 @@ class User(db.Model):
     @staticmethod
     def find_user_by_username(username):
         return User.query.filter(User.username == username).one_or_none()
+
+    @staticmethod
+    def find_user_by_email(email):
+        return User.query.filter(User.email == email).one_or_none()
 
 
 class Group(db.Model):

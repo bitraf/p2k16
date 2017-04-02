@@ -2,7 +2,8 @@ import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 
-from p2k16 import auth
+from p2k16 import auth, user_management
+from p2k16.database import db
 from p2k16.models import User
 from p2k16 import app
 
@@ -51,24 +52,32 @@ def logout():
 @api.route('/login', methods=['GET', 'POST'])
 def login():
     if flask.request.method == 'GET':
-        return '''
-               <form action='login' method='POST'>
-                <input type='text' name='username' id='username' placeholder='username'></input>
-                <input type='password' name='pw' id='pw' placeholder='password'></input>
-                <input type='submit' name='submit'></input>
-               </form>
-               '''
+        show_message = flask.request.args.get('show_message') or ''
+        username = flask.request.args.get('username') or ''
+        return render_template('login.html', show_message=show_message, username=username)
 
     username = flask.request.form['username']
     user = User.find_user_by_username(username)
-    app.logger.info("user {} logged inn.")
 
-    if flask.request.form['pw'] == user.password:
+    if flask.request.form['password'] == user.password:
+        app.logger.info("user {} logged in".format(username))
         authenticated_user = auth.AuthenticatedUser(user)
         flask_login.login_user(authenticated_user)
         return flask.redirect(flask.url_for('api.index'))
 
-    return 'Bad login'
+    return flask.redirect(flask.url_for('.login', show_message='bad-login', username=username))
+
+
+@api.route('/reset-password', methods=['POST'])
+def reset_password():
+    username = flask.request.form.get('username')
+    if username is not None:
+        user = user_management.reset_password(username)
+        if user is not None:
+            db.session.commit()
+
+
+    return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
 
 
 @api.route('/protected')

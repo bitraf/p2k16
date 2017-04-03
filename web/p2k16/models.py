@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
+from typing import Optional
+
 import flask_bcrypt
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -19,7 +21,7 @@ class User(db.Model):
     last_name = Column(String(50), unique=True, nullable=True)
     phone = Column(String(50), unique=True, nullable=True)
 
-    reset_token = Column(String(50))
+    reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)
 
     auth_events = relationship("AuthEvent", back_populates="user")
@@ -38,6 +40,9 @@ class User(db.Model):
         self.reset_token = str(uuid.uuid4())
         self.reset_token_validity = datetime.now() + timedelta(hours = 24)
 
+    def is_valid_reset_token(self, reset_token):
+        return self.reset_token == reset_token and datetime.now() < self.reset_token_validity
+
     @hybrid_property
     def password(self):
         return self._password
@@ -50,16 +55,20 @@ class User(db.Model):
         return '<User:%r, username=%s>' % (self.id, self.username)
 
     @staticmethod
-    def find_user_by_id(id):
-        return User.query.filter(User.id == id).one_or_none()
+    def find_user_by_id(_id) -> Optional['User']:
+        return User.query.filter(User.id == _id).one_or_none()
 
     @staticmethod
-    def find_user_by_username(username):
+    def find_user_by_username(username) -> Optional['User']:
         return User.query.filter(User.username == username).one_or_none()
 
     @staticmethod
-    def find_user_by_email(email):
+    def find_user_by_email(email) -> Optional['User']:
         return User.query.filter(User.email == email).one_or_none()
+
+    @staticmethod
+    def find_user_by_reset_token(reset_token) -> Optional['User']:
+        return User.query.filter(User.reset_token == reset_token).one_or_none()
 
 
 class Group(db.Model):

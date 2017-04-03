@@ -42,7 +42,7 @@ def add_user_to_group(user_id, group_id, admin_id):
     db.session.add(GroupMember(group, user, admin))
 
 
-def reset_password(username: string) -> Optional[User]:
+def start_reset_password(username: string) -> Optional[User]:
     app.logger.info('Resetting password for {}'.format(username))
 
     user = User.find_user_by_username(username)
@@ -51,11 +51,13 @@ def reset_password(username: string) -> Optional[User]:
         user = User.find_user_by_email(username)
 
     if user is None:
+        app.logger.info('Could not find user by username or email: {}'.format(username))
         return None
 
     user.create_new_reset_token()
 
-    url = flask.url_for('api.reset_password', key=user.reset_token, _external=True)
+    url = flask.url_for('core.reset_password_form', reset_token=user.reset_token, _external=True)
     app.logger.info('Reset URL: {}'.format(url))
 
     # TODO: send email
+    return user

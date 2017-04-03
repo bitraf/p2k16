@@ -29,7 +29,6 @@
             </div>
           </div>
         </form>
-        </div>
       {% elif show_message == 'bad-login' %}
         <div class="alert alert-danger">
           Bad username or password.
@@ -38,20 +37,23 @@
           If you want to reset your password, please submit this form. If you don't receive an email ask
           <a href="mailto:post@bitraf.no">post@bitraf.no</a> for assistance.
         </p>
-        <form class="form-horizontal" action='/reset-password' method='POST'>
+        <form class="form-horizontal" action='{{ url_for('core.start_reset_password') }}' method='POST'>
           <input type="hidden" name="username" value="{{ username }}"/>
           <button class="btn btn-default" type='submit' name='submit'>
             Send password reset email for <strong>{{ username }}</strong>
           </button>
         </form>
       {% elif show_message == 'recovery' %}
-
         <div class="alert alert-info">
           If we found the username or email, you have a new email. If this doesn't work, please contact
           <a href="mailto:post@bitraf.no">post@bitraf.no</a> for assistance.
         </div>
+      {% elif show_message == 'recovery-invalid-request' %}
+        <div class="alert alert-info">
+          The URL you had is not valid anymore.
+        </div>
       {% endif %}
 
-  </div>
+    </div>
   </body>
 {% endblock %}

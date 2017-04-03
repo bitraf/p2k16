@@ -68,16 +68,41 @@ def login():
     return flask.redirect(flask.url_for('.login', show_message='bad-login', username=username))
 
 
-@core.route('/reset-password', methods=['POST'])
-def reset_password():
-    username = flask.request.form.get('username')
-    if username is not None:
-        user = user_management.reset_password(username)
-        if user is not None:
-            db.session.commit()
-
+@core.route('/start-reset-password', methods=['POST'])
+def start_reset_password():
+    username = flask.request.form['username']
+    user = user_management.start_reset_password(username)
+    if user:
+        app.logger.info('Commit!')
+        db.session.commit()
 
     return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
+
+
+@core.route('/reset-password-form', methods=['GET'])
+def reset_password_form():
+    reset_token = flask.request.args['reset_token']
+    user = User.find_user_by_reset_token(reset_token)
+
+    if user and user.is_valid_reset_token(reset_token):
+        return render_template('reset-password.html', reset_token=reset_token, user=user)
+
+    return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
+
+
+@core.route('/set-new-password', methods=['POST'])
+def set_new_password():
+    reset_token = flask.request.form['reset_token']
+    user = User.find_user_by_reset_token(reset_token)
+
+    if not user or not user.is_valid_reset_token(reset_token):
+        return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
+
+    password = flask.request.form['password']
+    user._password = password
+    app.logger.info('Updating password for user={}'.format(user))
+    db.session.commit()
+    return flask.redirect(flask.url_for('.login'))
 
 
 @core.route('/protected')

@@ -7,7 +7,7 @@ from p2k16.database import db
 from p2k16.models import User
 from p2k16 import app
 
-api = Blueprint('api', __name__, template_folder='templates')
+core = Blueprint('core', __name__, template_folder='templates')
 
 
 def user_to_json(user):
@@ -18,13 +18,13 @@ def user_to_json(user):
     }
 
 
-@api.route('/data/user')
+@core.route('/data/user')
 def data_user():
     users = [user_to_json(user) for user in User.query.all()]
     return jsonify(users)
 
 
-@api.route('/data/user/<int:user_id>', methods=['POST'])
+@core.route('/data/user/<int:user_id>', methods=['POST'])
 def data_user_port(user_id):
     user = User.find_user_by_id(user_id)
 
@@ -36,20 +36,20 @@ def data_user_port(user_id):
     return user_to_json(user)
 
 
-@api.route('/')
+@core.route('/')
 def index():
     user = flask_login.current_user.is_authenticated and user_to_json(flask_login.current_user.user)
 
     return render_template('index.html', user=user)
 
 
-@api.route('/logout', methods=['GET'])
+@core.route('/logout', methods=['GET'])
 def logout():
     flask_login.logout_user()
-    return flask.redirect(flask.url_for('api.index'))
+    return flask.redirect(flask.url_for('core.index'))
 
 
-@api.route('/login', methods=['GET', 'POST'])
+@core.route('/login', methods=['GET', 'POST'])
 def login():
     if flask.request.method == 'GET':
         show_message = flask.request.args.get('show_message') or ''
@@ -63,12 +63,12 @@ def login():
         app.logger.info("user {} logged in".format(username))
         authenticated_user = auth.AuthenticatedUser(user)
         flask_login.login_user(authenticated_user)
-        return flask.redirect(flask.url_for('api.index'))
+        return flask.redirect(flask.url_for('core.index'))
 
     return flask.redirect(flask.url_for('.login', show_message='bad-login', username=username))
 
 
-@api.route('/reset-password', methods=['POST'])
+@core.route('/reset-password', methods=['POST'])
 def reset_password():
     username = flask.request.form.get('username')
     if username is not None:
@@ -80,7 +80,7 @@ def reset_password():
     return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
 
 
-@api.route('/protected')
+@core.route('/protected')
 @flask_login.login_required
 def protected():
     u = flask_login.current_user.user

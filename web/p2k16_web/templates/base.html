@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
   {% if user and current_user.is_authenticated %}
     <script>
-        var user ={{ user|tojson|safe }};
+        var user = {{ user|tojson|safe }};
     </script>
   {% endif %}
 

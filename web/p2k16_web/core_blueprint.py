@@ -58,8 +58,9 @@ def login():
 
     username = flask.request.form['username']
     user = User.find_user_by_username(username)
+    password = flask.request.form['password']
 
-    if flask.request.form['password'] == user.password:
+    if user.valid_password(password):
         app.logger.info("user {} logged in".format(username))
         authenticated_user = auth.AuthenticatedUser(user)
         flask_login.login_user(authenticated_user)
@@ -73,7 +74,6 @@ def start_reset_password():
     username = flask.request.form['username']
     user = user_management.start_reset_password(username)
     if user:
-        app.logger.info('Commit!')
         db.session.commit()
 
     return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
@@ -85,7 +85,7 @@ def reset_password_form():
     user = User.find_user_by_reset_token(reset_token)
 
     if user and user.is_valid_reset_token(reset_token):
-        return render_template('reset-password.html', reset_token=reset_token, user=user)
+        return render_template('reset-password.html', reset_token=reset_token, user=user_to_json(user))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 
@@ -99,7 +99,7 @@ def set_new_password():
         return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 
     password = flask.request.form['password']
-    user._password = password
+    user.password = password
     app.logger.info('Updating password for user={}'.format(user))
     db.session.commit()
     return flask.redirect(flask.url_for('.login'))

@@ -31,14 +31,14 @@ class User(db.Model):
     def __init__(self, username, email, first_name=None, last_name=None, phone=None, password=None):
         self.username = username
         self.email = email
-        self._password = password
+        self.password = password
         self.first_name = first_name
         self.last_name = last_name
         self.phone = phone
 
     def create_new_reset_token(self):
         self.reset_token = str(uuid.uuid4())
-        self.reset_token_validity = datetime.now() + timedelta(hours = 24)
+        self.reset_token_validity = datetime.now() + timedelta(hours=24)
 
     def is_valid_reset_token(self, reset_token):
         return self.reset_token == reset_token and datetime.now() < self.reset_token_validity
@@ -49,7 +49,14 @@ class User(db.Model):
 
     @password.setter
     def _set_password(self, plaintext):
-        self._password = flask_bcrypt.generate_password_hash(plaintext)
+        pw = flask_bcrypt.generate_password_hash(plaintext)
+        self._password = pw.decode('utf-8')
+        self.reset_token = None
+        self.reset_token_validity = None
+
+    def valid_password(self, password) -> bool:
+        bs = bytes(self._password, 'utf-8')
+        return flask_bcrypt.check_password_hash(bs, password)
 
     def __repr__(self):
         return '<User:%r, username=%s>' % (self.id, self.username)

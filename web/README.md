@@ -36,14 +36,17 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 # TODOs before deploying in prod
 
-* Use proper password hashing
-* Implement recover password feature so people can create passwords in p2k16
+* Implement recover password feature so people can create passwords in p2k16. Parts:
+  * <s>Request new password</s>
+  * Send by email
+  * <s>Set new password</s>
 
 # TODOs before dropping p2k12
 
 * Migrate data from p2k12 database
 * Implement SQL migrations
 * Actually open doors.
+  * Audit log
 
 # TODOs post production / p2k12 migration
 

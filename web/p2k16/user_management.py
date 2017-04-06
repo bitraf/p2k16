@@ -15,11 +15,11 @@ def users_in_group(group_id):
         all()
 
 
-def is_user_in_group(group_id, user_id):
+def is_user_in_group(group: Group, user: User):
     q = User.query. \
         join(GroupMember, GroupMember.user_id == User.id). \
-        filter(GroupMember.group_id == group_id). \
-        filter(User.id == user_id)
+        filter(GroupMember.group_id == group.id). \
+        filter(User.id == user.id)
     return db.session.query(db.literal(True)).filter(q.exists()).scalar()
 
 
@@ -36,7 +36,7 @@ def add_user_to_group(user_id, group_id, admin_id):
     if group_admin is None:
         raise P2k16UserException('No admin-group for group "%s"' % group.name)
 
-    if not is_user_in_group(group_admin.id, admin_id):
+    if not is_user_in_group(group_admin, admin):
         raise P2k16UserException('User %s is not an administrator of %s' % (admin.username, group.description))
 
     db.session.add(GroupMember(group, user, admin))

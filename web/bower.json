@@ -20,5 +20,8 @@
     "angular": "1.5.8",
     "angular-route": "1.5.8",
     "bootstrap": "3.3.7"
+  },
+  "resolutions": {
+    "angular": "1.5.8"
   }
 }

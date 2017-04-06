@@ -1,32 +1,50 @@
-import p2k16.database
-import p2k16_web
-from p2k16.models import *
-from p2k16 import default_data
+import sys
+import logging
+from logging import StreamHandler
+import flask
+from flask import Flask, g, request
 
-app = p2k16_web.app
+_REQ_FMT = '%(name)s %(levelname)s %(path)s %(endpoint)s %(remote_addr)s %(message)s'
+_DEFAULT_FMT = '%(name)s %(levelname)s %(message)s'
 
-print("Creating database")
-p2k16.database.db.create_all(app=p2k16.app)
-print("Database created")
 
-from p2k16.auth import login_manager
+class CustomFormatter(logging.Formatter):
+    def __init__(self):
+        super(CustomFormatter).__init__()
+        self.req_formatter = logging.Formatter(_REQ_FMT)
+        self.default_format = logging.Formatter(_DEFAULT_FMT)
 
-login_manager.init_app(app)
+    def format(self, record):
+        if flask.has_request_context():
+            # record.uuid = g.uuid if hasattr(g, 'uuid') else None
+            record.path = request.path
+            record.endpoint = request.endpoint
+            record.remote_addr = request.remote_addr
 
-if len(User.query.all()) == 0:
-    app.logger.info("No users found in database.")
+            return self.req_formatter.format(record)
 
-    default_data.create_default_groups()
-    default_data.create_default_users()
+        return self.default_format.format(record)
 
-    #
-    # session = p2k16.database.db.session
-    #
-    # session.add(Group('admin', 'Admins'))
-    # session.add(User('super', 'super@example.org', 'Super', 'User', '01234567',  'super'))
-    # session.add(User('foo', 'foo@example.org', 'Foo', 'Bar', '76543210', 'foo'))
-    # spr = User.find_user_by_username('super')
-    #
-    # session.add(GroupMember(Group.find_by_name('admins'), spr, spr))
-    # session.commit()
-    #app.logger.info("Default users created.")
+
+handler = StreamHandler(stream=sys.stdout)
+handler.setFormatter(CustomFormatter())
+
+from p2k16 import app
+from p2k16 import auth, database, door
+
+app.logger.addHandler(handler)
+
+auth.login_manager.init_app(app)
+
+door.init()
+
+if app.config['P2K16_CREATE_DATABASE']:
+    from p2k16 import default_data
+    from p2k16.models import *
+
+    app.logger.info("Creating database")
+    database.db.create_all(app=app)
+    app.logger.info("Database created")
+
+    if len(User.query.all()) == 0:
+        default_data.create()

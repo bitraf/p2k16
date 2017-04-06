@@ -27,10 +27,14 @@
 
     }
 
-    function FrontPageController() {
+    function FrontPageController($http) {
         var self = this;
 
         self.user = window.user;
+
+        self.openDoor = function () {
+            $http.post('/door/open');
+        }
     }
 
     var deps = ['ngRoute'];

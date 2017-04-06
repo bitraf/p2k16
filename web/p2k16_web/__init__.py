@@ -2,7 +2,7 @@ import flask
 import flask_bower
 import os
 import p2k16.database
-import p2k16_web.core_blueprint
+from p2k16_web import core_blueprint, door_blueprint
 
 app = p2k16.app
 
@@ -35,6 +35,7 @@ def static_file_hash(filename):
     return int(os.stat(filename).st_mtime)  # or app.config['last_build_timestamp'] or md5(filename) or etc...
 
 
-app.register_blueprint(p2k16_web.core_blueprint.core)
+app.register_blueprint(core_blueprint.core)
+app.register_blueprint(door_blueprint.door)
 
 flask_bower.Bower(app)

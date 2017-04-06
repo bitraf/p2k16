@@ -1,5 +1,6 @@
 import os
 
+
 def from_env(app=None):
     print("Loading config from environment")
 

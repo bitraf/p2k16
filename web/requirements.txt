@@ -10,3 +10,4 @@ sqlalchemy
 sqlalchemy-migrate
 
 nose
+paho-mqtt

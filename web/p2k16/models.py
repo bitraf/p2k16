@@ -1,3 +1,4 @@
+import string
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
@@ -24,7 +25,7 @@ class User(db.Model):
     reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)
 
-    auth_events = relationship("AuthEvent", back_populates="user")
+    auth_events = relationship("AuditRecord", back_populates="user")
     membership = relationship("Membership", back_populates="user")
     group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
 
@@ -35,6 +36,9 @@ class User(db.Model):
         self.first_name = first_name
         self.last_name = last_name
         self.phone = phone
+
+    def display_name(self):
+        return self.username
 
     def create_new_reset_token(self):
         self.reset_token = str(uuid.uuid4())
@@ -94,20 +98,24 @@ class Group(db.Model):
         return '<Group:%s>' % self.id
 
     @staticmethod
-    def find_by_id(id) -> "Group":
+    def find_by_id(id) -> Optional["Group"]:
         return Group.query.filter(Group.id == id).one_or_none()
 
     @staticmethod
-    def find_by_name(name) -> "Group":
+    def find_by_name(name) -> Optional["Group"]:
         return Group.query.filter(Group.name == name).one_or_none()
+
+    @staticmethod
+    def get_by_name(name) -> "Group":
+        return Group.query.filter(Group.name == name).one()
 
 
 class GroupMember(db.Model):
     __tablename__ = 'group_member'
 
     id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, ForeignKey('user_group.id'), unique=True, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    group_id = Column(Integer, ForeignKey('user_group.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     issuer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     db.UniqueConstraint(group_id, user_id)
@@ -125,21 +133,25 @@ class GroupMember(db.Model):
         return '<GroupMember:%s, group=%s, user=%s>' % (self.id, self.group_id, self.user_id)
 
 
-class AuthEvent(db.Model):
-    __tablename__ = 'auth_event'
+class AuditRecord(db.Model):
+    __tablename__ = 'audit_record'
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     timestamp = Column(DateTime, nullable=False)
-    location = Column(String(50), nullable=False)
+    object = Column(String(100), nullable=False)
+    action = Column(String(100), nullable=False)
 
     user = relationship("User", back_populates="auth_events")
 
-    def __init__(self):
-        self.timestamp = None
+    def __init__(self, user_id: int, object: string, action: string):
+        self.timestamp = datetime.now()
+        self.user_id = user_id
+        self.object = object
+        self.action = action
 
     def __repr__(self):
-        return '<AuthEvent:%r, user=%s>' % (self.id, self.user_id)
+        return '<AuditRecord:%r, user=%s>' % (self.id, self.user_id)
 
 
 class Membership(db.Model):

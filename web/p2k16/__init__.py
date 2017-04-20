@@ -10,9 +10,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 p2k16_config = os.getenv('P2K16_CONFIG')
 if p2k16_config is not None:
-    app.config.from_envvar('P2K16_CONFIG')
-    app.config.from_pyfile('../config-secret.cfg')
     app.logger.info("Loading config from {}".format(p2k16_config))
+    app.config.from_envvar('P2K16_CONFIG')
+    if os.path.isfile('../config-secret.cfg'):
+        app.config.from_pyfile('../config-secret.cfg')
+        app.logger.info("Loading config from ../config-secret.cfg")
 
 class P2k16UserException(Exception):
     """Exception that happened because the user did something silly. The message will be shown to the user"""

@@ -2,6 +2,8 @@
 
 echo "Copying postgresql.conf to /var/lib/postgresql/data/postgresql.conf"
 cp /docker-entrypoint-initdb.d/postgresql.conf /var/lib/postgresql/data/postgresql.conf
+chmod 0700 -R /var/lib/postgresql/data/
+chown postgres /var/lib/postgresql/data/
 
 echo "Creating p2k16 user"
 gosu postgres postgres --single -jE <<-EOSQL

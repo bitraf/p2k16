@@ -5,7 +5,6 @@ from p2k16.models import *
 def create():
     from p2k16_web import app
     app.logger.info("No users found in database.")
-
     session = database.db.session
     supr = User('super', 'super@example.org', 'Super', 'User', '01234567', 'super')
     session.add(supr)

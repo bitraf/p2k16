@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import flask_bcrypt
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -28,6 +28,7 @@ class User(db.Model):
     auth_events = relationship("AuditRecord", back_populates="user")
     membership = relationship("Membership", back_populates="user")
     group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
+    membership_payments = relationship("MembershipPayment", back_populates="user")
 
     def __init__(self, username, email, first_name=None, last_name=None, phone=None, password=None):
         self.username = username
@@ -173,3 +174,30 @@ class Membership(db.Model):
 
     def __repr__(self):
         return '<Membership:%r, fee=%r>' % (self.user_id, self.fee)
+
+
+class MembershipPayment(db.Model):
+    __tablename__ = 'membership_payment'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    membership_id = Column(String(50), unique=True, nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    amount = Column(Numeric(8, 2), nullable=False)
+    payment_date = Column(DateTime, nullable=True)
+
+    user = relationship("User", back_populates="membership_payments")
+
+    def __init__(self, user, membership_id, start_date, end_date, amount, payment_date):
+        self.user_id = user.id
+
+        self.membership_id = membership_id
+        self.start_date = start_date
+        self.end_date = end_date
+        self.amount = amount
+        self.payment_date = payment_date
+
+
+    def __repr__(self):
+        return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (self.id, self.user_id, self.start_date, self.end_date, self.amount)

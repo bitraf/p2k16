@@ -20,5 +20,9 @@ def create():
     session.add(GroupMember(admins, supr, supr))
     session.add(GroupMember(door, supr, supr))
 
+    # Add stripe payments
+    payment = MembershipPayment(supr, 'tok_sjdkjdfsk', '2017-01-01', '2017-01-01', '500.00', '2017-01-12')
+    session.add(payment)
+
     session.commit()
     app.logger.info("Default data created")

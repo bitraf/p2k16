@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+set -x
+
+export PYTHONPATH=.
+export FLASK_APP=p2k16_web.server
+export FLASK_DEBUG=1
+export P2K16_CONFIG=`pwd`/config-test.cfg
+
+if [[ ! -d env ]]
+then
+    virtualenv -p python3 env
+fi
+
+env/bin/pip install -r requirements.txt
+
+bower install
+
+#exec env/bin/flask run
+python -m p2k16.test_models

@@ -39,7 +39,7 @@ class UserTest(TestCase):
 
     def test_authentication_test(self):
         session = p2k16.database.db.session
-        user = User('foo', 'foo@example.org', '123')
+        user = User('foo', 'foo@example.org', password='123')
         session.add(user)
         session.flush()
 
@@ -50,9 +50,9 @@ class UserTest(TestCase):
 
     def test_groups(self):
         session = p2k16.database.db.session
-        admin = User('admin1', 'admin1@example.org', '123')
-        u1 = User('user1', 'user1@example.org', '123')
-        u2 = User('user2', 'user2@example.org', '123')
+        admin = User('admin1', 'admin1@example.org', password='123')
+        u1 = User('user1', 'user1@example.org', password='123')
+        u2 = User('user2', 'user2@example.org', password='123')
         g = Group('group-1', 'Group 1')
         g_admin = Group('group-1-admin', 'Group 1 Admins')
         session.add_all([admin, u1, u2, g, g_admin])

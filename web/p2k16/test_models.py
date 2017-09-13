@@ -1,8 +1,10 @@
 from flask_testing import TestCase
+from datetime import datetime
+from datetime import timedelta
 
 import p2k16.database
 from p2k16.models import *
-from p2k16 import user_management, P2k16UserException
+from p2k16 import user_management, membership_management, P2k16UserException
 
 
 class UserTest(TestCase):
@@ -73,6 +75,34 @@ class UserTest(TestCase):
         session.refresh(g)
         print('g.members=%s' % g.members)
         assert len(g.members) > 0
+
+    def test_membership(self):
+        session = p2k16.database.db.session
+        u3 = User('user3', 'user3@example.org', password='123')
+        u4 = User('user4', 'user4@example.org', password='123')
+        u5 = User('user5', 'user5@example.org', password='123')
+        session.add_all([u3, u4, u5])
+        session.flush()
+
+        # Add user3 with active membership
+        payment1 = MembershipPayment(u3, 'tok_stripe_xx1234', datetime(2017,1,1), datetime(2017,1,31), '500.00', datetime(2017,1,1))
+        payment2 = MembershipPayment(u3, 'tok_stripe_xx1337', datetime(2017,2,1), datetime(2017,2,28), '500.00', datetime(2017,2,1))
+        payment3 = MembershipPayment(u3, 'tok_stripe_xx1338', datetime(2017,3,1), datetime.utcnow() + timedelta(days=1),  '500.00', datetime(2017,2,1))
+
+        # User 4 with expired membership
+        payment4 = MembershipPayment(u4, 'tok_stripe_xx3234', datetime(2017,1,1), datetime(2017,1,31), '500.00', datetime(2017,1,1))
+
+        # User 5 has no payments
+
+        session.add_all([payment1, payment2, payment3, payment4])
+        session.flush()
+
+        # Verify only one paid user
+        assert len(membership_management.paid_members()) == 1
+
+        assert membership_management.active_member(u3) is True
+        assert membership_management.active_member(u4) is False
+        assert membership_management.active_member(u5) is False
 
 if __name__ == '__main__':
     import unittest

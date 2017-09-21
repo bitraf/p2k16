@@ -1,11 +1,10 @@
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
-
+from p2k16 import app
 from p2k16 import auth, user_management
 from p2k16.database import db
 from p2k16.models import User
-from p2k16 import app
 
 core = Blueprint('core', __name__, template_folder='templates')
 

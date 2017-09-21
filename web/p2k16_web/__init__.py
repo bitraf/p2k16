@@ -1,6 +1,7 @@
+import os
+
 import flask
 import flask_bower
-import os
 import p2k16.database
 from p2k16_web import core_blueprint, door_blueprint
 
@@ -17,7 +18,7 @@ def hashed_url_for_static_file(endpoint, values):
             else:
                 blueprint = flask.request.blueprint  # can be None too
 
-            static_folder=None
+            static_folder = None
             if blueprint:
                 static_folder = app.blueprints[blueprint].static_folder
 

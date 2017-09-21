@@ -1,9 +1,7 @@
 import flask_login
-from flask import Blueprint, jsonify
-
-from p2k16.models import db, User
-
 import p2k16.door
+from flask import Blueprint, jsonify
+from p2k16.models import db
 
 door = Blueprint('door', __name__, template_folder='templates')
 

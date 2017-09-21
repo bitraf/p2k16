@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 
 from p2k16 import app
 
+
 def send(email=None, subject=None, message=None):
     """
     Sends a email using mail server in MAIL_HOST config variable and MAIL_FROM as sender
@@ -18,7 +19,7 @@ def send(email=None, subject=None, message=None):
     msg['To'] = email
 
     # Send the message via our own SMTP server.
-    s = smtplib.SMTP(app.config['MAIL_HOST'],local_hostname="p2k12.bitraf.no")
+    s = smtplib.SMTP(app.config['MAIL_HOST'], local_hostname="p2k12.bitraf.no")
     s.send_message(msg)
     s.quit()
 
@@ -47,6 +48,7 @@ def _test_mail(email):
 
 if __name__ == '__main__':
     import sys
+
     if len(sys.argv) == 2:
         argument = sys.argv[1]
         if '@' in argument:
@@ -56,5 +58,3 @@ if __name__ == '__main__':
             print("To send a test email, add a valid email as argument to the script {}".format(sys.argv[0]))
     else:
         _test_config()
-
-

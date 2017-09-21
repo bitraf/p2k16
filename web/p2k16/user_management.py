@@ -2,10 +2,9 @@ import string
 from typing import Optional
 
 import flask
-
-from p2k16 import P2k16UserException, P2k16TechnicalException, app
-from p2k16.models import User, Group, GroupMember
+from p2k16 import P2k16UserException, app
 from p2k16.database import db
+from p2k16.models import User, Group, GroupMember
 
 
 def users_in_group(group_id):

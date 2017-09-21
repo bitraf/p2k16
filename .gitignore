@@ -1,1 +1,8 @@
+env*
+*.pyc
+bower_components
 .idea
+
+config-secret.cfg
+*.egg-info
+.cache/

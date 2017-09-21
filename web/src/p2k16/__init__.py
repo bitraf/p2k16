@@ -12,10 +12,11 @@ p2k16_config = os.getenv('P2K16_CONFIG')
 if p2k16_config is not None:
     app.logger.info("Loading config from {}".format(p2k16_config))
     app.config.from_envvar('P2K16_CONFIG')
-    print("current dir = {}".format(os.path.abspath(os.curdir)))
-    if os.path.isfile('config-secret.cfg'):
-        app.logger.info("Loading config from config-secret.cfg")
-        app.config.from_pyfile('../config-secret.cfg')
+    app.logger.info("current dir = {}".format(os.path.abspath(os.curdir)))
+    secret_file = os.path.abspath('./web/config-secret.cfg')
+    if os.path.isfile(secret_file):
+        app.logger.info("Loading config %s" % secret_file)
+        app.config.from_pyfile(secret_file)
 
 
 class P2k16UserException(Exception):

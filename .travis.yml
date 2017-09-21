@@ -1,0 +1,2 @@
+lang: python
+script: cd web && ./run-p2k16-test

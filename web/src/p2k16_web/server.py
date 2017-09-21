@@ -1,8 +1,9 @@
-import sys
 import logging
+import sys
 from logging import StreamHandler
+
 import flask
-from flask import Flask, g, request
+from flask import request
 
 _REQ_FMT = '%(name)s %(levelname)s %(path)s %(endpoint)s %(remote_addr)s %(message)s'
 _DEFAULT_FMT = '%(name)s %(levelname)s %(message)s'

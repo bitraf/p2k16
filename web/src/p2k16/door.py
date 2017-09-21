@@ -1,8 +1,7 @@
-from p2k16 import P2k16UserException, app
-from p2k16.models import db, User, Group, AuditRecord
-from p2k16 import user_management
-
 import paho.mqtt.client as mqtt
+from p2k16 import P2k16UserException, app
+from p2k16 import user_management
+from p2k16.models import db, User, Group, AuditRecord
 
 _client = mqtt.Client()
 
@@ -10,9 +9,11 @@ _host = 'mqtt.bitraf.no'
 _port = 1883
 _keep_alive = 60
 
+
 class Door(object):
     def __init__(self, key):
         self.key = key
+
 
 FRONT_DOOR = Door('front')
 

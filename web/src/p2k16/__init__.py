@@ -17,6 +17,7 @@ if p2k16_config is not None:
         app.logger.info("Loading config from config-secret.cfg")
         app.config.from_pyfile('../config-secret.cfg')
 
+
 class P2k16UserException(Exception):
     """Exception that happened because the user did something silly. The message will be shown to the user"""
 

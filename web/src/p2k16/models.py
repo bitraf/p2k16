@@ -4,11 +4,10 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import flask_bcrypt
+from p2k16.database import db
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-
-from p2k16.database import db
 
 
 class User(db.Model):
@@ -198,6 +197,6 @@ class MembershipPayment(db.Model):
         self.amount = amount
         self.payment_date = payment_date
 
-
     def __repr__(self):
-        return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (self.id, self.user_id, self.start_date, self.end_date, self.amount)
+        return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
+        self.id, self.user_id, self.start_date, self.end_date, self.amount)

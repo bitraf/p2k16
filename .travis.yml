@@ -1,2 +1,5 @@
 lang: python
+before_install: npm install -g bower
 script: cd web && ./run-p2k16-test
+addons:
+  postgresql: '9.6'

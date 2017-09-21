@@ -3,6 +3,7 @@ env*
 bower_components
 .idea
 
+node_modules/
 config-secret.cfg
 *.egg-info
 .cache/

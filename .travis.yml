@@ -1,7 +1,7 @@
 language: python
 before_install: npm install -g bower
 python:
-  - 3.6
+  - 3.4
 script: ./run-p2k16-test
 addons:
-  postgresql: '9.6'
+  postgresql: '9.4'

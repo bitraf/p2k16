@@ -18,4 +18,4 @@ env/bin/pip install -r requirements.txt
 bower install
 
 #exec env/bin/flask run
-python -m p2k16.test_models
+env/bin/python -m p2k16.test_models

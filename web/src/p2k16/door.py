@@ -21,7 +21,7 @@ FRONT_DOOR = Door('front')
 def init():
     app.logger.info('Connecting to {}:{}'.format(_host, _port))
     _client.username_pw_set(username=app.config['MQTT_USERNAME'], password=app.config['MQTT_PASSWORD'])
-    _client.connect(_host, _port, _keep_alive)
+    _client.connect_async(_host, _port, _keep_alive)
     _client.loop_start()
 
 

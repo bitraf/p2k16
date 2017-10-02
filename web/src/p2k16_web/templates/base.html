@@ -5,11 +5,12 @@
   <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
-  {% if user and current_user.is_authenticated %}
-    <script>
-        var user = {{ user|tojson|safe }};
-    </script>
-  {% endif %}
+  <script>
+    var p2k16 = {};
+    {% if user and current_user.is_authenticated %}
+      p2k16.user = {{ user|tojson|safe }};
+    {% endif %}
+  </script>
 
 </head>
 {% block content %}{% endblock %}

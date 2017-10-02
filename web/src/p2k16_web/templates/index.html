@@ -1,17 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-  {% if current_user.is_authenticated %}
-
     <body ng-app="p2k16.app" ng-view>
     </body>
-
-  {% else %}
-
-    <body class="container">
-    <p>
-      <a href="/login">log in</a>
-    </p>
-    </body>
-
-  {% endif %}
 {% endblock %}

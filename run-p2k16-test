@@ -8,7 +8,7 @@ then
     virtualenv -p python3 env
 fi
 
-env/bin/pip install -e web
+env/bin/pip install -e web --process-dependency-links
 env/bin/pip install -r requirements.txt
 
 export FLASK_APP=p2k16_web.server
@@ -16,4 +16,3 @@ export FLASK_DEBUG=1
 export P2K16_CONFIG=`pwd`/web/config-test.cfg
 
 env/bin/pytest
-

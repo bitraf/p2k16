@@ -60,3 +60,17 @@ def start_reset_password(username: string) -> Optional[User]:
 
     # TODO: send email
     return user
+
+
+def register_user(username: str, email: str, name: str, password: str, phone: str) -> User:
+    user = User.find_user_by_username(username)
+    if user:
+        raise P2k16UserException("Username is taken")
+
+    user = User.find_user_by_email(email)
+    if user:
+        raise P2k16UserException("Email is already registered")
+
+    user = User(username, email, name, phone, password)
+    db.session.add(user)
+    return user

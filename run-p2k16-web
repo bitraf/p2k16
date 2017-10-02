@@ -8,7 +8,7 @@ then
     virtualenv -p python3 env
 fi
 
-env/bin/pip install -e web
+env/bin/pip install -e web --process-dependency-links
 
 cd web
 bower install

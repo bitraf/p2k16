@@ -17,8 +17,7 @@ class User(db.Model):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     _password = Column('password', String(100))
-    first_name = Column(String(50), unique=True, nullable=True)
-    last_name = Column(String(50), unique=True, nullable=True)
+    name = Column(String(100), unique=True, nullable=True)
     phone = Column(String(50), unique=True, nullable=True)
 
     reset_token = Column(String(50), unique=True)
@@ -29,12 +28,11 @@ class User(db.Model):
     group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
     membership_payments = relationship("MembershipPayment", back_populates="user")
 
-    def __init__(self, username, email, first_name=None, last_name=None, phone=None, password=None):
+    def __init__(self, username, email, name=None, phone=None, password=None):
         self.username = username
         self.email = email
         self.password = password
-        self.first_name = first_name
-        self.last_name = last_name
+        self.name = name
         self.phone = phone
 
     def display_name(self):

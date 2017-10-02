@@ -5,6 +5,20 @@ from p2k16 import app
 from p2k16 import auth, user_management
 from p2k16.database import db
 from p2k16.models import User
+from p2k16_web.utils import validate_schema
+
+
+RegisterUserForm = {
+    "type": "object",
+    "properties": {
+        "username": {"type": "string", "minLength": 1},
+        "email": {"type": "string", "format": "email", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "password": {"type": "string", "minLength": 3},
+        "phone": {"type": "string"},
+    },
+    "required": ["email", "username", "password"]
+}
 
 core = Blueprint('core', __name__, template_folder='templates')
 
@@ -15,6 +29,19 @@ def user_to_json(user):
         "username": user.username,
         "email": user.email
     }
+
+
+@core.route('/service/register-user', methods=['POST'])
+@validate_schema(RegisterUserForm)
+def register_user():
+    u = user_management.register_user(request.json["username"],
+                                      request.json["email"],
+                                      request.json.get("name", None),
+                                      request.json["password"],
+                                      request.json.get("phone", None))
+    db.session.commit()
+    print("new user: {}/{}".format(u.username, u.id))
+    return jsonify({})
 
 
 @core.route('/data/user')

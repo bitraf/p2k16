@@ -1,3 +1,5 @@
-.foo {
-
+div.error-container {
+    position: absolute;
+    right: 3em;
+    top: 3em;
 }

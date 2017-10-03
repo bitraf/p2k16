@@ -15,10 +15,8 @@
     }
 
     function run(P2k16, $location, $rootScope) {
-        $rootScope.$on('$locationChangeStart', function (event) {
-            // console.log("$locationChangeStart!", event);
+        $rootScope.$on('$locationChangeStart', function () {
             var p = $location.path();
-            // console.log("$location.path()", p);
 
             if (p.startsWith("/public/")) {
                 return;
@@ -30,11 +28,16 @@
 
             $location.url("/public/register-user");
         });
+
+        $rootScope.p2k16 = P2k16;
     }
 
     function P2k16() {
         var self = this;
         self.errors = [];
+        self.errors.dismiss = function (index) {
+            self.errors.splice(index, 1);
+        };
 
         var user = window.p2k16.user;
         delete window["p2k16"];
@@ -44,17 +47,20 @@
         }
 
         function addErrors(messages) {
-            console.log("p2k16", "messages", messages);
-            if (typeof messages === 'string') {
-                self.errors.push(messages);
-            }
-            else {
-                angular.forEach(messages, function (message) {
-                    self.errors.push(message);
-                });
+            function add(m) {
+                m = typeof(m) === "string" ? m : "";
+                m = m.trim();
+                if (m.length) {
+                    self.errors.push(m);
+                }
             }
 
-            console.log("self.errors", self.errors);
+            if (typeof messages === 'string') {
+                add(messages);
+            }
+            else {
+                angular.forEach(messages, add);
+            }
         }
 
         return {
@@ -68,10 +74,13 @@
         console.log("P2k16HttpInterceptor", arguments);
         return {
             responseError: function (rejection) {
-                // console.log("responseError", "rejection", rejection);
+                console.log("responseError", "rejection", rejection);
 
-                if (rejection.status === 400 && rejection.data.messages) {
-                    P2k16.addErrors(rejection.data.messages);
+                window.x = rejection;
+                console.log('rejection.headers("content-type") === "application/vnd.json"', rejection.headers("content-type") === "application/vnd.error+json");
+                if (rejection.headers("content-type") === "application/vnd.error+json" && rejection.data.message) {
+                    // TODO: if rejection.status is in [400, 500), set level = warning, else danger.
+                    P2k16.addErrors(rejection.data.message);
                     var deferred = $q.defer();
                     return deferred.promise;
                 }
@@ -103,8 +112,7 @@
         }
     }
 
-    var deps = ['ngRoute'];
-    angular.module('p2k16.app', deps)
+    angular.module('p2k16.app', ['ngRoute'])
         .config(config)
         .run(run)
         .controller(FrontPageController)

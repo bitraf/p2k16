@@ -2,6 +2,7 @@ from functools import wraps
 
 import jsonschema as js
 from flask import jsonify, request
+from p2k16 import P2k16UserException
 
 
 def validate_schema(schema):
@@ -12,7 +13,7 @@ def validate_schema(schema):
                 js.validate(request.json, schema)
                 return f(*args, **kw)
             except js.ValidationError as e:
-                return jsonify({"messages": e.message}), 400
+                raise P2k16UserException(e.message)
 
         return wrapper
 

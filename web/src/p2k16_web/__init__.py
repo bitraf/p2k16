@@ -3,6 +3,7 @@ import os
 import flask
 import flask_bower
 import p2k16.database
+from p2k16 import P2k16UserException
 from p2k16_web import core_blueprint, door_blueprint
 
 app = p2k16.app
@@ -34,6 +35,14 @@ def hashed_url_for_static_file(endpoint, values):
 
 def static_file_hash(filename):
     return int(os.stat(filename).st_mtime)  # or app.config['last_build_timestamp'] or md5(filename) or etc...
+
+
+@app.errorhandler(P2k16UserException)
+def handle_p2k16_user_exception(error: P2k16UserException):
+    response = flask.jsonify({"message": error.msg})
+    response.status_code = 400
+    response.content_type = 'application/vnd.error+json'
+    return response
 
 
 app.register_blueprint(core_blueprint.core)

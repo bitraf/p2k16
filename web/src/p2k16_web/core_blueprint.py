@@ -46,7 +46,7 @@ def service_authz_login():
     user = User.find_user_by_username(username)
     password = request.json['password']
 
-    if not user.valid_password(password):
+    if not user or not user.valid_password(password):
         raise P2k16UserException("Invalid credentials")
 
     app.logger.info("user {} logged in".format(username))
@@ -70,7 +70,7 @@ def register_user():
                                       request.json["password"],
                                       request.json.get("phone", None))
     db.session.commit()
-    print("new user: {}/{}".format(u.username, u.id))
+    app.logger.info("new user: {}/{}".format(u.username, u.id))
     return jsonify({})
 
 

@@ -9,6 +9,10 @@
             controller: ToolsController,
             controllerAs: 'ctrl',
             templateUrl: 'static/tools.html'
+        }).when("/doors", {
+            controller: DoorsController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/doors.html'
         }).when("/public/unauthenticated", {
             controller: UnauthenticatedController,
             controllerAs: 'ctrl',
@@ -167,16 +171,20 @@
         }
     }
 
-    function FrontPageController($http) {
+    function FrontPageController() {
         var self = this;
-
-        self.openDoor = function () {
-            $http.post('/door/open');
-        }
     }
 
     function ToolsController() {
         var self = this;
+    }
+
+    function DoorsController($http) {
+        var self = this;
+
+        self.openDoor = function (door) {
+            $http.post('/service/door/open', {door: door});
+        }
     }
 
     /**

@@ -8,3 +8,7 @@ div.error-container {
 .nav, .pagination, .carousel, .panel-title a {
     cursor: pointer;
 }
+
+.door-buttons .btn {
+    width: 100%;
+}

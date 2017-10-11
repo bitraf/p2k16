@@ -15,7 +15,11 @@ class Door(object):
         self.key = key
 
 
-FRONT_DOOR = Door('front')
+FRONT_AND_LAB_DOOR = Door('front-and-lab')
+THIRD_DOOR = Door('3rd-floor')
+FOURTH_FLOOR_DOOR = Door('4th-floor')
+
+doors = {FRONT_AND_LAB_DOOR, THIRD_DOOR, FOURTH_FLOOR_DOOR}
 
 
 def init():
@@ -25,7 +29,7 @@ def init():
     _client.loop_start()
 
 
-def open_door(user: User, door):
+def open_door(user: User, door: Door):
     door_group = Group.get_by_name('door')
 
     if not user_management.is_user_in_group(door_group, user):

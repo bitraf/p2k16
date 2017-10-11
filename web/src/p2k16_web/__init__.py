@@ -39,6 +39,11 @@ def static_file_hash(filename):
 
 @app.errorhandler(P2k16UserException)
 def handle_p2k16_user_exception(error: P2k16UserException):
+    import sys, traceback
+    print("User error: {}".format(error.msg))
+    # traceback.print_exc(file=sys.stdout)
+    traceback.print_exc()
+
     response = flask.jsonify({"message": error.msg})
     response.status_code = 400
     response.content_type = 'application/vnd.error+json'

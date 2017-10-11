@@ -1,11 +1,10 @@
+<p2k16-header active="front-page"></p2k16-header>
+
 <div class="container">
   <p>
-    Welcome {{ ctrl.user.username }}!
+    Welcome {{ p2k16.currentUser().username }}!
   </p>
   <p>
     <button ng-click="ctrl.openDoor()">Open doors!</button>
-  </p>
-  <p>
-    <a href="/logout">Log out</a>
   </p>
 </div>

@@ -1,12 +1,11 @@
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
-from p2k16 import app
+from p2k16 import app, P2k16UserException
 from p2k16 import auth, user_management
 from p2k16.database import db
 from p2k16.models import User
 from p2k16_web.utils import validate_schema
-
 
 RegisterUserForm = {
     "type": "object",
@@ -20,6 +19,15 @@ RegisterUserForm = {
     "required": ["email", "username", "password"]
 }
 
+LoginForm = {
+    "type": "object",
+    "properties": {
+        "username": {"type": "string", "minLength": 1},
+        "password": {"type": "string", "minLength": 1},
+    },
+    "required": ["username", "password"]
+}
+
 core = Blueprint('core', __name__, template_folder='templates')
 
 
@@ -29,6 +37,28 @@ def user_to_json(user):
         "username": user.username,
         "email": user.email
     }
+
+
+@core.route('/service/authz/log-in', methods=['POST'])
+@validate_schema(LoginForm)
+def service_authz_login():
+    username = request.json["username"]
+    user = User.find_user_by_username(username)
+    password = request.json['password']
+
+    if not user.valid_password(password):
+        raise P2k16UserException("Invalid credentials")
+
+    app.logger.info("user {} logged in".format(username))
+    authenticated_user = auth.AuthenticatedUser(user)
+    flask_login.login_user(authenticated_user)
+    return jsonify(user_to_json(user))
+
+
+@core.route('/service/authz/log-out', methods=['POST'])
+def service_authz_logout():
+    flask_login.logout_user()
+    return jsonify({})
 
 
 @core.route('/service/register-user', methods=['POST'])

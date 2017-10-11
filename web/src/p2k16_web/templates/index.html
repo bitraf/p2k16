@@ -7,7 +7,7 @@
   {% raw %}
   <div ng-if="p2k16.errors.length" class="error-container">
     <div ng-repeat="m in p2k16.errors track by $index" class="alert alert-danger alert-dismissible">
-       <button type="button" class="close" ng-click="p2k16.errors.dismiss($index)">&times;</button>
+      <button type="button" class="close" ng-click="p2k16.errors.dismiss($index)">&times;</button>
       {{ m }}
     </div>
   </div>

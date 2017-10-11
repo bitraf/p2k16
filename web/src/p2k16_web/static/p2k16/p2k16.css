@@ -3,3 +3,8 @@ div.error-container {
     right: 3em;
     top: 3em;
 }
+
+/* ui.bootstrap */
+.nav, .pagination, .carousel, .panel-title a {
+    cursor: pointer;
+}

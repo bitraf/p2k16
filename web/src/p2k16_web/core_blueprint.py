@@ -1,10 +1,12 @@
+from typing import List
+
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16 import app, P2k16UserException
 from p2k16 import auth, user_management
 from p2k16.database import db
-from p2k16.models import User
+from p2k16.models import User, Group
 from p2k16_web.utils import validate_schema
 
 RegisterUserForm = {
@@ -31,11 +33,12 @@ LoginForm = {
 core = Blueprint('core', __name__, template_folder='templates')
 
 
-def user_to_json(user):
+def user_to_json(user, groups: List[Group]):
     return {
         "id": user.id,
         "username": user.username,
-        "email": user.email
+        "email": user.email,
+        "groups": {g.id: {"id": g.id, "name": g.name} for g in groups}
     }
 
 
@@ -48,11 +51,14 @@ def service_authz_login():
 
     if not user or not user.valid_password(password):
         raise P2k16UserException("Invalid credentials")
+    groups = user_management.groups_by_user(user.id)
 
-    app.logger.info("user {} logged in".format(username))
-    authenticated_user = auth.AuthenticatedUser(user)
+    app.logger.info("user {} logged in, groups={}".format(username, groups))
+
+    authenticated_user = auth.AuthenticatedUser(user, groups)
     flask_login.login_user(authenticated_user)
-    return jsonify(user_to_json(user))
+
+    return jsonify(user_to_json(user, groups))
 
 
 @core.route('/service/authz/log-out', methods=['POST'])
@@ -76,7 +82,8 @@ def register_user():
 
 @core.route('/data/user')
 def data_user():
-    users = [user_to_json(user) for user in User.query.all()]
+    users_with_groups = [(user, user_management.groups_by_user(user.id)) for user in User.query.all()]
+    users = [user_to_json(user, groups) for (user, groups) in users_with_groups]
     return jsonify(users)
 
 
@@ -88,13 +95,19 @@ def data_user_port(user_id):
         abort(404)
 
     user.password = request.json.password
+    groups = user_management.groups_by_user(user.id)
 
-    return user_to_json(user)
+    return user_to_json(user, groups)
 
 
 @core.route('/')
 def index():
-    user = flask_login.current_user.is_authenticated and user_to_json(flask_login.current_user.user)
+    if flask_login.current_user.is_authenticated:
+        user = flask_login.current_user.user
+        groups = user_management.groups_by_user(user.id)
+        user = user_to_json(user, groups)
+    else:
+        user = None
 
     return render_template('index.html', user=user)
 
@@ -117,8 +130,9 @@ def login():
     password = flask.request.form['password']
 
     if user.valid_password(password):
-        app.logger.info("user {} logged in".format(username))
-        authenticated_user = auth.AuthenticatedUser(user)
+        groups = user_management.groups_by_user(user.id)
+        app.logger.info("user {} logged in, groups={}".format(username, groups))
+        authenticated_user = auth.AuthenticatedUser(user, groups)
         flask_login.login_user(authenticated_user)
         return flask.redirect(flask.url_for('core.index'))
 
@@ -141,7 +155,7 @@ def reset_password_form():
     user = User.find_user_by_reset_token(reset_token)
 
     if user and user.is_valid_reset_token(reset_token):
-        return render_template('reset-password.html', reset_token=reset_token, user=user_to_json(user))
+        return render_template('reset-password.html', reset_token=reset_token, user=user_to_json(user, []))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 

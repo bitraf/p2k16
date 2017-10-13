@@ -1,5 +1,5 @@
 import string
-from typing import Optional
+from typing import Optional, List
 
 import flask
 from p2k16 import P2k16UserException, app
@@ -20,6 +20,13 @@ def is_user_in_group(group: Group, user: User):
         filter(GroupMember.group_id == group.id). \
         filter(User.id == user.id)
     return db.session.query(db.literal(True)).filter(q.exists()).scalar()
+
+
+def groups_by_user(user_id: int) -> List[Group]:
+    return Group.query.\
+        join(GroupMember, GroupMember.group_id == Group.id).\
+        filter(GroupMember.user_id == user_id).\
+        all()
 
 
 def add_user_to_group(user_id, group_id, admin_id):

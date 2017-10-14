@@ -60,6 +60,10 @@
             return self.user;
         }
 
+        function hasRole(roleName) {
+            return self.user && _.some(self.user.groups, {"name": roleName});
+        }
+
         function setLoggedIn(data) {
             self.user = data || null;
         }
@@ -90,6 +94,7 @@
             isLoggedIn: isLoggedIn,
             currentUser: currentUser,
             setLoggedIn: setLoggedIn,
+            hasRole: hasRole,
             addErrors: addErrors,
             errors: self.errors
         }

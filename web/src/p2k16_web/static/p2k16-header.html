@@ -7,7 +7,8 @@
       <li ng-class="{'front-page': 'active'}[active]"><a href="#">Home</a></li>
       <li ng-class="{'doors': 'active'}[active]"><a href="#!doors">Doors</a></li>
       <li ng-class="{'tools': 'active'}[active]"><a href="#!tools">Tools</a></li>
-      <li ng-class="{'admin': 'active'}[active]"><a href="#!admin">Admin</a></li>
+      <li ng-if="$root.p2k16.hasRole('admins')"
+        ng-class="{'admin': 'active'}[active]"><a href="#!admin">Admin</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">

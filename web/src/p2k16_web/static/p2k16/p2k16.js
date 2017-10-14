@@ -1,7 +1,11 @@
 (function () {
 
     function config($routeProvider, $httpProvider) {
-        $routeProvider.when("/", {
+        $routeProvider.when("/public/unauthenticated", {
+            controller: UnauthenticatedController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/unauthenticated.html'
+        }).when("/", {
             controller: FrontPageController,
             controllerAs: 'ctrl',
             templateUrl: 'static/front-page.html'
@@ -13,10 +17,10 @@
             controller: DoorsController,
             controllerAs: 'ctrl',
             templateUrl: 'static/doors.html'
-        }).when("/public/unauthenticated", {
-            controller: UnauthenticatedController,
+        }).when("/admin", {
+            controller: AdminController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/unauthenticated.html'
+            templateUrl: 'static/admin.html'
         }).otherwise("/");
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
@@ -34,6 +38,7 @@
                 return;
             }
 
+            // TODO: consider if we should show a login modal instead.
             $location.url("/public/unauthenticated");
         });
 
@@ -192,6 +197,10 @@
         }
     }
 
+    function AdminController($http) {
+        var self = this;
+    }
+
     /**
      * @param $http
      * @param $location
@@ -221,7 +230,6 @@
     angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap'])
         .config(config)
         .run(run)
-        .controller(FrontPageController)
         .service("P2k16", P2k16)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)

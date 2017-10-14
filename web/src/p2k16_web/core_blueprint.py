@@ -9,7 +9,7 @@ from p2k16.database import db
 from p2k16.models import User, Group
 from p2k16_web.utils import validate_schema
 
-RegisterUserForm = {
+register_user_form = {
     "type": "object",
     "properties": {
         "username": {"type": "string", "minLength": 1},
@@ -21,7 +21,7 @@ RegisterUserForm = {
     "required": ["email", "username", "password"]
 }
 
-LoginForm = {
+login_form = {
     "type": "object",
     "properties": {
         "username": {"type": "string", "minLength": 1},
@@ -43,7 +43,7 @@ def user_to_json(user, groups: List[Group]):
 
 
 @core.route('/service/authz/log-in', methods=['POST'])
-@validate_schema(LoginForm)
+@validate_schema(login_form)
 def service_authz_login():
     username = request.json["username"]
     user = User.find_user_by_username(username)
@@ -68,7 +68,7 @@ def service_authz_logout():
 
 
 @core.route('/service/register-user', methods=['POST'])
-@validate_schema(RegisterUserForm)
+@validate_schema(register_user_form)
 def register_user():
     u = user_management.register_user(request.json["username"],
                                       request.json["email"],

@@ -7,7 +7,7 @@ from p2k16 import app, P2k16UserException
 from p2k16 import auth, user_management
 from p2k16.database import db
 from p2k16.models import User, Group
-from p2k16_web.utils import validate_schema
+from p2k16_web.utils import validate_schema, DataServiceTool
 
 register_user_form = {
     "type": "object",
@@ -31,6 +31,7 @@ login_form = {
 }
 
 core = Blueprint('core', __name__, template_folder='templates')
+registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
 
 def user_to_json(user, groups: List[Group]):
@@ -42,7 +43,7 @@ def user_to_json(user, groups: List[Group]):
     }
 
 
-@core.route('/service/authz/log-in', methods=['POST'])
+@registry.route('/service/authz/log-in', methods=['POST'])
 @validate_schema(login_form)
 def service_authz_login():
     username = request.json["username"]
@@ -61,13 +62,13 @@ def service_authz_login():
     return jsonify(user_to_json(user, groups))
 
 
-@core.route('/service/authz/log-out', methods=['POST'])
+@registry.route('/service/authz/log-out', methods=['POST'])
 def service_authz_logout():
     flask_login.logout_user()
     return jsonify({})
 
 
-@core.route('/service/register-user', methods=['POST'])
+@registry.route('/service/register-user', methods=['POST'])
 @validate_schema(register_user_form)
 def register_user():
     u = user_management.register_user(request.json["username"],
@@ -80,7 +81,8 @@ def register_user():
     return jsonify({})
 
 
-@core.route('/data/user')
+# @core.route('/data/user')
+@registry.route('/data/user')
 def data_user():
     users_with_groups = [(user, user_management.groups_by_user(user.id)) for user in User.query.all()]
     users = [user_to_json(user, groups) for (user, groups) in users_with_groups]
@@ -180,3 +182,8 @@ def set_new_password():
 def protected():
     u = flask_login.current_user.user
     return 'Logged in as: ' + str(u.id) + ", username=" + u.username
+
+
+@core.route('/core-data-service.js')
+def core_service():
+    return flask.Response(registry.generate(), content_type='application/javascript')

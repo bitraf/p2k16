@@ -20,7 +20,10 @@
         }).when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin.html'
+            templateUrl: 'static/admin.html',
+            resolve: {
+                users: CoreDataService.resolve.data_user
+            }
         }).otherwise("/");
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
@@ -95,6 +98,9 @@
             delete window["p2k16"];
         }
 
+        /**
+         * @lends P2k16.prototype
+         */
         return {
             isLoggedIn: isLoggedIn,
             currentUser: currentUser,
@@ -106,9 +112,11 @@
     }
 
     /**
+     * @param {P2k16} P2k16
+     * @param {CoreDataService} CoreDataService
      * @constructor
      */
-    function AuthzService(P2k16, $http) {
+    function AuthzService(P2k16, CoreDataService) {
         function logIn(form) {
             return $http.post('/service/authz/log-in', form).then(function (res) {
                 P2k16.setLoggedIn(res.data);
@@ -116,11 +124,17 @@
         }
 
         function logOut() {
-            return $http.post('/service/authz/log-out', {}).then(function () {
+            return CoreDataService.service_authz_logout().then(function () {
                 P2k16.setLoggedIn(null);
             });
+            // return $http.post('/service/authz/log-out', {}).then(function () {
+            //     P2k16.setLoggedIn(null);
+            // });
         }
 
+        /**
+         * @lends AuthzService.prototype
+         */
         return {
             logIn: logIn,
             logOut: logOut
@@ -197,8 +211,10 @@
         }
     }
 
-    function AdminController($http) {
+    function AdminController($http, users) {
         var self = this;
+
+        self.users = users;
     }
 
     /**
@@ -231,6 +247,7 @@
         .config(config)
         .run(run)
         .service("P2k16", P2k16)
+        .service("CoreDataService", CoreDataService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
         .directive("p2k16Header", p2k16HeaderDirective);

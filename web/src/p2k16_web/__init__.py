@@ -53,4 +53,8 @@ def handle_p2k16_user_exception(error: P2k16UserException):
 app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)
 
+with open(os.path.join(app.static_folder, core_blueprint.registry.jsName), "w") as f:
+    print("app.static_folder={}".format(app.static_folder))
+    f.write(core_blueprint.registry.generate())
+
 flask_bower.Bower(app)

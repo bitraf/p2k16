@@ -1,6 +1,21 @@
-<p2k16-header active="doors"></p2k16-header>
+<p2k16-header active="admin"></p2k16-header>
 
 <div class="container">
   <h1>Admin</h1>
+
+  <h3>All users</h3>
+
+  <table>
+    <thead>
+    <tr>
+      <th>username</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="user in ctrl.users">
+      <td>{{user.username}}</td>
+    </tr>
+    </tbody>
+  </table>
 
 </div>

@@ -3,6 +3,7 @@
  * @constructor
  */
 var CoreDataService = function ($http) {
+
   function service_authz_login(payload) {
     var req = {};
     req.method = 'POST';
@@ -27,12 +28,21 @@ var CoreDataService = function ($http) {
     return $http(req);
   }
 
-  function data_user() {
+  function data_users() {
     var req = {};
     req.method = 'GET';
     req.url = '/data/user';
     return $http(req);
   }
+
+  function data_user(user_id) {
+    var req = {};
+    req.method = 'GET';
+    req.url = '/data/user';
+    req.url += '/' + user_id;
+    return $http(req);
+  }
+
 
   /**
    * @lends CoreDataService.prototype
@@ -41,20 +51,16 @@ var CoreDataService = function ($http) {
     service_authz_login: service_authz_login,
     service_authz_logout: service_authz_logout,
     register_user: register_user,
+    data_users: data_users,
     data_user: data_user
-  }
+  };
 };
 
-CoreDataService.resolve = {};
-CoreDataService.resolve.service_authz_login = function(CoreDataService) {
-  return CoreDataService.service_authz_login().then(function (res) { return res.data; });
+var CoreDataServiceResolvers = {};
+CoreDataServiceResolvers.data_users = function (CoreDataService) {
+  return CoreDataService.data_users().then(function (res) { return res.data; });
 };
-CoreDataService.resolve.service_authz_logout = function(CoreDataService) {
-  return CoreDataService.service_authz_logout().then(function (res) { return res.data; });
-};
-CoreDataService.resolve.register_user = function(CoreDataService) {
-  return CoreDataService.register_user().then(function (res) { return res.data; });
-};
-CoreDataService.resolve.data_user = function(CoreDataService) {
-  return CoreDataService.data_user().then(function (res) { return res.data; });
+CoreDataServiceResolvers.data_user = function (CoreDataService, $route) {
+  var user_id = $route.current.params.user_id;
+  return CoreDataService.data_user(user_id).then(function (res) { return res.data; });
 };

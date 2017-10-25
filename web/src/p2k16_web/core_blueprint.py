@@ -83,23 +83,22 @@ def register_user():
 
 # @core.route('/data/user')
 @registry.route('/data/user')
-def data_user():
+def data_users():
     users_with_groups = [(user, user_management.groups_by_user(user.id)) for user in User.query.all()]
     users = [user_to_json(user, groups) for (user, groups) in users_with_groups]
     return jsonify(users)
 
 
-@core.route('/data/user/<int:user_id>', methods=['POST'])
-def data_user_port(user_id):
+@registry.route('/data/user/<int:user_id>')
+def data_user(user_id):
     user = User.find_user_by_id(user_id)
 
     if user is None:
         abort(404)
 
-    user.password = request.json.password
     groups = user_management.groups_by_user(user.id)
 
-    return user_to_json(user, groups)
+    return jsonify(user_to_json(user, groups))
 
 
 @core.route('/')

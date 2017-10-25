@@ -22,7 +22,14 @@
             controllerAs: 'ctrl',
             templateUrl: 'static/admin.html',
             resolve: {
-                users: CoreDataService.resolve.data_user
+                users: CoreDataServiceResolvers.data_users
+            }
+        }).when("/admin/:user_id", {
+            controller: AdminUserController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/admin-user.html',
+            resolve: {
+                user: CoreDataServiceResolvers.data_user
             }
         }).otherwise("/");
 
@@ -215,6 +222,12 @@
         var self = this;
 
         self.users = users;
+    }
+
+    function AdminUserController($http, user) {
+        var self = this;
+
+        self.user = user;
     }
 
     /**

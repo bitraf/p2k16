@@ -5,17 +5,18 @@
 
   <h3>All users</h3>
 
-  <table>
+  <table class="table">
     <thead>
     <tr>
       <th>username</th>
+      <th>&nbsp;</th>
     </tr>
     </thead>
     <tbody>
     <tr ng-repeat="user in ctrl.users">
       <td>{{user.username}}</td>
       <td>
-        <a href="#!/admin/{{user.id}}">edit</a>
+        <a href="#!/admin/{{user.id}}">show</a>
       </td>
     </tr>
     </tbody>

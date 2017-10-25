@@ -39,6 +39,8 @@ def user_to_json(user, groups: List[Group]):
         "id": user.id,
         "username": user.username,
         "email": user.email,
+        "name": user.name,
+        "phone": user.phone,
         "groups": {g.id: {"id": g.id, "name": g.name} for g in groups}
     }
 

@@ -17,4 +17,10 @@ cd ..
 export FLASK_APP=p2k16_web.server
 export FLASK_DEBUG=1
 export P2K16_CONFIG=`pwd`/web/config-local.cfg
+
+# Use the Stripe non-prod API
+export WEBHOOK_SECRET='test'
+export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
+export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
+
 exec env/bin/flask run

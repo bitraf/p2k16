@@ -1,0 +1,136 @@
+<p2k16-header active="membership"></p2k16-header>
+
+<div class="container">
+    <h1>Membership</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Member Info</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <th>Name:</th>
+                            <td>H&aring;vard Espeland</td>
+                        </tr>
+                        <tr>
+                            <th>Username:</th>
+                            <td>haavares</td>
+                        </tr>
+                        <tr>
+                            <th>Organization:</th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>E-mail:</th>
+                            <td>haavares@ifi.uio.no</td>
+                        </tr>
+                        <tr>
+                            <th>Member price:</th>
+                            <td>300</td>
+                        </tr>
+                        <tr>
+                            <th>Payment form:</th>
+                            <td>Stripe (credit card) </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Payment</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <th>Credit card:</th>
+                            <td> **** **** **** 3690 </td>
+                        </tr>
+                        <tr>
+                            <th>Expire date:</th>
+                            <td> 10/2018 </td>
+                        </tr>
+                    </table>
+
+                    <div class="row">
+                        <!-- Get stripe token. TODO: Should use advanced API. -->
+                        <button stripe-checkout="ctrl.doCheckout"
+                                data-key="pk_test_hUoh3MEu4Oa8RjVFwZrFge4b"
+                                data-name="Bitraf membership"
+                                data-description="Update card"
+                                class="btn btn-success"
+                                data-amount="500">
+                            Set credit card
+                        </button>
+
+
+
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#updateMembership">Change membership</a>
+                        </div>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="updateMembership" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form method='post' action='/mystripe.php?id=2&amp;signature=xxx'>
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" id="myModalLabel">Change membership</h4>
+                                    </div>
+                                    <div class="modal-body">
+
+                                        <p>Membership</p>
+                                        <select class="form-control" name="membership_price">
+                                            <option value="1500" >Filantropmedlem (1500 kr / mnd) </option>
+                                            <option value="500" >Vanlig medlem (500 kr / mnd) </option>
+                                            <option value="300" selected>St&oslash;ttemedlem (300 kr / mnd) </option>
+                                            <option value="0" >Inaktiv (0 kr / mnd) </option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Credit card details are never stored by Bitraf and is handled by <a href='http://stripe.com'>stripe.com</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">Membership periods</h3>
+    </div>
+    <div class="panel-body" style="width: 50%;">
+        <table class="table">
+            <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+                <th>Paid</th>
+            </tr>
+
+            <tr><td>2017-10-09</td><td>2017-11-09</td><td>300.00</td><td>2017-10-17</td></tr><tr><td>2017-09-09</td><td>2017-10-09</td><td>300.00</td><td>2017-09-09</td></tr><tr><td>2017-08-09</td><td>2017-09-09</td><td>300.00</td><td>2017-08-09</td></tr><tr><td>2017-07-09</td><td>2017-08-09</td><td>300.00</td><td>2017-07-09</td></tr><tr><td>2017-06-09</td><td>2017-07-09</td><td>300.00</td><td>2017-06-09</td></tr><tr><td>2017-05-09</td><td>2017-06-09</td><td>300.00</td><td>2017-05-09</td></tr><tr><td>2017-04-09</td><td>2017-05-09</td><td>300.00</td><td>2017-04-09</td></tr><tr><td>2017-03-09</td><td>2017-04-09</td><td>300.00</td><td>2017-03-09</td></tr><tr><td>2017-02-09</td><td>2017-03-09</td><td>300.00</td><td>2017-02-09</td></tr><tr><td>2017-01-09</td><td>2017-02-09</td><td>300.00</td><td>2017-01-09</td></tr><tr><td>2016-12-09</td><td>2017-01-09</td><td>300.00</td><td>2016-12-09</td></tr><tr><td>2016-11-09</td><td>2016-12-09</td><td>300.00</td><td>2016-11-09</td></tr><tr><td>2016-10-09</td><td>2016-11-09</td><td>300.00</td><td>2016-10-09</td></tr><tr><td>2016-09-09</td><td>2016-10-09</td><td>300.00</td><td>2016-09-09</td></tr><tr><td>2016-08-09</td><td>2016-09-09</td><td>300.00</td><td>2016-08-09</td></tr><tr><td>2016-07-09</td><td>2016-08-09</td><td>300.00</td><td>2016-07-09</td></tr><tr><td>2016-06-09</td><td>2016-07-09</td><td>300.00</td><td>2016-06-09</td></tr><tr><td>2016-05-09</td><td>2016-06-09</td><td>300.00</td><td>2016-05-09</td></tr><tr><td>2016-04-09</td><td>2016-05-09</td><td>300.00</td><td>2016-04-09</td></tr><tr><td>2016-03-09</td><td>2016-04-09</td><td>300.00</td><td>2016-03-09</td></tr><tr><td>2016-02-09</td><td>2016-03-09</td><td>300.00</td><td>2016-02-09</td></tr><tr><td>2016-01-09</td><td>2016-02-09</td><td>300.00</td><td>2016-01-09</td></tr><tr><td>2015-12-09</td><td>2016-01-09</td><td>300.00</td><td>2015-12-09</td></tr><tr><td>2015-11-09</td><td>2015-12-09</td><td>300.00</td><td>2015-11-09</td></tr><tr><td>2015-10-09</td><td>2015-11-09</td><td>300.00</td><td>2015-10-09</td></tr><tr><td>2015-09-09</td><td>2015-10-09</td><td>300.00</td><td>2015-09-13</td></tr><tr><td>2015-08-09</td><td>2015-09-09</td><td>300.00</td><td>2015-08-09</td></tr><tr><td>2015-07-09</td><td>2015-08-09</td><td>300.00</td><td>2015-07-09</td></tr><tr><td>2015-06-09</td><td>2015-07-09</td><td>300.00</td><td>2015-06-09</td></tr><tr><td>2015-05-09</td><td>2015-06-09</td><td>300.00</td><td>2015-05-12</td></tr><tr><td>2015-04-09</td><td>2015-05-09</td><td>300.00</td><td>2015-04-09</td></tr><tr><td>2015-03-09</td><td>2015-04-09</td><td>300.00</td><td>2015-03-09</td></tr><tr><td>2015-02-09</td><td>2015-03-09</td><td>300.00</td><td>2015-02-09</td></tr>  </table>
+
+    </div>
+</div>
+
+
+
+</div>
+
+</div>

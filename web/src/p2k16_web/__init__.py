@@ -4,7 +4,7 @@ import flask
 import flask_bower
 import p2k16.database
 from p2k16 import P2k16UserException
-from p2k16_web import core_blueprint, door_blueprint
+from p2k16_web import core_blueprint, door_blueprint, membership_blueprint
 
 app = p2k16.app
 
@@ -52,6 +52,7 @@ def handle_p2k16_user_exception(error: P2k16UserException):
 
 app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)
+app.register_blueprint(membership_blueprint.membership)
 
 with open(os.path.join(app.static_folder, core_blueprint.registry.jsName), "w") as f:
     print("app.static_folder={}".format(app.static_folder))

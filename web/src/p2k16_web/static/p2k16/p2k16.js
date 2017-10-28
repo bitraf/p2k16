@@ -13,6 +13,10 @@
             controller: ToolsController,
             controllerAs: 'ctrl',
             templateUrl: 'static/tools.html'
+        }).when("/membership", {
+            controller: MembershipController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/membership.html'
         }).when("/doors", {
             controller: DoorsController,
             controllerAs: 'ctrl',
@@ -210,6 +214,14 @@
         var self = this;
     }
 
+    function MembershipController() {
+        var self = this;
+
+        self.doCheckout = function(token) {
+            alert("Got Stripe token: " + token.id);
+          };
+    }
+
     function DoorsController($http) {
         var self = this;
 
@@ -256,7 +268,7 @@
         };
     }
 
-    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap'])
+    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])
         .config(config)
         .run(run)
         .service("P2k16", P2k16)

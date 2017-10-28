@@ -1,6 +1,7 @@
 from p2k16.models import User, MembershipPayment
 from p2k16.database import db
 import datetime
+import stripe
 
 
 def paid_members():
@@ -18,3 +19,10 @@ def active_member(user=None) -> bool:
     """
     return User.query.join(MembershipPayment).filter(User.id == user.id,
                                                      MembershipPayment.end_date >= datetime.datetime.utcnow()).scalar() is not None
+
+def parse_stripe_event(event):
+    print("Hi")
+    repr(event)
+    print("Received event: id={id}, type={type}".format(id=event.id, type=event.type))
+
+    pass

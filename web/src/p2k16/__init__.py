@@ -28,4 +28,6 @@ class P2k16UserException(Exception):
 
 class P2k16TechnicalException(Exception):
     """Exception for unexpected stuff."""
-    pass
+
+    def __init__(self, msg=None):
+        self.msg = msg

@@ -128,7 +128,7 @@ class DataServiceTool(object):
             # print("url_parts={}".format(up))
 
             middle = '='
-            f_args = ['payload'] + args if has_payload else args
+            f_args = args + ['payload'] if has_payload else args
             s += "  function {}({}) {{\n".format(r.name, ", ".join(f_args))
             s += "    var req = {{}};\n".format()
             s += "    req.method = '{}';\n".format(r.method)

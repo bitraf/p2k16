@@ -55,26 +55,26 @@ class AccountTest(TestCase):
         admin = Account('admin1', 'admin1@example.org', password='123')
         a1 = Account('account1', 'account1@example.org', password='123')
         a2 = Account('account2', 'account2@example.org', password='123')
-        g = Circle('circle-1', 'Circle 1')
-        g_admin = Circle('circle-1-admin', 'Circle 1 Admins')
-        session.add_all([admin, a1, a2, g, g_admin])
+        c = Circle('circle-1', 'Circle 1')
+        c_admin = Circle('circle-1-admin', 'Circle 1 Admins')
+        session.add_all([admin, a1, a2, c, c_admin])
         session.flush()
-        session.add(CircleMember(g_admin, admin, admin))
+        session.add(CircleMember(c_admin, admin, admin))
         session.flush()
 
         # non-admin account trying to add
         try:
-            account_management.add_account_to_circle(a1.id, g.id, a2.id)
+            account_management.add_account_to_circle(a1.id, c.id, a2.id)
             session.flush()
             self.fail("expected exception")
         except P2k16UserException as e:
             pass
 
-        account_management.add_account_to_circle(a1.id, g.id, admin.id)
+        account_management.add_account_to_circle(a1.id, c.id, admin.id)
         session.commit()
-        session.refresh(g)
-        print('g.members=%s' % g.members)
-        assert len(g.members) > 0
+        session.refresh(c)
+        print('c.members=%s' % c.members)
+        assert len(c.members) > 0
 
     def test_membership(self):
         session = p2k16.database.db.session

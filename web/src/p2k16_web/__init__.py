@@ -3,7 +3,7 @@ import os
 import flask
 import flask_bower
 import p2k16.database
-from p2k16 import P2k16UserException
+from p2k16 import P2k16UserException, P2k16TechnicalException
 from p2k16_web import core_blueprint, door_blueprint, membership_blueprint
 
 app = p2k16.app
@@ -37,15 +37,28 @@ def static_file_hash(filename):
     return int(os.stat(filename).st_mtime)  # or app.config['last_build_timestamp'] or md5(filename) or etc...
 
 
+@app.errorhandler(P2k16TechnicalException)
+def handle_p2k16_technical_exception(error: P2k16TechnicalException):
+    return _handle_p2k16_exception(error.msg, False)
+
+
 @app.errorhandler(P2k16UserException)
 def handle_p2k16_user_exception(error: P2k16UserException):
+    return _handle_p2k16_exception(error.msg, True)
+
+
+def _handle_p2k16_exception(msg, is_user):
     import sys, traceback
-    app.logger.info("Account error: {}".format(error.msg))
+    from p2k16.database import db
+
+    db.session.rollback()
+
+    app.logger.info("Account error: {}".format(msg))
     # traceback.print_exc(file=sys.stdout)
     traceback.print_exc()
 
-    response = flask.jsonify({"message": error.msg})
-    response.status_code = 400
+    response = flask.jsonify({"message": msg})
+    response.status_code = 400 if is_user else 500
     response.content_type = 'application/vnd.error+json'
     return response
 

@@ -1,10 +1,9 @@
-import string
-from typing import Optional, List
-
 import flask
+import string
 from p2k16 import P2k16UserException, app
 from p2k16.database import db
 from p2k16.models import Account, Circle, CircleMember
+from typing import Optional, List
 
 
 def accounts_in_circle(circle_id):
@@ -14,7 +13,7 @@ def accounts_in_circle(circle_id):
         all()
 
 
-def is_account_in_circle(circle: Circle, account: Account):
+def is_account_in_circle(account: Account, circle: Circle):
     q = Account.query. \
         join(CircleMember, CircleMember.account_id == Account.id). \
         filter(CircleMember.circle_id == circle.id). \
@@ -23,13 +22,13 @@ def is_account_in_circle(circle: Circle, account: Account):
 
 
 def get_circles_for_account(account_id: int) -> List[Circle]:
-    return Circle.query.\
-        join(CircleMember, CircleMember.circle_id == Circle.id).\
-        filter(CircleMember.account_id == account_id).\
+    return Circle.query. \
+        join(CircleMember, CircleMember.circle_id == Circle.id). \
+        filter(CircleMember.account_id == account_id). \
         all()
 
 
-def add_account_to_circle(account_id, circle_id, admin_id):
+def _load_circle_admin(account_id, circle_id, admin_id):
     account = Account.find_account_by_id(account_id)
     admin = Account.find_account_by_id(admin_id)
     circle = Circle.find_by_id(circle_id)
@@ -37,15 +36,42 @@ def add_account_to_circle(account_id, circle_id, admin_id):
     if account is None or admin is None or circle is None:
         raise P2k16UserException('Bad values')
 
-    circle_admin = Circle.find_by_name(circle.name + '-admin')
+    return (account, admin, circle)
 
-    if circle_admin is None:
-        raise P2k16UserException('No admin-circle for circle "%s"' % circle.name)
 
-    if not is_account_in_circle(circle_admin, admin):
+def _check_is_circle_admin(circle: Circle, admin: Account):
+    admin_circle = Circle.find_by_name(circle.name + '-admin')
+
+    if admin_circle is None:
+        raise P2k16UserException('There is not an admin circle for circle "%s"' % circle.name)
+
+    if not is_account_in_circle(admin, admin_circle):
         raise P2k16UserException('Account %s is not an administrator of %s' % (admin.username, circle.description))
 
+
+def add_account_to_circle(account_id, circle_id, admin_id):
+    (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
+
+    app.logger.info("Adding %s to circle %s, issuer=%s" % (account.username, circle.name, admin.username))
+
+    _check_is_circle_admin(circle, admin)
+
     db.session.add(CircleMember(circle, account, admin))
+
+
+def remove_account_from_circle(account_id, circle_id, admin_id):
+    (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
+
+    app.logger.info("Removing %s from circle %s, issuer=%s" % (account.username, circle.name, admin.username))
+
+    _check_is_circle_admin(circle, admin)
+
+    cm = CircleMember.query.filter_by(account_id=account.id, circle_id=circle.id).one_or_none()
+
+    app.logger.info("cm={}".format(cm))
+
+    if cm:
+        db.session.delete(cm)
 
 
 def start_reset_password(username: string) -> Optional[Account]:

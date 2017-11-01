@@ -33,7 +33,8 @@
             controllerAs: 'ctrl',
             templateUrl: 'static/admin-account.html',
             resolve: {
-                account: CoreDataServiceResolvers.data_account
+                account: CoreDataServiceResolvers.data_account,
+                circles: CoreDataServiceResolvers.data_circles
             }
         }).otherwise("/");
 
@@ -218,9 +219,9 @@
     function MembershipController() {
         var self = this;
 
-        self.doCheckout = function(token) {
+        self.doCheckout = function (token) {
             alert("Got Stripe token: " + token.id);
-          };
+        };
     }
 
     function DoorsController($http) {
@@ -237,10 +238,29 @@
         self.accounts = accounts;
     }
 
-    function AdminAccountController($http, account) {
+    /**
+     * @param $http
+     * @param {CoreDataService} CoreDataService
+     * @param account
+     * @param circles
+     * @constructor
+     */
+    function AdminAccountController($http, CoreDataService, account, circles) {
         var self = this;
 
         self.account = account;
+        self.circles = circles;
+
+        self.in_circle = function (circle) {
+            return !!_.find(self.account.circles, {id: circle.id})
+        };
+
+        self.membership = function (circle, create) {
+            var f = (create ? CoreDataService.create_membership : CoreDataService.remove_membership);
+            f(self.account.id, {circle_id: circle.id}).then(function (account) {
+                self.account = account.data;
+            });
+        }
     }
 
     /**

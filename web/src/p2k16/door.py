@@ -32,7 +32,7 @@ def init():
 def open_door(account: Account, door: Door):
     door_circle = Circle.get_by_name('door')
 
-    if not account_management.is_account_in_circle(door_circle, account):
+    if not account_management.is_account_in_circle(account, door_circle):
         raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
 
     app.logger.info('Opening door. key={}, username={}'.format(door.key, account.username))

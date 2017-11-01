@@ -1,5 +1,3 @@
-from typing import List
-
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
@@ -8,13 +6,17 @@ from p2k16 import auth, account_management
 from p2k16.database import db
 from p2k16.models import Account, Circle
 from p2k16_web.utils import validate_schema, DataServiceTool
+from typing import List
+
+id_type = {"type": "number", "min": 1}
+nonempty_string = {"type": "string", "minLength": 1}
 
 register_account_form = {
     "type": "object",
     "properties": {
-        "username": {"type": "string", "minLength": 1},
+        "username": nonempty_string,
         "email": {"type": "string", "format": "email", "minLength": 1},
-        "name": {"type": "string", "minLength": 1},
+        "name": nonempty_string,
         "password": {"type": "string", "minLength": 3},
         "phone": {"type": "string"},
     },
@@ -24,14 +26,29 @@ register_account_form = {
 login_form = {
     "type": "object",
     "properties": {
-        "username": {"type": "string", "minLength": 1},
-        "password": {"type": "string", "minLength": 1},
+        "username": nonempty_string,
+        "password": nonempty_string,
     },
     "required": ["username", "password"]
 }
 
+single_circle_form = {
+    "type": "object",
+    "properties": {
+        "circle_id": id_type,
+    },
+    "required": ["circle_id"]
+}
+
 core = Blueprint('core', __name__, template_folder='templates')
 registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
+
+
+def circle_to_json(circle: Circle):
+    return {
+        "id": circle.id,
+        "name": circle.name
+    }
 
 
 def account_to_json(account: Account, circles: List[Circle]):
@@ -41,7 +58,7 @@ def account_to_json(account: Account, circles: List[Circle]):
         "email": account.email,
         "name": account.name,
         "phone": account.phone,
-        "circles": {g.id: {"id": g.id, "name": g.name} for g in circles}
+        "circles": {c.id: {"id": c.id, "name": c.name} for c in circles}
     }
 
 
@@ -85,7 +102,8 @@ def register_account():
 
 @registry.route('/data/account')
 def data_accounts():
-    accounts_with_circles = [(account, account_management.get_circles_for_account(account.id)) for account in Account.query.all()]
+    accounts_with_circles = [(account, account_management.get_circles_for_account(account.id)) for account in
+                             Account.query.all()]
     accounts = [account_to_json(account, circles) for (account, circles) in accounts_with_circles]
     return jsonify(accounts)
 
@@ -100,6 +118,44 @@ def data_account(account_id):
     circles = account_management.get_circles_for_account(account.id)
 
     return jsonify(account_to_json(account, circles))
+
+
+@registry.route('/data/account/<int:account_id>/cmd/remove-membership', methods=["POST"])
+@validate_schema(single_circle_form)
+def remove_membership(account_id):
+    return _manage_membership(account_id, False)
+
+
+@registry.route('/data/account/<int:account_id>/cmd/create-membership', methods=["POST"])
+@validate_schema(single_circle_form)
+def create_membership(account_id):
+    return _manage_membership(account_id, True)
+
+
+def _manage_membership(account_id: int, create: bool):
+    account = Account.find_account_by_id(account_id)
+
+    if account is None:
+        abort(404)
+
+    circle_id = request.json["circle_id"]
+    a = flask_login.current_user.account
+
+    if create:
+        account_management.add_account_to_circle(account.id, circle_id, a.id)
+    else:
+        account_management.remove_account_from_circle(account.id, circle_id, a.id)
+
+    circles = account_management.get_circles_for_account(account.id)
+
+    db.session.commit()
+    return jsonify(account_to_json(account, circles))
+
+
+@registry.route('/data/circle')
+def data_circles():
+    circles = Circle.query.all()
+    return jsonify([circle_to_json(c) for c in circles])
 
 
 @core.route('/')
@@ -186,4 +242,13 @@ def protected():
 
 @core.route('/core-data-service.js')
 def core_service():
-    return flask.Response(registry.generate(), content_type='application/javascript')
+    content = core_service.content
+
+    if not content:
+        content = flask.Response(registry.generate(), content_type='application/javascript')
+        core_service.content = content
+
+    return content
+
+
+core_service.content = None

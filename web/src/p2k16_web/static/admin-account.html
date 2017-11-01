@@ -7,8 +7,8 @@
   <table class="table">
     <tbody>
     <tr>
-      <th>username</th>
-      <td>{{ctrl.account.username}}</td>
+      <th class="col-xs-4">username</th>
+      <td class="col-xs-8">{{ctrl.account.username}}</td>
     </tr>
     <tr>
       <th>Name</th>
@@ -29,8 +29,17 @@
 
   <table class="table">
     <tbody>
-    <tr ng-repeat="g in ctrl.account.circles">
-      <td>{{g.name}}</td>
+    <tr ng-repeat="c in ctrl.circles">
+      <td class="col-xs-4">{{c.name}}</td>
+      <td class="col-xs-8">
+        <a ng-if="ctrl.in_circle(c)" ng-click="ctrl.membership(c, false)">
+          remove membership
+        </a>
+        <a ng-if="!ctrl.in_circle(c)" ng-click="ctrl.membership(c, true)">
+          create membership
+        </a>
+
+      </td>
     </tr>
     </tbody>
   </table>

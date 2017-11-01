@@ -90,7 +90,7 @@ def data_accounts():
     return jsonify(accounts)
 
 
-@registry.route('/data/account/<account_id>')
+@registry.route('/data/account/<int:account_id>')
 def data_account(account_id):
     account = Account.find_account_by_id(account_id)
 

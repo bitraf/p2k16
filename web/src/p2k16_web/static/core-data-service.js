@@ -35,10 +35,11 @@ var CoreDataService = function ($http) {
     return $http(req);
   }
 
-  function data_account() {
+  function data_account(account_id) {
     var req = {};
     req.method = 'GET';
-    req.url = '/data/account/<account_id>';
+    req.url = '/data/account';
+    req.url += '/' + account_id;
     return $http(req);
   }
 
@@ -59,6 +60,7 @@ var CoreDataServiceResolvers = {};
 CoreDataServiceResolvers.data_accounts = function (CoreDataService) {
   return CoreDataService.data_accounts().then(function (res) { return res.data; });
 };
-CoreDataServiceResolvers.data_account = function (CoreDataService) {
-  return CoreDataService.data_account().then(function (res) { return res.data; });
+CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
+  var account_id = $route.current.params.account_id;
+  return CoreDataService.data_account(account_id).then(function (res) { return res.data; });
 };

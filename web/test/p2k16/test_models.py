@@ -3,11 +3,12 @@ from datetime import timedelta
 
 import p2k16.database
 from flask_testing import TestCase
-from p2k16 import user_management, membership_management, P2k16UserException
+from p2k16 import account_management, membership_management, P2k16UserException
 from p2k16.models import *
 
 
-class UserTest(TestCase):
+# noinspection PyMethodMayBeStatic
+class AccountTest(TestCase):
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     TESTING = True
 
@@ -35,42 +36,41 @@ class UserTest(TestCase):
         pass
 
     def test_basic(self):
-        # users = self.session.query(User).all()
-        users = User.query.all()
-        print("users: " + str(users))
+        accounts = Account.query.all()
+        print("accounts: " + str(accounts))
 
     def test_authentication_test(self):
         session = p2k16.database.db.session
-        user = User('foo', 'foo@example.org', password='123')
-        session.add(user)
+        account = Account('foo', 'foo@example.org', password='123')
+        session.add(account)
         session.flush()
 
-        membership = Membership(user, 500)
+        membership = Membership(account, 500)
         session.add(membership)
         session.flush()
         session.commit()
 
-    def test_groups(self):
+    def test_circles(self):
         session = p2k16.database.db.session
-        admin = User('admin1', 'admin1@example.org', password='123')
-        u1 = User('user1', 'user1@example.org', password='123')
-        u2 = User('user2', 'user2@example.org', password='123')
-        g = Group('group-1', 'Group 1')
-        g_admin = Group('group-1-admin', 'Group 1 Admins')
-        session.add_all([admin, u1, u2, g, g_admin])
+        admin = Account('admin1', 'admin1@example.org', password='123')
+        a1 = Account('account1', 'account1@example.org', password='123')
+        a2 = Account('account2', 'account2@example.org', password='123')
+        g = Circle('circle-1', 'Circle 1')
+        g_admin = Circle('circle-1-admin', 'Circle 1 Admins')
+        session.add_all([admin, a1, a2, g, g_admin])
         session.flush()
-        session.add(GroupMember(g_admin, admin, admin))
+        session.add(CircleMember(g_admin, admin, admin))
         session.flush()
 
-        # non-admin user trying to add
+        # non-admin account trying to add
         try:
-            user_management.add_user_to_group(u1.id, g.id, u2.id)
+            account_management.add_account_to_circle(a1.id, g.id, a2.id)
             session.flush()
             self.fail("expected exception")
         except P2k16UserException as e:
             pass
 
-        user_management.add_user_to_group(u1.id, g.id, admin.id)
+        account_management.add_account_to_circle(a1.id, g.id, admin.id)
         session.commit()
         session.refresh(g)
         print('g.members=%s' % g.members)
@@ -78,35 +78,35 @@ class UserTest(TestCase):
 
     def test_membership(self):
         session = p2k16.database.db.session
-        u3 = User('user3', 'user3@example.org', password='123')
-        u4 = User('user4', 'user4@example.org', password='123')
-        u5 = User('user5', 'user5@example.org', password='123')
-        session.add_all([u3, u4, u5])
+        a3 = Account('account3', 'account3@example.org', password='123')
+        a4 = Account('account4', 'account4@example.org', password='123')
+        a5 = Account('account5', 'account5@example.org', password='123')
+        session.add_all([a3, a4, a5])
         session.flush()
 
-        # Add user3 with active membership
-        payment1 = MembershipPayment(u3, 'tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+        # Add account3 with active membership
+        payment1 = MembershipPayment(a3, 'tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
                                      datetime(2017, 1, 1))
-        payment2 = MembershipPayment(u3, 'tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
+        payment2 = MembershipPayment(a3, 'tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
                                      datetime(2017, 2, 1))
-        payment3 = MembershipPayment(u3, 'tok_stripe_xx1338', datetime(2017, 3, 1),
+        payment3 = MembershipPayment(a3, 'tok_stripe_xx1338', datetime(2017, 3, 1),
                                      datetime.utcnow() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
 
-        # User 4 with expired membership
-        payment4 = MembershipPayment(u4, 'tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+        # Account 4 with expired membership
+        payment4 = MembershipPayment(a4, 'tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
                                      datetime(2017, 1, 1))
 
-        # User 5 has no payments
+        # Account 5 has no payments
 
         session.add_all([payment1, payment2, payment3, payment4])
         session.flush()
 
-        # Verify only one paid user
+        # Verify only one paid account
         assert len(membership_management.paid_members()) == 1
 
-        assert membership_management.active_member(u3) is True
-        assert membership_management.active_member(u4) is False
-        assert membership_management.active_member(u5) is False
+        assert membership_management.active_member(a3) is True
+        assert membership_management.active_member(a4) is False
+        assert membership_management.active_member(a5) is False
 
 
 if __name__ == '__main__':

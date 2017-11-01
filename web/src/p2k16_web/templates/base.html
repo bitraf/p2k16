@@ -12,8 +12,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
   <script>
     var p2k16 = {};
-    {% if user and current_user.is_authenticated %}
-      p2k16.user = {{ user|tojson|safe }};
+    {% if account and current_user.is_authenticated %}
+      p2k16.account = {{ account | tojson | safe }};
     {% endif %}
   </script>
 

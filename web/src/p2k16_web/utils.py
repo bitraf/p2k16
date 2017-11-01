@@ -90,7 +90,7 @@ class DataServiceTool(object):
 
             matches = list(DataServiceTool.segments_re.finditer(r.url))
             if len(matches):
-                print("len(matches)={}, str={}".format(len(matches), r.url))
+                # print("len(matches)={}, str={}".format(len(matches), r.url))
                 # i = 0
                 url = ""
                 for m in matches:
@@ -101,13 +101,13 @@ class DataServiceTool(object):
                         url_parts.append((g[2], None))
                         args.append(g[2])
 
-                print("url={}".format(url))
+                # print("url={}".format(url))
             else:
                 raise Exception("Hm..")
 
             has_payload = r.method == "POST"
 
-            print("url_parts={}".format(url_parts))
+            # print("url_parts={}".format(url_parts))
 
             up = []
             tmp = None
@@ -125,7 +125,7 @@ class DataServiceTool(object):
                     up.append(p)
             if tmp:
                 up.append((None, tmp))
-            print("url_parts={}".format(up))
+            # print("url_parts={}".format(up))
 
             middle = '='
             f_args = ['payload'] + args if has_payload else args

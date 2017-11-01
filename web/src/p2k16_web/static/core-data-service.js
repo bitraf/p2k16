@@ -20,26 +20,25 @@ var CoreDataService = function ($http) {
     return $http(req);
   }
 
-  function register_user(payload) {
+  function register_account(payload) {
     var req = {};
     req.method = 'POST';
-    req.url = '/service/register-user';
+    req.url = '/service/register-account';
     req.data = payload;
     return $http(req);
   }
 
-  function data_users() {
+  function data_accounts() {
     var req = {};
     req.method = 'GET';
-    req.url = '/data/user';
+    req.url = '/data/account';
     return $http(req);
   }
 
-  function data_user(user_id) {
+  function data_account() {
     var req = {};
     req.method = 'GET';
-    req.url = '/data/user';
-    req.url += '/' + user_id;
+    req.url = '/data/account/<account_id>';
     return $http(req);
   }
 
@@ -50,17 +49,16 @@ var CoreDataService = function ($http) {
   return {
     service_authz_login: service_authz_login,
     service_authz_logout: service_authz_logout,
-    register_user: register_user,
-    data_users: data_users,
-    data_user: data_user
+    register_account: register_account,
+    data_accounts: data_accounts,
+    data_account: data_account
   };
 };
 
 var CoreDataServiceResolvers = {};
-CoreDataServiceResolvers.data_users = function (CoreDataService) {
-  return CoreDataService.data_users().then(function (res) { return res.data; });
+CoreDataServiceResolvers.data_accounts = function (CoreDataService) {
+  return CoreDataService.data_accounts().then(function (res) { return res.data; });
 };
-CoreDataServiceResolvers.data_user = function (CoreDataService, $route) {
-  var user_id = $route.current.params.user_id;
-  return CoreDataService.data_user(user_id).then(function (res) { return res.data; });
+CoreDataServiceResolvers.data_account = function (CoreDataService) {
+  return CoreDataService.data_account().then(function (res) { return res.data; });
 };

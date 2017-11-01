@@ -3,7 +3,7 @@
 <div class="container">
   <h1>Admin</h1>
 
-  <h3>All users</h3>
+  <h3>All accounts</h3>
 
   <table class="table">
     <thead>
@@ -13,10 +13,10 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="user in ctrl.users">
-      <td>{{user.username}}</td>
+    <tr ng-repeat="account in ctrl.accounts">
+      <td>{{account.username}}</td>
       <td>
-        <a href="#!/admin/{{user.id}}">show</a>
+        <a href="#!/admin/{{account.id}}">show</a>
       </td>
     </tr>
     </tbody>

@@ -4,12 +4,12 @@ import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16 import app, P2k16UserException
-from p2k16 import auth, user_management
+from p2k16 import auth, account_management
 from p2k16.database import db
-from p2k16.models import User, Group
+from p2k16.models import Account, Circle
 from p2k16_web.utils import validate_schema, DataServiceTool
 
-register_user_form = {
+register_account_form = {
     "type": "object",
     "properties": {
         "username": {"type": "string", "minLength": 1},
@@ -34,14 +34,14 @@ core = Blueprint('core', __name__, template_folder='templates')
 registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
 
-def user_to_json(user, groups: List[Group]):
+def account_to_json(account: Account, circles: List[Circle]):
     return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "name": user.name,
-        "phone": user.phone,
-        "groups": {g.id: {"id": g.id, "name": g.name} for g in groups}
+        "id": account.id,
+        "username": account.username,
+        "email": account.email,
+        "name": account.name,
+        "phone": account.phone,
+        "circles": {g.id: {"id": g.id, "name": g.name} for g in circles}
     }
 
 
@@ -49,19 +49,19 @@ def user_to_json(user, groups: List[Group]):
 @validate_schema(login_form)
 def service_authz_login():
     username = request.json["username"]
-    user = User.find_user_by_username(username)
+    account = Account.find_account_by_username(username)
     password = request.json['password']
 
-    if not user or not user.valid_password(password):
+    if not account or not account.valid_password(password):
         raise P2k16UserException("Invalid credentials")
-    groups = user_management.groups_by_user(user.id)
+    circles = account_management.get_circles_for_account(account.id)
 
-    app.logger.info("user {} logged in, groups={}".format(username, groups))
+    app.logger.info("Login: username={}, circles={}".format(username, circles))
 
-    authenticated_user = auth.AuthenticatedUser(user, groups)
-    flask_login.login_user(authenticated_user)
+    authenticated_account = auth.AuthenticatedAccount(account, circles)
+    flask_login.login_user(authenticated_account)
 
-    return jsonify(user_to_json(user, groups))
+    return jsonify(account_to_json(account, circles))
 
 
 @registry.route('/service/authz/log-out', methods=['POST'])
@@ -70,49 +70,48 @@ def service_authz_logout():
     return jsonify({})
 
 
-@registry.route('/service/register-user', methods=['POST'])
-@validate_schema(register_user_form)
-def register_user():
-    u = user_management.register_user(request.json["username"],
-                                      request.json["email"],
-                                      request.json.get("name", None),
-                                      request.json["password"],
-                                      request.json.get("phone", None))
+@registry.route('/service/register-account', methods=['POST'])
+@validate_schema(register_account_form)
+def register_account():
+    u = account_management.register_account(request.json["username"],
+                                            request.json["email"],
+                                            request.json.get("name", None),
+                                            request.json["password"],
+                                            request.json.get("phone", None))
     db.session.commit()
-    app.logger.info("new user: {}/{}".format(u.username, u.id))
+    app.logger.info("new account: {}/{}".format(u.username, u.id))
     return jsonify({})
 
 
-# @core.route('/data/user')
-@registry.route('/data/user')
-def data_users():
-    users_with_groups = [(user, user_management.groups_by_user(user.id)) for user in User.query.all()]
-    users = [user_to_json(user, groups) for (user, groups) in users_with_groups]
-    return jsonify(users)
+@registry.route('/data/account')
+def data_accounts():
+    accounts_with_circles = [(account, account_management.get_circles_for_account(account.id)) for account in Account.query.all()]
+    accounts = [account_to_json(account, circles) for (account, circles) in accounts_with_circles]
+    return jsonify(accounts)
 
 
-@registry.route('/data/user/<int:user_id>')
-def data_user(user_id):
-    user = User.find_user_by_id(user_id)
+@registry.route('/data/account/<account_id>')
+def data_account(account_id):
+    account = Account.find_account_by_id(account_id)
 
-    if user is None:
+    if account is None:
         abort(404)
 
-    groups = user_management.groups_by_user(user.id)
+    circles = account_management.get_circles_for_account(account.id)
 
-    return jsonify(user_to_json(user, groups))
+    return jsonify(account_to_json(account, circles))
 
 
 @core.route('/')
 def index():
     if flask_login.current_user.is_authenticated:
-        user = flask_login.current_user.user
-        groups = user_management.groups_by_user(user.id)
-        user = user_to_json(user, groups)
+        account = flask_login.current_user.account
+        circles = account_management.get_circles_for_account(account.id)
+        account = account_to_json(account, circles)
     else:
-        user = None
+        account = None
 
-    return render_template('index.html', user=user)
+    return render_template('index.html', account=account)
 
 
 @core.route('/logout', methods=['GET'])
@@ -129,14 +128,14 @@ def login():
         return render_template('login.html', show_message=show_message, username=username)
 
     username = flask.request.form['username']
-    user = User.find_user_by_username(username)
+    account = Account.find_account_by_username(username)
     password = flask.request.form['password']
 
-    if user.valid_password(password):
-        groups = user_management.groups_by_user(user.id)
-        app.logger.info("user {} logged in, groups={}".format(username, groups))
-        authenticated_user = auth.AuthenticatedUser(user, groups)
-        flask_login.login_user(authenticated_user)
+    if account.valid_password(password):
+        circles = account_management.get_circles_for_account(account.id)
+        app.logger.info("User {} logged in, circles={}".format(username, circles))
+        authenticated_account = auth.AuthenticatedAccount(account, circles)
+        flask_login.login_user(authenticated_account)
         return flask.redirect(flask.url_for('core.index'))
 
     return flask.redirect(flask.url_for('.login', show_message='bad-login', username=username))
@@ -145,8 +144,8 @@ def login():
 @core.route('/start-reset-password', methods=['POST'])
 def start_reset_password():
     username = flask.request.form['username']
-    user = user_management.start_reset_password(username)
-    if user:
+    account = account_management.start_reset_password(username)
+    if account:
         db.session.commit()
 
     return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
@@ -155,10 +154,10 @@ def start_reset_password():
 @core.route('/reset-password-form', methods=['GET'])
 def reset_password_form():
     reset_token = flask.request.args['reset_token']
-    user = User.find_user_by_reset_token(reset_token)
+    account = Account.find_account_by_reset_token(reset_token)
 
-    if user and user.is_valid_reset_token(reset_token):
-        return render_template('reset-password.html', reset_token=reset_token, user=user_to_json(user, []))
+    if account and account.is_valid_reset_token(reset_token):
+        return render_template('reset-password.html', reset_token=reset_token, account=account_to_json(account, []))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 
@@ -166,14 +165,14 @@ def reset_password_form():
 @core.route('/set-new-password', methods=['POST'])
 def set_new_password():
     reset_token = flask.request.form['reset_token']
-    user = User.find_user_by_reset_token(reset_token)
+    account = Account.find_account_by_reset_token(reset_token)
 
-    if not user or not user.is_valid_reset_token(reset_token):
+    if not account or not account.is_valid_reset_token(reset_token):
         return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 
     password = flask.request.form['password']
-    user.password = password
-    app.logger.info('Updating password for user={}'.format(user))
+    account.password = password
+    app.logger.info('Updating password for account={}'.format(account))
     db.session.commit()
     return flask.redirect(flask.url_for('.login'))
 
@@ -181,8 +180,8 @@ def set_new_password():
 @core.route('/protected')
 @flask_login.login_required
 def protected():
-    u = flask_login.current_user.user
-    return 'Logged in as: ' + str(u.id) + ", username=" + u.username
+    a = flask_login.current_user.account
+    return 'Logged in as: ' + str(a.id) + ", username=" + a.username
 
 
 @core.route('/core-data-service.js')

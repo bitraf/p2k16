@@ -1,34 +1,34 @@
 import flask_login
-from p2k16 import user_management
-from p2k16.models import User
+from p2k16 import account_management
+from p2k16.models import Account
 
 login_manager = flask_login.LoginManager()
 
 
-class AuthenticatedUser(flask_login.UserMixin):
-    def __init__(self, user, groups):
-        self.id = user.id
-        self.user = user
-        self.groups = groups
+class AuthenticatedAccount(flask_login.UserMixin):
+    def __init__(self, account, circles):
+        self.id = account.id
+        self.account = account
+        self.circles = circles
 
 
 @login_manager.user_loader
-def user_loader(user_id):
-    user = User.find_user_by_id(user_id)
+def account_loader(account_id):
+    account = Account.find_account_by_id(account_id)
 
-    if user is None:
+    if account is None:
         return
 
-    groups = user_management.groups_by_user(user.id)
+    circles = account_management.get_circles_for_account(account.id)
 
-    return AuthenticatedUser(user, groups)
+    return AuthenticatedAccount(account, circles)
 
 
 @login_manager.request_loader
 def request_loader(request):
-    user_id = request.form.get("user_id")
+    account_id = request.form.get("account")
 
-    if user_id is None:
+    if account_id is None:
         return
 
-    return user_loader(user_id)
+    return account_loader(account_id)

@@ -1,22 +1,23 @@
 # Running with Docker
 
-### Docker-compose deployment
+## Docker-compose deployment
+
 The docker-compose setup contains both the flask app and the required services.
 
 To build and deploy the full service, run the following commands.
+
 - Clone the project
-```
-git clone https://github.com/bitraf/p2k16.git
-cd p2k16
-```
+
+    git clone https://github.com/bitraf/p2k16.git
+    cd p2k16
+
 - Build the docker-compose services
-```
-docker-compose build
-```
+
+    docker-compose build
+
 - Deploy services
-```
-docker-compose up -d
-```
+
+    docker-compose up -d
 
 # Getting started without Docker
 
@@ -34,8 +35,17 @@ Running the application:
 
 This will fail unless you have the required applications installed.
 
-# Thoughts
+# Creating SQL migrations
 
+We use Flyway (https://flywaydb.org) to manage the schema. Flyway is a upgrade-only, sql-only tool (at least in our
+setup) to manage SQL databases. We're smart and are using PostgreSQL which support transactional changes to the schema.
+
+After checking out the code and creating the database, run `./flyway migrate` to migrate the database.
+
+If you want to change the schema, create a new file under `migrations/` called `V001.NNN__clever_comment.sql`. If more
+than one person is creating a schema at the same time you will get a conflict when the code is merged.
+
+# Thoughts
 
 * Office users, support companies that give access to more than one user
 * Certifications, allow users to have certifications.

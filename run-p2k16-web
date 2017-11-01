@@ -10,6 +10,8 @@ fi
 
 env/bin/pip install -e web --process-dependency-links
 
+./flyway migrate
+
 cd web
 bower install
 cd ..

@@ -40,7 +40,7 @@ def static_file_hash(filename):
 @app.errorhandler(P2k16UserException)
 def handle_p2k16_user_exception(error: P2k16UserException):
     import sys, traceback
-    app.logger.info("User error: {}".format(error.msg))
+    app.logger.info("Account error: {}".format(error.msg))
     # traceback.print_exc(file=sys.stdout)
     traceback.print_exc()
 

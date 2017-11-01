@@ -26,14 +26,14 @@
             controllerAs: 'ctrl',
             templateUrl: 'static/admin.html',
             resolve: {
-                users: CoreDataServiceResolvers.data_users
+                accounts: CoreDataServiceResolvers.data_accounts
             }
-        }).when("/admin/:user_id", {
-            controller: AdminUserController,
+        }).when("/admin/:account_id", {
+            controller: AdminAccountController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-user.html',
+            templateUrl: 'static/admin-account.html',
             resolve: {
-                user: CoreDataServiceResolvers.data_user
+                account: CoreDataServiceResolvers.data_account
             }
         }).otherwise("/");
 
@@ -69,22 +69,22 @@
             self.errors.splice(index, 1);
         };
 
-        self.user = null;
+        self.account = null;
 
         function isLoggedIn() {
-            return !!self.user;
+            return !!self.account;
         }
 
-        function currentUser() {
-            return self.user;
+        function currentAccount() {
+            return self.account;
         }
 
-        function hasRole(roleName) {
-            return self.user && _.some(self.user.groups, {"name": roleName});
+        function hasRole(circleName) {
+            return self.account && _.some(self.account.circles, {"name": circleName});
         }
 
         function setLoggedIn(data) {
-            self.user = data || null;
+            self.account = data || null;
         }
 
         function addErrors(messages) {
@@ -104,8 +104,8 @@
             }
         }
 
-        if (window.p2k16.user) {
-            setLoggedIn(window.p2k16.user);
+        if (window.p2k16.account) {
+            setLoggedIn(window.p2k16.account);
             delete window["p2k16"];
         }
 
@@ -114,7 +114,7 @@
          */
         return {
             isLoggedIn: isLoggedIn,
-            currentUser: currentUser,
+            currentAccount: currentAccount,
             setLoggedIn: setLoggedIn,
             hasRole: hasRole,
             addErrors: addErrors,
@@ -123,11 +123,12 @@
     }
 
     /**
+     * @param $http
      * @param {P2k16} P2k16
      * @param {CoreDataService} CoreDataService
      * @constructor
      */
-    function AuthzService(P2k16, CoreDataService) {
+    function AuthzService($http, P2k16, CoreDataService) {
         function logIn(form) {
             return $http.post('/service/authz/log-in', form).then(function (res) {
                 P2k16.setLoggedIn(res.data);
@@ -155,7 +156,7 @@
     function p2k16HeaderDirective() {
         function p2k16HeaderController($scope, $location, P2k16, AuthzService) {
             var self = this;
-            self.currentUser = P2k16.currentUser;
+            self.currentAccount = P2k16.currentAccount;
 
             self.logout = function ($event) {
                 $event.preventDefault();
@@ -230,16 +231,16 @@
         }
     }
 
-    function AdminController($http, users) {
+    function AdminController($http, accounts) {
         var self = this;
 
-        self.users = users;
+        self.accounts = accounts;
     }
 
-    function AdminUserController($http, user) {
+    function AdminAccountController($http, account) {
         var self = this;
 
-        self.user = user;
+        self.account = account;
     }
 
     /**
@@ -256,8 +257,8 @@
             'password': null
         };
 
-        self.registerUser = function () {
-            $http.post('/service/register-user', self.signupForm).then(function () {
+        self.registerAccount = function () {
+            $http.post('/service/register-account', self.signupForm).then(function () {
             }).catch(angular.identity);
         };
 

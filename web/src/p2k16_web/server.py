@@ -38,14 +38,3 @@ app.logger.addHandler(handler)
 auth.login_manager.init_app(app)
 
 door.init()
-
-if 'P2K16_CREATE_DATABASE' in app.config.keys() and app.config['P2K16_CREATE_DATABASE']:
-    from p2k16 import default_data
-    from p2k16.models import *
-
-    app.logger.info("Creating database")
-    database.db.create_all(app=app)
-    app.logger.info("Database created")
-
-    if len(User.query.all()) == 0:
-        default_data.create()

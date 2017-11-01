@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from p2k16 import P2k16UserException, app
-from p2k16 import user_management
-from p2k16.models import db, User, Group, AuditRecord
+from p2k16 import account_management
+from p2k16.models import db, Account, Circle, AuditRecord
 
 _client = mqtt.Client()
 
@@ -29,15 +29,15 @@ def init():
     _client.loop_start()
 
 
-def open_door(user: User, door: Door):
-    door_group = Group.get_by_name('door')
+def open_door(account: Account, door: Door):
+    door_circle = Circle.get_by_name('door')
 
-    if not user_management.is_user_in_group(door_group, user):
-        raise P2k16UserException('{} is not in the door group'.format(user.display_name()))
+    if not account_management.is_account_in_circle(door_circle, account):
+        raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
 
-    app.logger.info('Opening door. key={}, user={}'.format(door.key, user.username))
+    app.logger.info('Opening door. key={}, username={}'.format(door.key, account.username))
 
-    db.session.add(AuditRecord(user.id, 'door/{}'.format(door.key), 'open'))
+    db.session.add(AuditRecord(account.id, 'door/{}'.format(door.key), 'open'))
     # Make sure everything has been written to the database before actually opening the door.
     db.session.flush()
 

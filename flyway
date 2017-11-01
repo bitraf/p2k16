@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+v=4.2.0
+
+if [ ! -d flyway-$v ]
+then
+    rm -f flyway-$v.zip
+    wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$v/flyway-commandline-$v.zip
+    unzip -q flyway-commandline-$v.zip
+fi
+
+exec flyway-$v/flyway "$@"

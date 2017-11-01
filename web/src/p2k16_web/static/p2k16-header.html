@@ -9,14 +9,14 @@
       <li ng-class="{'membership': 'active'}[active]"><a href="#!membership">Membership</a></li>
       <li ng-class="{'tools': 'active'}[active]"><a href="#!tools">Tools</a></li>
       <li ng-if="$root.p2k16.hasRole('admins')"
-        ng-class="{'admin': 'active'}[active]"><a href="#!admin">Admin</a></li>
+          ng-class="{'admin': 'active'}[active]"><a href="#!admin">Admin</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">
 
-      <li uib-dropdown ng-show="header.currentUser()">
+      <li uib-dropdown ng-show="header.currentAccount()">
         <a href uib-dropdown-toggle>
-          {{header.currentUser().username}}
+          {{header.currentAccount().username}}
           <span class="caret"></span>
         </a>
         <ul uib-dropdown-menu>
@@ -24,43 +24,6 @@
         </ul>
       </li>
 
-      <!--
-      <li ng-hide="header.currentUser()">
-        <a href ng-click="header.showLoginModal($event)">Log in</a>
-      </li>
-      -->
     </ul>
   </div>
 </nav>
-<!--
-<script type="text/ng-template" id="modals/login.html">
-  <div class="modal-header">
-    <h3 class="modal-title" id="modal-title">I'm a modal!</h3>
-  </div>
-  <div class="modal-body">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label for="login-username" class="col-sm-2">
-          Username
-        </label>
-        <div class="col-sm-4">
-          <input class="form-control" type="text" name="email" id="login-username" placeholder="username"
-                 ng-model="ctrl.loginForm.username"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="login-password" class="col-sm-2">
-          Password
-        </label>
-        <div class="col-sm-4">
-          <input class="form-control" type="password" name="password" id="login-password" placeholder="Password"
-                 ng-model="ctrl.loginForm.password"/>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" ng-click="ctrl.logIn()">Log in</button>
-  </div>
-</script>
--->

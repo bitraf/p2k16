@@ -20,13 +20,13 @@ door_form = {
 @validate_schema(door_form)
 @flask_login.login_required
 def open():
-    u = flask_login.current_user.user
+    a = flask_login.current_user.account
 
     door_name = request.json["door"]
 
     for door in p2k16.door.doors:
         if door.key == door_name:
-            p2k16.door.open_door(u, door)
+            p2k16.door.open_door(a, door)
 
             db.session.commit()
             return jsonify(dict())

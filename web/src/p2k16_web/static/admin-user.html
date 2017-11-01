@@ -1,35 +1,35 @@
 <p2k16-header active="admin"></p2k16-header>
 
 <div class="container">
-  <h1>{{ctrl.user.username}}</h1>
+  <h1>{{ctrl.account.username}}</h1>
 
   <h2>Details</h2>
   <table class="table">
     <tbody>
     <tr>
       <th>username</th>
-      <td>{{ctrl.user.username}}</td>
+      <td>{{ctrl.account.username}}</td>
     </tr>
     <tr>
       <th>Name</th>
-      <td>{{ctrl.user.name}}</td>
+      <td>{{ctrl.account.name}}</td>
     </tr>
     <tr>
       <th>email</th>
-      <td><a href="mailto:{{ctrl.user.email}}">{{ctrl.user.email}}</a></td>
+      <td><a href="mailto:{{ctrl.account.email}}">{{ctrl.account.email}}</a></td>
     </tr>
     <tr>
       <th>Phone number</th>
-      <td><a href="tlf:{{ctrl.user.phone}}">{{ctrl.user.phone}}</a></td>
+      <td><a href="tlf:{{ctrl.account.phone}}">{{ctrl.account.phone}}</a></td>
     </tr>
     </tbody>
   </table>
 
-  <h2>Groups</h2>
+  <h2>Circles</h2>
 
   <table class="table">
     <tbody>
-    <tr ng-repeat="g in ctrl.user.groups">
+    <tr ng-repeat="g in ctrl.account.circles">
       <td>{{g.name}}</td>
     </tr>
     </tbody>

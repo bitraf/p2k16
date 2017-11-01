@@ -10,8 +10,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 
-class User(db.Model):
-    __tablename__ = 'users'
+class Account(db.Model):
+    __tablename__ = 'account'
 
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
@@ -23,10 +23,10 @@ class User(db.Model):
     reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)
 
-    auth_events = relationship("AuditRecord", back_populates="user")
-    membership = relationship("Membership", back_populates="user")
-    group_memberships = relationship("GroupMember", back_populates="user", foreign_keys="[GroupMember.user_id]")
-    membership_payments = relationship("MembershipPayment", back_populates="user")
+    auth_events = relationship("AuditRecord", back_populates="account")
+    membership = relationship("Membership", back_populates="account")
+    circle_memberships = relationship("CircleMember", back_populates="account", foreign_keys="[CircleMember.account_id]")
+    membership_payments = relationship("MembershipPayment", back_populates="account")
 
     def __init__(self, username, email, name=None, phone=None, password=None):
         self.username = username
@@ -61,133 +61,133 @@ class User(db.Model):
         return flask_bcrypt.check_password_hash(bs, password)
 
     def __repr__(self):
-        return '<User:%r, username=%s>' % (self.id, self.username)
+        return '<Account:%r, username=%s>' % (self.id, self.username)
 
     @staticmethod
-    def find_user_by_id(_id) -> Optional['User']:
-        return User.query.filter(User.id == _id).one_or_none()
+    def find_account_by_id(_id) -> Optional['Account']:
+        return Account.query.filter(Account.id == _id).one_or_none()
 
     @staticmethod
-    def find_user_by_username(username) -> Optional['User']:
-        return User.query.filter(User.username == username).one_or_none()
+    def find_account_by_username(username) -> Optional['Account']:
+        return Account.query.filter(Account.username == username).one_or_none()
 
     @staticmethod
-    def find_user_by_email(email) -> Optional['User']:
-        return User.query.filter(User.email == email).one_or_none()
+    def find_account_by_email(email) -> Optional['Account']:
+        return Account.query.filter(Account.email == email).one_or_none()
 
     @staticmethod
-    def find_user_by_reset_token(reset_token) -> Optional['User']:
-        return User.query.filter(User.reset_token == reset_token).one_or_none()
+    def find_account_by_reset_token(reset_token) -> Optional['Account']:
+        return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
 
-class Group(db.Model):
-    __tablename__ = 'user_group'
+class Circle(db.Model):
+    __tablename__ = 'circle'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(50), unique=True, nullable=False)
-    members = relationship("GroupMember", back_populates="group")
+    members = relationship("CircleMember", back_populates="circle")
 
     def __init__(self, name, description):
         self.name = name
         self.description = description
 
     def __repr__(self):
-        return '<Group:%s>' % self.id
+        return '<Circle:%s>' % self.id
 
     @staticmethod
-    def find_by_id(id) -> Optional["Group"]:
-        return Group.query.filter(Group.id == id).one_or_none()
+    def find_by_id(id) -> Optional["Circle"]:
+        return Circle.query.filter(Circle.id == id).one_or_none()
 
     @staticmethod
-    def find_by_name(name) -> Optional["Group"]:
-        return Group.query.filter(Group.name == name).one_or_none()
+    def find_by_name(name) -> Optional["Circle"]:
+        return Circle.query.filter(Circle.name == name).one_or_none()
 
     @staticmethod
-    def get_by_name(name) -> "Group":
-        return Group.query.filter(Group.name == name).one()
+    def get_by_name(name) -> "Circle":
+        return Circle.query.filter(Circle.name == name).one()
 
 
-class GroupMember(db.Model):
-    __tablename__ = 'group_member'
+class CircleMember(db.Model):
+    __tablename__ = 'circle_member'
 
     id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, ForeignKey('user_group.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    issuer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    circle_id = Column(Integer, ForeignKey('circle.id'), nullable=False)
+    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
+    issuer_id = Column(Integer, ForeignKey('account.id'), nullable=False)
 
-    db.UniqueConstraint(group_id, user_id)
+    db.UniqueConstraint(circle_id, account_id)
 
-    group = relationship("Group")
-    user = relationship("User", foreign_keys=[user_id])
-    issuer = relationship("User", foreign_keys=[issuer_id])
+    circle = relationship("Circle")
+    account = relationship("Account", foreign_keys=[account_id])
+    issuer = relationship("Account", foreign_keys=[issuer_id])
 
-    def __init__(self, group: Group, user: User, issuer: User):
-        self.group_id = group.id
-        self.user_id = user.id
+    def __init__(self, circle: Circle, account: Account, issuer: Account):
+        self.circle_id = circle.id
+        self.account_id = account.id
         self.issuer_id = issuer.id
 
     def __repr__(self):
-        return '<GroupMember:%s, group=%s, user=%s>' % (self.id, self.group_id, self.user_id)
+        return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)
 
 
 class AuditRecord(db.Model):
     __tablename__ = 'audit_record'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    account_id = Column(Integer, ForeignKey('account.id'))
     timestamp = Column(DateTime, nullable=False)
     object = Column(String(100), nullable=False)
     action = Column(String(100), nullable=False)
 
-    user = relationship("User", back_populates="auth_events")
+    account = relationship("Account", back_populates="auth_events")
 
-    def __init__(self, user_id: int, object: string, action: string):
+    def __init__(self, account_id: int, object: string, action: string):
         self.timestamp = datetime.now()
-        self.user_id = user_id
+        self.account_id = account_id
         self.object = object
         self.action = action
 
     def __repr__(self):
-        return '<AuditRecord:%r, user=%s>' % (self.id, self.user_id)
+        return '<AuditRecord:%r, account=%s>' % (self.id, self.account_id)
 
 
 class Membership(db.Model):
     __tablename__ = 'membership'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
     first_membership = Column(DateTime, nullable=False)
     start_membership = Column(DateTime, nullable=False)
     fee = Column(Integer, nullable=False)
 
-    user = relationship("User", back_populates="membership")
+    account = relationship("Account", back_populates="membership")
 
-    def __init__(self, user, fee):
-        self.user_id = user.id
+    def __init__(self, account, fee):
+        self.account_id = account.id
         self.fee = fee
         self.first_membership = datetime.now()
         self.start_membership = self.first_membership
 
     def __repr__(self):
-        return '<Membership:%r, fee=%r>' % (self.user_id, self.fee)
+        return '<Membership:%r, fee=%r>' % (self.account_id, self.fee)
 
 
 class MembershipPayment(db.Model):
     __tablename__ = 'membership_payment'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
     membership_id = Column(String(50), unique=True, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     amount = Column(Numeric(8, 2), nullable=False)
     payment_date = Column(DateTime, nullable=True)
 
-    user = relationship("User", back_populates="membership_payments")
+    account = relationship("Account", back_populates="membership_payments")
 
-    def __init__(self, user, membership_id, start_date, end_date, amount, payment_date):
-        self.user_id = user.id
+    def __init__(self, account: Account, membership_id, start_date, end_date, amount, payment_date):
+        self.account_id = account.id
 
         self.membership_id = membership_id
         self.start_date = start_date
@@ -197,4 +197,4 @@ class MembershipPayment(db.Model):
 
     def __repr__(self):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
-        self.id, self.user_id, self.start_date, self.end_date, self.amount)
+            self.id, self.account_id, self.start_date, self.end_date, self.amount)

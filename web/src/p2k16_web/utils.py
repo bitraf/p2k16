@@ -1,10 +1,9 @@
-import re
-from functools import wraps
-from symtable import Function
-
 import jsonschema as js
+import re
 from flask import request, Blueprint
+from functools import wraps
 from p2k16 import P2k16UserException
+from symtable import Function
 
 
 def validate_schema(schema):
@@ -155,7 +154,9 @@ class DataServiceTool(object):
                 for a in args:
                     r_s += "  var {} = $route.current.params.{};\n".format(a, a)
 
-                r_s += "  return CoreDataService.{}({}).then(function (res) {{ return res.data; }});\n".format(r.name, ", ".join(args))
+                r_s += "  return CoreDataService.{}({}).then(function (res) {{ return res.data; }});\n".format(r.name,
+                                                                                                               ", ".join(
+                                                                                                                   args))
                 r_s += "};\n"
                 resolvers.append((r.name, r_s))
 

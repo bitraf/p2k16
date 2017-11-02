@@ -1,9 +1,9 @@
-import logging
 import sys
-from logging import StreamHandler
 
 import flask
+import logging
 from flask import request
+from logging import StreamHandler
 
 _REQ_FMT = '%(name)s %(levelname)s %(path)s %(endpoint)s %(remote_addr)s %(message)s'
 _DEFAULT_FMT = '%(name)s %(levelname)s %(message)s'
@@ -31,7 +31,7 @@ handler = StreamHandler(stream=sys.stdout)
 handler.setFormatter(CustomFormatter())
 
 from p2k16 import app
-from p2k16 import auth, database, door
+from p2k16 import auth, door
 
 app.logger.addHandler(handler)
 

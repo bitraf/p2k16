@@ -1,13 +1,13 @@
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric
+
+import flask_bcrypt
 import string
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional
-
-import flask_bcrypt
 from p2k16.database import db
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from typing import Optional
 
 
 class Account(db.Model):
@@ -25,7 +25,8 @@ class Account(db.Model):
 
     auth_events = relationship("AuditRecord", back_populates="account")
     membership = relationship("Membership", back_populates="account")
-    circle_memberships = relationship("CircleMember", back_populates="account", foreign_keys="[CircleMember.account_id]")
+    circle_memberships = relationship("CircleMember", back_populates="account",
+                                      foreign_keys="[CircleMember.account_id]")
     membership_payments = relationship("MembershipPayment", back_populates="account")
 
     def __init__(self, username, email, name=None, phone=None, password=None):

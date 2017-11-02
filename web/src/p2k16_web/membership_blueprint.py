@@ -1,9 +1,7 @@
-import flask_login
-from flask import Blueprint, jsonify, request
-import stripe
-import os
 import json
-
+import os
+import stripe
+from flask import Blueprint, jsonify, request
 from p2k16.membership_management import parse_stripe_event
 
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')

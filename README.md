@@ -23,11 +23,7 @@ To build and deploy the full service, run the following commands.
 
 Creating the database:
 
-    # sudo -iu postgres psql
-
-    CREATE USER "p2k16" ENCRYPTED PASSWORD 'p2k16';
-    CREATE USER "p2k16-web" ENCRYPTED PASSWORD 'p2k16-web';
-    CREATE DATABASE "p2k16" OWNER "p2k16";
+    # sudo -u postgres psql -f database-setup.sql
 
 Running the application:
 

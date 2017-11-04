@@ -1,5 +1,3 @@
-GRANT USAGE ON SCHEMA "public" TO "p2k16-web";
-
 CREATE TABLE account
 (
   id                   SERIAL       NOT NULL PRIMARY KEY,

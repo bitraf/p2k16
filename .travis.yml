@@ -2,6 +2,11 @@ language: python
 before_install: npm install -g bower
 python:
   - 3.4
-script: ./run-p2k16-test
+before_script:
+  - psql -U postgres -f database-setup.sql
+script: "./run-p2k16-test"
 addons:
-  postgresql: '9.4'
+  postgresql: '9.6'
+notifications:
+  slack:
+    secure: hJTZ6g/d8TjFYLs5vdRxrZPP2Il5bpHTZ2eZ9GBzUHjf75dIcWrk4Uu8J7UyWglReNdICGTDVNTmasShoRtZIs8WgqoIxPUxsqPCqwIioYttXvDZnW+GyYg6r0aquJS1DaG2kL964Wegr4+JKC+1w1W4OO+BP8vh2SSpI+HKhqhFPOutD0lUT4SGofhZA4hGzimQSeGfT7hRbIrGMgE9sOeou2SMjecmVhDzdPKmqfFdfgdNf9wdAibS4kgwy/oHWjl0WAiCuFbiuoTe+7Y5dZurjvay9NaF+shObajonKprxLSPAtK6F8EkThBIg/LoV0JWVreClvwEH64hpo3fiIioP3unhbm3Y8Qrsi4K3IGsq6SK46XVqZgiz+L1fsddjewDEwTm76k9KHU+9n1H0RPxG47ehb3cyuXc0W1WsruCxvcpBH4vitXoBKxVGNUnAjOz2xQac5SCb/msH7yjDcQzDgTgTTkw91jiVzbBvNGHM5rlP27JOyJ78BhyYYQjsSheXDtNhSJ3Hq3j92RK4I551lQxlXCDeDrYMyyOf+I8PH94euqXwCaoeFBaGq7C9pEmu52jkpho3RyLFmvszHHz03dGNbvvj5eXXpF32Ey+YBxVFp+Pds6VegjOeMczUZ72uPM9WWkDMQh5753EmO2YadlD7Wf5Q9Hcr6iR088=

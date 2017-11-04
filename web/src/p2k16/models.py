@@ -12,6 +12,7 @@ from typing import Optional
 
 class Account(db.Model):
     __tablename__ = 'account'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
@@ -83,6 +84,7 @@ class Account(db.Model):
 
 class Circle(db.Model):
     __tablename__ = 'circle'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
@@ -111,6 +113,7 @@ class Circle(db.Model):
 
 class CircleMember(db.Model):
     __tablename__ = 'circle_member'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     circle_id = Column(Integer, ForeignKey('circle.id'), nullable=False)
@@ -134,6 +137,7 @@ class CircleMember(db.Model):
 
 class AuditRecord(db.Model):
     __tablename__ = 'audit_record'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -155,6 +159,7 @@ class AuditRecord(db.Model):
 
 class Membership(db.Model):
     __tablename__ = 'membership'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
@@ -176,6 +181,7 @@ class Membership(db.Model):
 
 class MembershipPayment(db.Model):
     __tablename__ = 'membership_payment'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     account_id = Column(Integer, ForeignKey('account.id'), nullable=False)

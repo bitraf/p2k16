@@ -1,8 +1,8 @@
 import flask
 import string
-from p2k16 import P2k16UserException, app
-from p2k16.database import db
-from p2k16.models import Account, Circle, CircleMember
+from p2k16.core import P2k16UserException, app
+from p2k16.core.database import db
+from p2k16.core.models import Account, Circle, CircleMember
 from typing import Optional, List
 
 

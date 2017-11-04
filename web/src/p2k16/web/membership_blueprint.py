@@ -2,7 +2,7 @@ import json
 import os
 import stripe
 from flask import Blueprint, jsonify, request
-from p2k16.membership_management import parse_stripe_event
+from p2k16.core.membership_management import parse_stripe_event
 
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 webhook_secret = os.environ.get('WEBHOOK_SECRET')

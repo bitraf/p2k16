@@ -1,5 +1,5 @@
 import datetime
-from p2k16.models import Account, MembershipPayment
+from p2k16.core.models import Account, MembershipPayment
 
 
 def paid_members():

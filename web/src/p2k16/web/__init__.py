@@ -1,11 +1,9 @@
 import flask
 import flask_bower
 import os
-import p2k16.database
-from p2k16 import P2k16UserException, P2k16TechnicalException
-from p2k16_web import core_blueprint, door_blueprint, membership_blueprint
-
-app = p2k16.app
+from p2k16.core import P2k16UserException, P2k16TechnicalException, app
+from p2k16.core.database import db
+from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
 
 
 @app.url_defaults
@@ -48,7 +46,6 @@ def handle_p2k16_user_exception(error: P2k16UserException):
 
 def _handle_p2k16_exception(msg, is_user):
     import traceback
-    from p2k16.database import db
 
     db.session.rollback()
 

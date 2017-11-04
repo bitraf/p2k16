@@ -30,8 +30,8 @@ class CustomFormatter(logging.Formatter):
 handler = StreamHandler(stream=sys.stdout)
 handler.setFormatter(CustomFormatter())
 
-from p2k16 import app
-from p2k16 import auth, door
+from p2k16.core import app
+from p2k16.core import auth, door
 
 app.logger.addHandler(handler)
 

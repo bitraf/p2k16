@@ -1,6 +1,6 @@
 import flask_login
-from p2k16 import account_management
-from p2k16.models import Account
+from p2k16.core import account_management
+from p2k16.core.models import Account
 
 login_manager = flask_login.LoginManager()
 

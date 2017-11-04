@@ -1,10 +1,10 @@
+import p2k16
 from datetime import datetime
 from datetime import timedelta
-
-import p2k16.database
 from flask_testing import TestCase
-from p2k16 import account_management, membership_management, P2k16UserException
-from p2k16.models import *
+from p2k16 import *
+from p2k16 import account_management
+from p2k16 import membership_management
 
 
 # noinspection PyMethodMayBeStatic
@@ -28,7 +28,7 @@ class AccountTest(TestCase):
         # self.session = self.Session()
         # self.session.add(Panel(1, 'ion torrent', 'start'))
         # self.session.commit()
-        p2k16.database.db.create_all()
+        p2k16.core.database.db.create_all()
         pass
 
     def tearDown(self):
@@ -40,7 +40,7 @@ class AccountTest(TestCase):
         print("accounts: " + str(accounts))
 
     def test_authentication_test(self):
-        session = p2k16.database.db.session
+        session = p2k16.core.database.db.session
         account = Account('foo', 'foo@example.org', password='123')
         session.add(account)
         session.flush()
@@ -51,7 +51,7 @@ class AccountTest(TestCase):
         session.commit()
 
     def test_circles(self):
-        session = p2k16.database.db.session
+        session = p2k16.core.database.db.session
         admin = Account('admin1', 'admin1@example.org', password='123')
         a1 = Account('account1', 'account1@example.org', password='123')
         a2 = Account('account2', 'account2@example.org', password='123')
@@ -77,7 +77,7 @@ class AccountTest(TestCase):
         assert len(c.members) > 0
 
     def test_membership(self):
-        session = p2k16.database.db.session
+        session = p2k16.core.database.db.session
         a3 = Account('account3', 'account3@example.org', password='123')
         a4 = Account('account4', 'account4@example.org', password='123')
         a5 = Account('account5', 'account5@example.org', password='123')

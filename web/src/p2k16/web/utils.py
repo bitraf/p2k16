@@ -2,7 +2,7 @@ import jsonschema as js
 import re
 from flask import request, Blueprint
 from functools import wraps
-from p2k16 import P2k16UserException
+from p2k16.core import P2k16UserException
 from symtable import Function
 
 

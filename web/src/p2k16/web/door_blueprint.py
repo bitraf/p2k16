@@ -1,9 +1,9 @@
 import flask_login
-import p2k16.door
+import p2k16.core.door
 from flask import Blueprint, jsonify, request
-from p2k16 import P2k16UserException
-from p2k16.models import db
-from p2k16_web.utils import validate_schema
+from p2k16.core import P2k16UserException
+from p2k16.core.models import db
+from p2k16.web.utils import validate_schema
 
 door = Blueprint('door', __name__, template_folder='templates')
 
@@ -24,9 +24,9 @@ def open():
 
     door_name = request.json["door"]
 
-    for door in p2k16.door.doors:
+    for door in p2k16.core.door.doors:
         if door.key == door_name:
-            p2k16.door.open_door(a, door)
+            p2k16.core.door.open_door(a, door)
 
             db.session.commit()
             return jsonify(dict())

@@ -4,7 +4,7 @@ import flask_bcrypt
 import string
 import uuid
 from datetime import datetime, timedelta
-from p2k16.database import db
+from p2k16.core.database import db
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from typing import Optional

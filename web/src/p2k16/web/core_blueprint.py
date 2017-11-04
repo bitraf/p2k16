@@ -1,11 +1,11 @@
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
-from p2k16 import app, P2k16UserException
-from p2k16 import auth, account_management
-from p2k16.database import db
-from p2k16.models import Account, Circle
-from p2k16_web.utils import validate_schema, DataServiceTool
+from p2k16.core import app, P2k16UserException
+from p2k16.core import auth, account_management
+from p2k16.core.database import db
+from p2k16.core.models import Account, Circle
+from p2k16.web.utils import validate_schema, DataServiceTool
 from typing import List
 
 id_type = {"type": "number", "min": 1}

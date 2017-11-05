@@ -18,8 +18,8 @@ class Account(db.Model):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     _password = Column('password', String(100))
-    name = Column(String(100), unique=True, nullable=True)
-    phone = Column(String(50), unique=True, nullable=True)
+    name = Column(String(100), nullable=True)
+    phone = Column(String(50), nullable=True)
 
     reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)

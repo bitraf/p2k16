@@ -9,5 +9,6 @@ from sqlalchemy_continuum import make_versioned
 make_versioned(plugins=[FlaskPlugin()], user_cls=None)
 
 # Explicitly import all the models here so we know configure_mappers() are called afterwards
+from p2k16.core.models import *
 
 db.configure_mappers()

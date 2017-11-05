@@ -1,0 +1,4 @@
+#!/bin/bash
+
+scp bomba.bitraf.no:/tmp/*.csv p2k12/
+

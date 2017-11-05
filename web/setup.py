@@ -26,6 +26,7 @@ setup(name='p2k16',
           'paho-mqtt',
           'jsonschema',
           'stripe',
+          'ldif3',
       ],
       dependency_links=[
           'git+http://github.com/nathancahill/flask-inputs.git@9d7d329#egg=Flask_Inputs-9d7d329',

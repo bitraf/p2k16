@@ -240,6 +240,52 @@ def protected():
     return 'Logged in as: ' + str(a.id) + ", username=" + a.username
 
 
+@core.route('/core/ldap/users.ldif')
+def core_ldif():
+    from ldif3 import LDIFWriter
+    import io
+    f = io.BytesIO()
+    writer = LDIFWriter(f)
+
+    for a in Account.query.all():
+        dn = "uid={},ou=People,dc=bitraf,dc=no".format(a.username)
+
+        writer.unparse(dn, {"changetype": ["delete"]})
+
+        object_class = ["top", "inetOrgPerson"]
+
+        d = {
+            "objectClass": object_class,
+            "changetype": ["add"],
+        }
+
+        parts = a.name.split()
+
+        if len(parts) < 1:
+            # bad name
+            continue
+
+        d["cn"] = [a.name]
+        d["sn"] = [parts[-1]]
+        if a.email:
+            d["mail"] = [a.email]
+
+        # posixAccount: http://ldapwiki.com/wiki/PosixAccount
+        object_class.append("posixAccount")
+        d["uid"] = [a.username]
+        d["uidNumber"] = ["1000"]
+        d["gidNumber"] = ["1000"]
+        d["homeDirectory"] = ["/home/{}".format(a.username)]
+        d["userPassword"] = [a.password]
+        d["gecos"] = [a.name]
+
+        writer.unparse(dn, d)
+
+    s = f.getvalue()
+    print(str(s))
+    return s
+
+
 @core.route('/core-data-service.js')
 def core_service():
     content = core_service.content

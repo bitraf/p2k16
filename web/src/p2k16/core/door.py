@@ -37,7 +37,7 @@ def open_door(account: Account, door: Door):
 
     app.logger.info('Opening door. key={}, username={}'.format(door.key, account.username))
 
-    db.session.add(AuditRecord(account.id, 'door/{}'.format(door.key), 'open'))
+    db.session.add(AuditRecord('door/{}'.format(door.key), 'open'))
     # Make sure everything has been written to the database before actually opening the door.
     db.session.flush()
 

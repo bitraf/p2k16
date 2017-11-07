@@ -26,15 +26,23 @@
             controllerAs: 'ctrl',
             templateUrl: 'static/admin.html',
             resolve: {
-                accounts: CoreDataServiceResolvers.data_accounts
+                accounts: CoreDataServiceResolvers.data_accounts,
+                companies: CoreDataServiceResolvers.data_companies
             }
-        }).when("/admin/:account_id", {
+        }).when("/admin/account/:account_id", {
             controller: AdminAccountController,
             controllerAs: 'ctrl',
             templateUrl: 'static/admin-account.html',
             resolve: {
                 account: CoreDataServiceResolvers.data_account,
                 circles: CoreDataServiceResolvers.data_circles
+            }
+        }).when("/admin/company/:company_id", {
+            controller: AdminCompanyController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/admin-company.html',
+            resolve: {
+                company: CoreDataServiceResolvers.data_company
             }
         }).otherwise("/");
 
@@ -165,19 +173,6 @@
                     $location.url("/?random=" + Date.now());
                 });
             };
-
-            // self.showLoginModal = function ($event) {
-            //     $event.preventDefault();
-            //
-            //     var instance = $uibModal.open({
-            //         controller: LoginModalController,
-            //         controllerAs: 'modal',
-            //         templateUrl: 'modals/login.html'
-            //     });
-            // };
-            //
-            // function LoginModalController() {
-            // }
         }
 
         return {
@@ -232,10 +227,72 @@
         }
     }
 
-    function AdminController($http, accounts) {
+    /**
+     * @param $http
+     * @param $uibModal
+     * @param {CoreDataService} CoreDataService
+     * @param accounts
+     * @param companies
+     * @constructor
+     */
+    function AdminController($http, $uibModal, CoreDataService, accounts, companies) {
         var self = this;
 
         self.accounts = accounts;
+        self.companies = companies;
+
+        self.openCompanyModal = function ($event, company) {
+            $event.preventDefault();
+
+            company = company || {active: true};
+
+            var instance = $uibModal.open({
+                controller: CompanyModalController,
+                controllerAs: 'modal',
+                templateUrl: 'admin/company-modal.html',
+                resolve: {
+                    company: company
+                }
+            });
+
+            instance.result.then(function (company) {
+                return CoreDataService.data_companies();
+            }).then(function (res) {
+                self.companies = res.data;
+            });
+        };
+
+        function CompanyModalController($uibModalInstance, company) {
+            var self = this;
+
+            self.accounts = accounts;
+            self.company = angular.copy(company);
+
+            console.log('company', self.company);
+            self.ok = function () {
+                var body = {
+                    name: self.company.name,
+                    contact: self.company.contact,
+                    active: self.company.active
+                };
+                console.log('body', body);
+                console.log('company', self.company);
+                var q;
+                if (self.company.id) {
+                    q = CoreDataService.data_company_update(self.company.id, body);
+                } else {
+                    q = CoreDataService.data_company_register(body);
+                }
+                q.then(function (res) {
+                    console.log('res.data', res.data);
+                    return $uibModalInstance.close(res.data);
+                })
+            };
+
+            self.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+        }
     }
 
     /**
@@ -261,6 +318,13 @@
                 self.account = account.data;
             });
         }
+    }
+
+    function AdminCompanyController($http, CoreDataService, company) {
+        var self = this;
+
+        self.company = company;
+
     }
 
     /**

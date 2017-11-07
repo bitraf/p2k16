@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
 
 import flask_bcrypt
 import string
@@ -63,6 +63,10 @@ class ModelSupport(object):
 
 model_support = ModelSupport()
 
+class P2k16Mixin(object):
+    id = Column(Integer, primary_key=True)
+
+
 
 class TimestampMixin(object):
     created_at = Column(DateTime, nullable=False)
@@ -96,11 +100,10 @@ class ModifiedByMixin(object):
         self.updated_by_id = None
 
 
-class Account(TimestampMixin, db.Model):
+class Account(TimestampMixin, P2k16Mixin, db.Model):
     __tablename__ = 'account'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     _password = Column('password', String(100))
@@ -173,11 +176,10 @@ class Account(TimestampMixin, db.Model):
         return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
 
-class Circle(TimestampMixin, ModifiedByMixin, db.Model):
+class Circle(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'circle'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(50), unique=True, nullable=False)
     members = relationship("CircleMember", back_populates="circle")
@@ -203,11 +205,10 @@ class Circle(TimestampMixin, ModifiedByMixin, db.Model):
         return Circle.query.filter(Circle.name == name).one()
 
 
-class CircleMember(TimestampMixin, ModifiedByMixin, db.Model):
+class CircleMember(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'circle_member'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     circle_id = Column("circle", Integer, ForeignKey('circle.id'), nullable=False)
     account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
 
@@ -225,11 +226,10 @@ class CircleMember(TimestampMixin, ModifiedByMixin, db.Model):
         return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)
 
 
-class AuditRecord(TimestampMixin, ModifiedByMixin, db.Model):
+class AuditRecord(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'audit_record'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, nullable=False)
     object = Column(String(100), nullable=False)
     action = Column(String(100), nullable=False)
@@ -244,11 +244,10 @@ class AuditRecord(TimestampMixin, ModifiedByMixin, db.Model):
         return '<AuditRecord:%r, account=%s>' % (self.id, self.created_by)
 
 
-class Membership(TimestampMixin, ModifiedByMixin, db.Model):
+class Membership(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'membership'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     first_membership = Column(DateTime, nullable=False)
     start_membership = Column(DateTime, nullable=False)
     fee = Column(Integer, nullable=False)
@@ -263,11 +262,10 @@ class Membership(TimestampMixin, ModifiedByMixin, db.Model):
         return '<Membership:%r, fee=%r>' % (self.id, self.fee)
 
 
-class MembershipPayment(TimestampMixin, ModifiedByMixin, db.Model):
+class MembershipPayment(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'membership_payment'
     __versioned__ = {}
 
-    id = Column(Integer, primary_key=True)
     stripe_id = Column("stripe_id", String(50), unique=True, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
@@ -285,3 +283,26 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, db.Model):
     def __repr__(self):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
             self.id, self.created_by_id, self.start_date, self.end_date, self.amount)
+
+
+class Company(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+    __tablename__ = 'company'
+    __versioned__ = {}
+
+    name = Column(String(50), unique=True, nullable=False)
+    active = Column(Boolean, nullable=False)
+
+    contact_id = Column("contact", Integer, ForeignKey('account.id'), nullable=False)
+    contact = relationship("Account", foreign_keys=[contact_id])
+
+    def __init__(self, name, contact: Account, active: bool):
+        self.name = name
+        self.contact_id = contact.id
+        self.active = active
+
+    def __repr__(self):
+        return '<Company:%r, name=%r>' % (self.id, self.name)
+
+    @staticmethod
+    def find_by_id(_id) -> Optional['Company']:
+        return Company.query.filter(Company.id == _id).one_or_none()

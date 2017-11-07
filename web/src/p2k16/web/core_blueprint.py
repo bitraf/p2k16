@@ -1,12 +1,13 @@
+from typing import List
+
 import flask
 import flask_login
 from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16.core import app, P2k16UserException
 from p2k16.core import auth, account_management
 from p2k16.core.database import db
-from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle
+from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company
 from p2k16.web.utils import validate_schema, DataServiceTool
-from typing import List
 
 id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
@@ -38,6 +39,16 @@ single_circle_form = {
         "circle_id": id_type,
     },
     "required": ["circle_id"]
+}
+
+single_company_form = {
+    "type": "object",
+    "properties": {
+        "name": nonempty_string,
+        "contact": id_type,
+        "active": {"type": "boolean"},
+    },
+    "required": ["name", "contact"]
 }
 
 core = Blueprint('core', __name__, template_folder='templates')
@@ -76,6 +87,21 @@ def account_to_json(account: Account, circles: List[Circle]):
         "phone": account.phone,
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles}
     }}
+
+
+def company_to_json(c: Company):
+    return {**model_to_json(c), **{
+        "name": c.name,
+        "contact": c.contact,
+        "active": c.active,
+    }}
+
+
+def check_is_in_circle(circle_name: str):
+    """
+    TODO: implement
+    """
+    pass
 
 
 @registry.route('/service/authz/log-in', methods=['POST'])
@@ -172,6 +198,58 @@ def _manage_membership(account_id: int, create: bool):
 def data_circles():
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
+
+
+@registry.route('/data/company')
+def data_companies():
+    companies = Company.query.all()
+    return jsonify([company_to_json(c) for c in companies])
+
+
+@registry.route('/data/company/<int:company_id>')
+def data_company(company_id: int):
+    company = Company.find_by_id(company_id)
+
+    if company is None:
+        abort(404)
+
+    return jsonify(company_to_json(company))
+
+
+@registry.route('/data/company', methods=["POST"])
+@validate_schema(single_company_form)
+def data_company_register():
+    check_is_in_circle("admin")
+    name = request.json["name"]
+    contact_id = request.json["contact"]
+    active = request.json["active"]
+
+    contact = Account.find_account_by_id(contact_id)
+    if not contact:
+        raise P2k16UserException("No such account: {}".format(contact_id))
+
+    app.logger.info("Registering new company: {}".format(name))
+
+    company = Company(name, contact, active)
+    db.session.add(company)
+    db.session.commit()
+    return jsonify(company_to_json(company))
+
+
+@registry.route('/data/company/<int:company_id>', methods=["POST"])
+@validate_schema(single_company_form)
+def data_company_update(company_id: int):
+    check_is_in_circle("admin")
+    company = Company.find_by_id(company_id)
+
+    if company is None:
+        abort(404)
+
+    company.name = request.json["name"]
+    company.contact_id = request.json["contact"]
+    company.active = request.json["active"]
+    db.session.commit()
+    return jsonify(company_to_json(company))
 
 
 @core.route('/')

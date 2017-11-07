@@ -1,9 +1,10 @@
-import flask
 import string
+from typing import Optional, List
+
+import flask
 from p2k16.core import P2k16UserException, app
 from p2k16.core.database import db
 from p2k16.core.models import Account, Circle, CircleMember
-from typing import Optional, List
 
 
 def accounts_in_circle(circle_id):
@@ -36,7 +37,7 @@ def _load_circle_admin(account_id, circle_id, admin_id):
     if account is None or admin is None or circle is None:
         raise P2k16UserException('Bad values')
 
-    return (account, admin, circle)
+    return account, admin, circle
 
 
 def _check_is_circle_admin(circle: Circle, admin: Account):

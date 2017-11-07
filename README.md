@@ -66,11 +66,11 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
   * <s>Request new password</s>
   * Send by email
   * <s>Set new password</s>
+  * Create some @annotations to do simple circle membership checks. To be used after @registry.
 
 # TODOs before dropping p2k12
 
 * Migrate data from p2k12 database
-* Implement SQL migrations
 * Actually open doors.
   * Audit log
 

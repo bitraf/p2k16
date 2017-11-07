@@ -1,12 +1,13 @@
+import os
+from datetime import date
+
 import flask
 import flask_bower
 import flask_login
-import os
-from datetime import date
 from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException, app
 from p2k16.core.database import db
-from p2k16.core.models import model_support
+from p2k16.core.models import model_support, P2k16Mixin
 from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
 
 
@@ -95,21 +96,22 @@ def _after_request(response, failed: bool):
     return response
 
 
-# We want dates to be ISO formatted.
-# https://stackoverflow.com/a/43663918/245614
+# We want dates to be ISO formatted: https://stackoverflow.com/a/43663918/245614
 
 class P2k16JSONEncoder(JSONEncoder):
-
     def default(self, obj):
         try:
             if isinstance(obj, date):
                 return obj.isoformat()
+            if isinstance(obj, P2k16Mixin):
+                return obj.id
             iterable = iter(obj)
         except TypeError:
             pass
         else:
             return list(iterable)
         return JSONEncoder.default(self, obj)
+
 
 app.json_encoder = P2k16JSONEncoder
 

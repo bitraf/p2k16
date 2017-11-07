@@ -20,11 +20,11 @@ class ModelSupport(object):
         if not account:
             raise P2k16TechnicalException("account is None")
 
-        db.session.flush() # Make sure all callbacks are executed before modifying the stack
+        db.session.flush()  # Make sure all callbacks are executed before modifying the stack
         self.stack.append(account)
 
     def pop(self):
-        db.session.flush() # Make sure all callbacks are executed before modifying the stack
+        db.session.flush()  # Make sure all callbacks are executed before modifying the stack
         self.stack.pop()
 
     def run_as(self, account: "Account"):
@@ -208,8 +208,8 @@ class CircleMember(TimestampMixin, ModifiedByMixin, db.Model):
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
-    circle_id = Column(Integer, ForeignKey('circle.id'), nullable=False)
-    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
+    circle_id = Column("circle", Integer, ForeignKey('circle.id'), nullable=False)
+    account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
 
     db.UniqueConstraint(circle_id, account_id)
 
@@ -268,15 +268,15 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, db.Model):
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
-    membership_id = Column(String(50), unique=True, nullable=False)
+    stripe_id = Column("stripe_id", String(50), unique=True, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     amount = Column(Numeric(8, 2), nullable=False)
     payment_date = Column(DateTime, nullable=True)
 
-    def __init__(self, membership_id, start_date, end_date, amount, payment_date):
+    def __init__(self, stripe_id, start_date, end_date, amount, payment_date):
         super().__init__()
-        self.membership_id = membership_id
+        self.stripe_id = stripe_id
         self.start_date = start_date
         self.end_date = end_date
         self.amount = amount
@@ -284,4 +284,4 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, db.Model):
 
     def __repr__(self):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
-            self.id, self.account_id, self.start_date, self.end_date, self.amount)
+            self.id, self.created_by_id, self.start_date, self.end_date, self.amount)

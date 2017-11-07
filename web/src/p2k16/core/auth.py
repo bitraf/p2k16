@@ -14,14 +14,20 @@ class AuthenticatedAccount(flask_login.UserMixin):
 
 @login_manager.user_loader
 def account_loader(account_id):
-    account = Account.find_account_by_id(account_id)
+    import flask
+    flask.current_app.logger.info("Loading account")
 
-    if account is None:
-        return
+    try:
+        account = Account.find_account_by_id(account_id)
 
-    circles = account_management.get_circles_for_account(account.id)
+        if account is None:
+            return
 
-    return AuthenticatedAccount(account, circles)
+        circles = account_management.get_circles_for_account(account.id)
+
+        return AuthenticatedAccount(account, circles)
+    finally:
+        flask.current_app.logger.info("account loaded")
 
 
 @login_manager.request_loader

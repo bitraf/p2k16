@@ -4,13 +4,99 @@ import flask_bcrypt
 import string
 import uuid
 from datetime import datetime, timedelta
+from p2k16.core import P2k16TechnicalException
 from p2k16.core.database import db
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from typing import Optional
 
 
-class Account(db.Model):
+class ModelSupport(object):
+    def __init__(self):
+        self.stack = []
+
+    def push(self, account: "Account"):
+        if not account:
+            raise P2k16TechnicalException("account is None")
+
+        db.session.flush() # Make sure all callbacks are executed before modifying the stack
+        self.stack.append(account)
+
+    def pop(self):
+        db.session.flush() # Make sure all callbacks are executed before modifying the stack
+        self.stack.pop()
+
+    def run_as(self, account: "Account"):
+        this = self
+
+        class RunAs(object):
+            def __enter__(self):
+                this.push(account)
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                this.pop()
+
+        return RunAs()
+
+    @property
+    def current_account(self) -> "Account":
+        if len(self.stack) == 0:
+            raise P2k16TechnicalException("No current account")
+
+        return self.stack[-1]
+
+    def before_flush(self, obj):
+        if isinstance(obj, TimestampMixin):
+            print("TimestampMixin: created={}, updated={}".format(obj.created_at, obj.updated_at))
+            obj.created_at = datetime.now()
+            obj.updated_at = datetime.now()
+
+        if isinstance(obj, ModifiedByMixin):
+            account = model_support.current_account
+            print("ModifiedByMixin: created={}, updated={}, ca={}".
+                  format(obj.created_by_id, obj.updated_by_id, account.username if account else "None"))
+
+            obj.created_by_id = account.id if account else None
+            obj.updated_by_id = account.id if account else None
+
+
+model_support = ModelSupport()
+
+
+class TimestampMixin(object):
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+
+    def __init__(self):
+        super().__init__()
+
+
+class ModifiedByMixin(object):
+
+    @declared_attr
+    def created_by_id(cls):
+        return Column("created_by", Integer, ForeignKey('account.id'))
+
+    @declared_attr
+    def updated_by_id(cls):
+        return Column("updated_by", Integer, ForeignKey('account.id'))
+
+    @declared_attr
+    def created_by(cls):
+        return relationship("Account", foreign_keys=[cls.created_by_id])
+
+    @declared_attr
+    def updated_by(cls):
+        return relationship("Account", foreign_keys=[cls.updated_by_id])
+
+    def __init__(self):
+        super().__init__()
+        self.created_by_id = None
+        self.updated_by_id = None
+
+
+class Account(TimestampMixin, db.Model):
     __tablename__ = 'account'
     __versioned__ = {}
 
@@ -24,13 +110,18 @@ class Account(db.Model):
     reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)
 
-    auth_events = relationship("AuditRecord", back_populates="account")
-    membership = relationship("Membership", back_populates="account")
-    circle_memberships = relationship("CircleMember", back_populates="account",
-                                      foreign_keys="[CircleMember.account_id]")
-    membership_payments = relationship("MembershipPayment", back_populates="account")
+    # This class should be kept relation-free to keep the number of direct dependencies on Account to a minimum.
+    # The alternative is that almost all models depend on Account which leads to a 'big ball of mud'
+    # (https://en.wikipedia.org/wiki/Big_ball_of_mud) - trygvis
+
+    # audit_records = relationship("AuditRecord", foreign_keys="AuditRecord.created_by_id", back_populates="created_by")
+    # membership = relationship("Membership", foreign_keys="Membership.created_by_id", back_populates="account")
+    # circle_memberships = relationship("CircleMember", foreign_keys="CircleMember.account_id", back_populates="account")
+    # membership_payments = relationship("MembershipPayment", foreign_keys="MembershipPayment.account_id",
+    #                                    back_populates="account")
 
     def __init__(self, username, email, name=None, phone=None, password=None):
+        super().__init__()
         self.username = username
         self.email = email
         self.password = password
@@ -82,7 +173,7 @@ class Account(db.Model):
         return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
 
-class Circle(db.Model):
+class Circle(TimestampMixin, ModifiedByMixin, db.Model):
     __tablename__ = 'circle'
     __versioned__ = {}
 
@@ -92,6 +183,7 @@ class Circle(db.Model):
     members = relationship("CircleMember", back_populates="circle")
 
     def __init__(self, name, description):
+        super().__init__()
         self.name = name
         self.description = description
 
@@ -111,91 +203,79 @@ class Circle(db.Model):
         return Circle.query.filter(Circle.name == name).one()
 
 
-class CircleMember(db.Model):
+class CircleMember(TimestampMixin, ModifiedByMixin, db.Model):
     __tablename__ = 'circle_member'
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
     circle_id = Column(Integer, ForeignKey('circle.id'), nullable=False)
     account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
-    issuer_id = Column(Integer, ForeignKey('account.id'), nullable=False)
 
     db.UniqueConstraint(circle_id, account_id)
 
     circle = relationship("Circle")
     account = relationship("Account", foreign_keys=[account_id])
-    issuer = relationship("Account", foreign_keys=[issuer_id])
 
-    def __init__(self, circle: Circle, account: Account, issuer: Account):
+    def __init__(self, circle: Circle, account: Account):
+        super().__init__()
         self.circle_id = circle.id
         self.account_id = account.id
-        self.issuer_id = issuer.id
 
     def __repr__(self):
         return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)
 
 
-class AuditRecord(db.Model):
+class AuditRecord(TimestampMixin, ModifiedByMixin, db.Model):
     __tablename__ = 'audit_record'
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
-    account_id = Column(Integer, ForeignKey('account.id'))
     timestamp = Column(DateTime, nullable=False)
     object = Column(String(100), nullable=False)
     action = Column(String(100), nullable=False)
 
-    account = relationship("Account", back_populates="auth_events")
-
-    def __init__(self, account_id: int, object: string, action: string):
+    def __init__(self, object: string, action: string):
+        super().__init__()
         self.timestamp = datetime.now()
-        self.account_id = account_id
         self.object = object
         self.action = action
 
     def __repr__(self):
-        return '<AuditRecord:%r, account=%s>' % (self.id, self.account_id)
+        return '<AuditRecord:%r, account=%s>' % (self.id, self.created_by)
 
 
-class Membership(db.Model):
+class Membership(TimestampMixin, ModifiedByMixin, db.Model):
     __tablename__ = 'membership'
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
-    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
     first_membership = Column(DateTime, nullable=False)
     start_membership = Column(DateTime, nullable=False)
     fee = Column(Integer, nullable=False)
 
-    account = relationship("Account", back_populates="membership")
-
-    def __init__(self, account, fee):
-        self.account_id = account.id
+    def __init__(self, fee):
+        super().__init__()
         self.fee = fee
         self.first_membership = datetime.now()
         self.start_membership = self.first_membership
 
     def __repr__(self):
-        return '<Membership:%r, fee=%r>' % (self.account_id, self.fee)
+        return '<Membership:%r, fee=%r>' % (self.id, self.fee)
 
 
-class MembershipPayment(db.Model):
+class MembershipPayment(TimestampMixin, ModifiedByMixin, db.Model):
     __tablename__ = 'membership_payment'
     __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
-    account_id = Column(Integer, ForeignKey('account.id'), nullable=False)
     membership_id = Column(String(50), unique=True, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     amount = Column(Numeric(8, 2), nullable=False)
     payment_date = Column(DateTime, nullable=True)
 
-    account = relationship("Account", back_populates="membership_payments")
-
-    def __init__(self, account: Account, membership_id, start_date, end_date, amount, payment_date):
-        self.account_id = account.id
-
+    def __init__(self, membership_id, start_date, end_date, amount, payment_date):
+        super().__init__()
         self.membership_id = membership_id
         self.start_date = start_date
         self.end_date = end_date

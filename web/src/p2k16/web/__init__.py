@@ -1,8 +1,12 @@
 import flask
 import flask_bower
+import flask_login
 import os
+from datetime import date
+from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException, app
 from p2k16.core.database import db
+from p2k16.core.models import model_support
 from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
 
 
@@ -58,6 +62,56 @@ def _handle_p2k16_exception(msg, is_user):
     response.content_type = 'application/vnd.error+json'
     return response
 
+
+@app.before_request
+def modified_by_mixing_before_request():
+    cu = flask_login.current_user
+
+    if not cu or not hasattr(cu, "account"):
+        return
+
+    account = cu.account
+    flask.current_app.logger.info("before: request: account={}, {}".format(account, flask.request))
+    model_support.push(account)
+    flask.g.model_pushed = True
+
+
+@app.after_request
+def modified_by_mixing_after_request(response):
+    return _after_request(response, False)
+
+
+@app.teardown_request
+def modified_by_mixing_after_request(response):
+    return _after_request(response, True)
+
+
+def _after_request(response, failed: bool):
+    if hasattr(flask.g, "model_pushed"):
+        del flask.g.model_pushed
+        flask.current_app.logger.info("after: failed={}, request: {}".format(failed, flask.request))
+        model_support.pop()
+
+    return response
+
+
+# We want dates to be ISO formatted.
+# https://stackoverflow.com/a/43663918/245614
+
+class P2k16JSONEncoder(JSONEncoder):
+
+    def default(self, obj):
+        try:
+            if isinstance(obj, date):
+                return obj.isoformat()
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
+
+app.json_encoder = P2k16JSONEncoder
 
 app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)

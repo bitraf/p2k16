@@ -4,7 +4,7 @@ from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16.core import app, P2k16UserException
 from p2k16.core import auth, account_management
 from p2k16.core.database import db
-from p2k16.core.models import Account, Circle
+from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle
 from p2k16.web.utils import validate_schema, DataServiceTool
 from typing import List
 
@@ -44,22 +44,38 @@ core = Blueprint('core', __name__, template_folder='templates')
 registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
 
+def model_to_json(obj) -> dict:
+    d = {}
+
+    if hasattr(obj, "id"):
+        d["id"] = str(obj.id)
+
+    if isinstance(obj, TimestampMixin):
+        d["createdAt"] = obj.created_at
+        d["updatedAt"] = obj.updated_at
+
+    if isinstance(obj, ModifiedByMixin):
+        d["createdBy"] = obj.created_by.username
+        d["updatedBy"] = obj.updated_by.username
+
+    return d
+
+
 def circle_to_json(circle: Circle):
-    return {
-        "id": circle.id,
+    return {**model_to_json(circle), **{
         "name": circle.name
-    }
+    }}
 
 
 def account_to_json(account: Account, circles: List[Circle]):
-    return {
+    return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
         "email": account.email,
         "name": account.name,
         "phone": account.phone,
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles}
-    }
+    }}
 
 
 @registry.route('/service/authz/log-in', methods=['POST'])

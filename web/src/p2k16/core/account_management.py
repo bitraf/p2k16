@@ -56,7 +56,7 @@ def add_account_to_circle(account_id, circle_id, admin_id):
 
     _check_is_circle_admin(circle, admin)
 
-    db.session.add(CircleMember(circle, account, admin))
+    db.session.add(CircleMember(circle, account))
 
 
 def remove_account_from_circle(account_id, circle_id, admin_id):

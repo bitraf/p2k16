@@ -3,17 +3,19 @@
 <div class="container">
   <h1>Admin</h1>
 
-  <h3>All accounts</h3>
+  <h3 id="#accounts">All accounts</h3>
 
   <table class="table">
     <thead>
     <tr>
+      <th>Last updated</th>
       <th>username</th>
       <th>&nbsp;</th>
     </tr>
     </thead>
     <tbody>
     <tr ng-repeat="account in ctrl.accounts">
+      <td>{{ account.updatedAt | date }}</td>
       <td>{{ account.username }}</td>
       <td>
         <a href="#!/admin/{{ account.id }}">show</a>

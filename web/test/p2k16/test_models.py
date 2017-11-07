@@ -1,8 +1,5 @@
-from datetime import datetime
-from datetime import timedelta
 from flask_testing import TestCase
 from p2k16.core import app, account_management, membership_management, P2k16UserException
-from p2k16.core.database import db
 from p2k16.core.models import *
 
 
@@ -44,10 +41,11 @@ class AccountTest(TestCase):
         session.add(account)
         session.flush()
 
-        membership = Membership(account, 500)
-        session.add(membership)
-        session.flush()
-        session.commit()
+        with model_support.run_as(account):
+            membership = Membership(500)
+            session.add(membership)
+            session.flush()
+            session.commit()
 
     def test_circles(self):
         session = db.session
@@ -55,21 +53,27 @@ class AccountTest(TestCase):
         a1 = Account('account1', 'account1@example.org', password='123')
         a2 = Account('account2', 'account2@example.org', password='123')
         c = Circle('circle-1', 'Circle 1')
-        c_admin = Circle('circle-1-admin', 'Circle 1 Admins')
-        session.add_all([admin, a1, a2, c, c_admin])
-        session.flush()
-        session.add(CircleMember(c_admin, admin, admin))
-        session.flush()
+
+        with model_support.run_as(admin):
+            c_admin = Circle('circle-1-admin', 'Circle 1 Admins')
+            session.add_all([admin, a1, a2, c, c_admin])
+            session.flush()
+
+        with model_support.run_as(admin):
+            session.add(CircleMember(c_admin, admin))
+            session.flush()
 
         # non-admin account trying to add
         try:
             account_management.add_account_to_circle(a1.id, c.id, a2.id)
             session.flush()
             self.fail("expected exception")
-        except P2k16UserException as e:
+        except P2k16UserException:
             pass
 
-        account_management.add_account_to_circle(a1.id, c.id, admin.id)
+        with model_support.run_as(admin):
+            account_management.add_account_to_circle(a1.id, c.id, admin.id)
+
         session.commit()
         session.refresh(c)
         print('c.members=%s' % c.members)
@@ -83,22 +87,23 @@ class AccountTest(TestCase):
         session.add_all([a3, a4, a5])
         session.flush()
 
-        # Add account3 with active membership
-        payment1 = MembershipPayment(a3, 'tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                     datetime(2017, 1, 1))
-        payment2 = MembershipPayment(a3, 'tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
-                                     datetime(2017, 2, 1))
-        payment3 = MembershipPayment(a3, 'tok_stripe_xx1338', datetime(2017, 3, 1),
-                                     datetime.utcnow() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
+        with model_support.run_as(a3):
+            # Add account3 with active membership
+            payment1 = MembershipPayment('tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+                                         datetime(2017, 1, 1))
+            payment2 = MembershipPayment('tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
+                                         datetime(2017, 2, 1))
+            payment3 = MembershipPayment('tok_stripe_xx1338', datetime(2017, 3, 1),
+                                         datetime.utcnow() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
 
-        # Account 4 with expired membership
-        payment4 = MembershipPayment(a4, 'tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                     datetime(2017, 1, 1))
+            # Account 4 with expired membership
+            payment4 = MembershipPayment('tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+                                         datetime(2017, 1, 1))
 
-        # Account 5 has no payments
+            # Account 5 has no payments
 
-        session.add_all([payment1, payment2, payment3, payment4])
-        session.flush()
+            session.add_all([payment1, payment2, payment3, payment4])
+            session.flush()
 
         # Verify only one paid account
         assert len(membership_management.paid_members()) == 1

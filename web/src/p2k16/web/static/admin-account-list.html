@@ -1,0 +1,25 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>Accounts</h1>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-sm-3">Last updated</th>
+      <th class="col-sm-8">username</th>
+      <th class="col-sm-1"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="account in ctrl.accounts">
+      <td>{{ account.updatedAt | date }}</td>
+      <td>{{ account.username }}</td>
+      <td>
+        <a href="#!/admin/account/{{ account.id }}">show</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+</div>

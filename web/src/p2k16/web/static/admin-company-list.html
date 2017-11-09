@@ -1,0 +1,40 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>Companies</h1>
+
+  <div class="row">
+    <div class="col-sm-12 text-right">
+      <a class="btn btn-default" href="#!/admin/company/new">Create new company</a>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-sm-3">Last updated</th>
+      <th class="col-sm-4">Name</th>
+      <th class="col-sm-4">Contact</th>
+      <th class="col-sm-1"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="c in ctrl.companies">
+      <td>{{ c.updatedAt | date }}</td>
+      <td>
+        {{ c.name }}
+        <span title="Inactive" class="glyphicon glyphicon-ban-circle" ng-if="!c.active"></span>
+      </td>
+      <td>
+        <a href="#!/admin/account/{{ c.contact }}">account details</a>
+      </td>
+      <td>
+        <a href="#!/admin/company/{{ c.id }}">show</a>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+
+</div>

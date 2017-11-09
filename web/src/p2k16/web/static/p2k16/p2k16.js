@@ -24,18 +24,28 @@
         }).when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin.html',
+            templateUrl: 'static/admin.html'
+        }).when("/admin/account", {
+            controller: AdminAccountListController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/admin-account-list.html',
             resolve: {
-                accounts: CoreDataServiceResolvers.data_account_list,
-                companies: CoreDataServiceResolvers.data_company_list
+                accounts: CoreDataServiceResolvers.data_account_list
             }
         }).when("/admin/account/:account_id", {
-            controller: AdminAccountController,
+            controller: AdminAccountDetailController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-account.html',
+            templateUrl: 'static/admin-account-detail.html',
             resolve: {
                 account: CoreDataServiceResolvers.data_account,
                 circles: CoreDataServiceResolvers.data_circle_list
+            }
+        }).when("/admin/company", {
+            controller: AdminCompanyListController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/admin-company-list.html',
+            resolve: {
+                companies: CoreDataServiceResolvers.data_company_list
             }
         }).when("/admin/company/new", {
             controller: AdminCompanyDetailController,
@@ -240,23 +250,21 @@
      * @param $http
      * @param $location
      * @param {CoreDataService} CoreDataService
-     * @param accounts
-     * @param companies
      * @constructor
      */
-    function AdminController($http, $location, CoreDataService, accounts, companies) {
-        // console.log('CoreDataService.data_account_list()', CoreDataService.data_account_list);
+    function AdminController($http, $location, CoreDataService) {
+        var self = this;
+    }
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param accounts
+     * @constructor
+     */
+    function AdminAccountListController(CoreDataService, accounts) {
         var self = this;
 
         self.accounts = accounts;
-        self.companies = companies;
-
-        // console.log('CoreDataService.data_account_list()', CoreDataService.data_account_list);
-        CoreDataService.data_account_list();
-
-        self.newCompany = function () {
-            $location.url("/admin/company/new");
-        };
     }
 
     /**
@@ -266,7 +274,7 @@
      * @param circles
      * @constructor
      */
-    function AdminAccountController($http, CoreDataService, account, circles) {
+    function AdminAccountDetailController($http, CoreDataService, account, circles) {
         var self = this;
 
         self.account = account;
@@ -282,6 +290,17 @@
                 self.account = account.data;
             });
         }
+    }
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param companies
+     * @constructor
+     */
+    function AdminCompanyListController(CoreDataService, companies) {
+        var self = this;
+
+        self.companies = companies;
     }
 
     /**
@@ -302,6 +321,7 @@
             isNew = !self.company.id;
             self.title = isNew ? "New company" : self.company.name;
         }
+
         setCompany(company);
 
         self.save = function () {

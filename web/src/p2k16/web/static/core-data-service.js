@@ -88,6 +88,26 @@ CoreDataService.prototype.data_company = function (company_id) {
     return this.$http(req);
 };
 
+CoreDataService.prototype.data_company_add_employee = function (company_id, payload) {
+    var req = {};
+    req.method = 'POST';
+    req.url = '/data/company';
+    req.url += '/' + company_id;
+    req.url += '/cmd/add-employee';
+    req.data = payload;
+    return this.$http(req);
+};
+
+CoreDataService.prototype.data_company_remove_employee = function (company_id, payload) {
+    var req = {};
+    req.method = 'POST';
+    req.url = '/data/company';
+    req.url += '/' + company_id;
+    req.url += '/cmd/remove-employee';
+    req.data = payload;
+    return this.$http(req);
+};
+
 CoreDataService.prototype.data_company_add = function (payload) {
     var req = {};
     req.method = 'POST';

@@ -77,3 +77,7 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 # TODOs post production / p2k12 migration
 
 * Fix bitraf.no graph
+
+# TODOs (fix at any time)
+
+* Drop BIGSERIAL on _version tables. Should be BIGINT instead.

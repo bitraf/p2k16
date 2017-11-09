@@ -1,15 +1,15 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
-
-import flask_bcrypt
 import string
 import uuid
 from datetime import datetime, timedelta
+from typing import Optional
+
+import flask_bcrypt
 from p2k16.core import P2k16TechnicalException
 from p2k16.core.database import db
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from typing import Optional
 
 
 class ModelSupport(object):
@@ -63,9 +63,9 @@ class ModelSupport(object):
 
 model_support = ModelSupport()
 
+
 class P2k16Mixin(object):
     id = Column(Integer, primary_key=True)
-
 
 
 class TimestampMixin(object):
@@ -306,3 +306,31 @@ class Company(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     @staticmethod
     def find_by_id(_id) -> Optional['Company']:
         return Company.query.filter(Company.id == _id).one_or_none()
+
+
+class CompanyEmployee(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+    __tablename__ = 'company_employee'
+    __versioned__ = {}
+
+    company_id = Column("company", Integer, ForeignKey('company.id'), nullable=False)
+    company = relationship("Company", foreign_keys=[company_id])
+    account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
+    account = relationship("Account", foreign_keys=[account_id])
+
+    def __init__(self, company: Company, account: Account):
+        self.company_id = company.id
+        self.account_id = account.id
+
+    def __repr__(self):
+        return '<CompanyEmployee:%r, company=%r, account=%r>' % (self.id, self.company_id, self.account_id)
+
+    @staticmethod
+    def list_by_company(company_id: int) -> Optional['Company']:
+        return CompanyEmployee.query.filter(Company.id == company_id).all()
+
+    @staticmethod
+    def find_by_company_and_account(company_id: int, account_id: int) -> Optional['Company']:
+        return CompanyEmployee.query. \
+            filter(CompanyEmployee.company_id == company_id,
+                   CompanyEmployee.account_id == account_id) \
+            .one_or_none()

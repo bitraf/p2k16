@@ -6,7 +6,7 @@ from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16.core import app, P2k16UserException
 from p2k16.core import auth, account_management
 from p2k16.core.database import db
-from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company
+from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
 from p2k16.web.utils import validate_schema, DataServiceTool
 
 id_type = {"type": "number", "min": 1}
@@ -89,11 +89,21 @@ def account_to_json(account: Account, circles: List[Circle]):
     }}
 
 
-def company_to_json(c: Company):
+def company_to_json(c: Company, employees: List[CompanyEmployee]):
+    def ce(e: CompanyEmployee):
+        return {**model_to_json(e), **{
+            "account_id": e.account_id,
+            "account": {
+                "username": e.account.username
+            },
+            "company_id": e.company_id
+        }}
+
     return {**model_to_json(c), **{
         "name": c.name,
         "contact": c.contact,
         "active": c.active,
+        "employees": [ce(e) for e in employees]
     }}
 
 
@@ -203,7 +213,7 @@ def data_circle_list():
 @registry.route('/data/company')
 def data_company_list():
     companies = Company.query.all()
-    return jsonify([company_to_json(c) for c in companies])
+    return jsonify([company_to_json(c, []) for c in companies])
 
 
 @registry.route('/data/company/<int:company_id>')
@@ -213,7 +223,46 @@ def data_company(company_id: int):
     if company is None:
         abort(404)
 
-    return jsonify(company_to_json(company))
+    employees = CompanyEmployee.list_by_company(company_id)
+
+    return jsonify(company_to_json(company, employees))
+
+
+@registry.route('/data/company/<int:company_id>/cmd/add-employee', methods=["POST"])
+def data_company_add_employee(company_id):
+    return _data_company_change_employee(company_id, True)
+
+
+@registry.route('/data/company/<int:company_id>/cmd/remove-employee', methods=["POST"])
+def data_company_remove_employee(company_id):
+    return _data_company_change_employee(company_id, False)
+
+
+def _data_company_change_employee(company_id, add: bool):
+    check_is_in_circle("admin")
+
+    company = Company.find_by_id(company_id)
+
+    if company is None:
+        abort(404)
+
+    account_id = request.json["account_id"]
+    account = Account.find_account_by_id(account_id)
+    if account is None:
+        abort(404)
+
+    if add:
+        db.session.add(CompanyEmployee(company, account))
+    else:
+        ce = CompanyEmployee.find_by_company_and_account(company_id, account_id)
+        if ce is None:
+            abort(404)
+        db.session.delete(ce)
+
+    employees = CompanyEmployee.list_by_company(company_id)
+    db.session.commit()
+
+    return jsonify(company_to_json(company, employees))
 
 
 @registry.route('/data/company', methods=["POST"])
@@ -255,8 +304,9 @@ def _data_company_save():
         company = Company(name, contact, active)
 
     db.session.add(company)
+    employees = CompanyEmployee.list_by_company(company.id)
     db.session.commit()
-    return jsonify(company_to_json(company))
+    return jsonify(company_to_json(company, employees))
 
 
 @core.route('/')

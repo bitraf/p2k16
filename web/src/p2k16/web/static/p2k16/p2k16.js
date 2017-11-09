@@ -336,6 +336,27 @@
                 }
             });
         };
+
+        self.existingEmployeeFilter = function (account) {
+            return _.findIndex(self.company.employees, {account: {username: account.username}}) === -1
+        };
+
+        self.removeEmployee = function ($event, a) {
+            $event.preventDefault();
+            CoreDataService.data_company_remove_employee(company.id, {account_id: a.id})
+                .then(function (res) {
+                    setCompany(res.data);
+                });
+        };
+
+        self.addEmployee = function ($event, a) {
+            $event.preventDefault();
+            self.query = '';
+            CoreDataService.data_company_add_employee(company.id, {account_id: a.id})
+                .then(function (res) {
+                    setCompany(res.data);
+                });
+        };
     }
 
     /**

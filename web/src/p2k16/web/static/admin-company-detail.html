@@ -33,11 +33,58 @@
     </div>
     <div class="form-group">
       <div class="col-sm-12 text-right">
-      <button class="btn btn-success" ng-click="ctrl.save()">
-        {{ (ctrl.company.id ? 'Update' : 'Create') }}
-      </button>
+        <button class="btn btn-success" ng-click="ctrl.save()">
+          {{ (ctrl.company.id ? 'Update' : 'Create') }}
+        </button>
       </div>
     </div>
   </div>
+
+  <h2>Employees</h2>
+
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>Updated</th>
+      <th>username</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody ng-if="!ctrl.company.employees.length">
+    <tr>
+      <td colspan="2">No employees registered</td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr ng-repeat="e in ctrl.company.employees">
+      <td>{{ e.updatedAt | date:'medium' }}</td>
+      <td>
+        <a href="#!/admin/account/{{ e.account_id }}">{{ e.account.username }}</a>
+      </td>
+      <td>
+        <a ng-click="ctrl.removeEmployee($event, e)">remove</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>Add employee</h3>
+  <div class="form">
+    <div class="form-group">
+      <input class="form-control" type="text" placeholder="Search" ng-model="ctrl.query" ng-change="ctrl.search()">
+    </div>
+  </div>
+
+  <table class="table">
+    <tbody ng-if="ctrl.query">
+    <tr ng-repeat="a in ctrl.accounts|filter:ctrl.existingEmployeeFilter|filter:ctrl.query:'username' | orderBy:'username'">
+      <td>{{ a.username }}</td>
+      <td>{{ a.name }}</td>
+      <td>
+        <a ng-click="ctrl.addEmployee($event, a)">add</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 
 </div>

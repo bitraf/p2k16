@@ -143,7 +143,7 @@ def register_account():
 
 
 @registry.route('/data/account')
-def data_accounts():
+def data_account_list():
     accounts_with_circles = [(account, account_management.get_circles_for_account(account.id)) for account in
                              Account.query.all()]
     accounts = [account_to_json(account, circles) for (account, circles) in accounts_with_circles]
@@ -195,13 +195,13 @@ def _manage_membership(account_id: int, create: bool):
 
 
 @registry.route('/data/circle')
-def data_circles():
+def data_circle_list():
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
 
 
 @registry.route('/data/company')
-def data_companies():
+def data_company_list():
     companies = Company.query.all()
     return jsonify([company_to_json(c) for c in companies])
 
@@ -218,36 +218,43 @@ def data_company(company_id: int):
 
 @registry.route('/data/company', methods=["POST"])
 @validate_schema(single_company_form)
-def data_company_register():
-    check_is_in_circle("admin")
-    name = request.json["name"]
-    contact_id = request.json["contact"]
-    active = request.json["active"]
+def data_company_add():
+    return _data_company_save()
 
+
+@registry.route('/data/company', methods=["PUT"])
+@validate_schema(single_company_form)
+def data_company_update():
+    return _data_company_save()
+
+
+def _data_company_save():
+    check_is_in_circle("admin")
+
+    contact_id = request.json["contact"]
     contact = Account.find_account_by_id(contact_id)
     if not contact:
         raise P2k16UserException("No such account: {}".format(contact_id))
 
-    app.logger.info("Registering new company: {}".format(name))
+    _id = request.json["id"]
 
-    company = Company(name, contact, active)
+    if id:
+        company = Company.find_by_id(_id)
+
+        if company is None:
+            abort(404)
+
+        app.logger.info("Updating company: {}".format(company))
+        company.name = request.json["name"]
+        company.contact_id = contact.id
+        company.active = request.json["active"]
+    else:
+        name = request.json["name"]
+        active = request.json["active"]
+        app.logger.info("Registering new company: {}".format(name))
+        company = Company(name, contact, active)
+
     db.session.add(company)
-    db.session.commit()
-    return jsonify(company_to_json(company))
-
-
-@registry.route('/data/company/<int:company_id>', methods=["POST"])
-@validate_schema(single_company_form)
-def data_company_update(company_id: int):
-    check_is_in_circle("admin")
-    company = Company.find_by_id(company_id)
-
-    if company is None:
-        abort(404)
-
-    company.name = request.json["name"]
-    company.contact_id = request.json["contact"]
-    company.active = request.json["active"]
     db.session.commit()
     return jsonify(company_to_json(company))
 
@@ -261,7 +268,7 @@ def index():
     else:
         account = None
 
-    return render_template('index.html', account=account)
+    return render_template("index.html", account=account)
 
 
 @core.route('/logout', methods=['GET'])

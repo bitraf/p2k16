@@ -26,8 +26,8 @@
             controllerAs: 'ctrl',
             templateUrl: 'static/admin.html',
             resolve: {
-                accounts: CoreDataServiceResolvers.data_accounts,
-                companies: CoreDataServiceResolvers.data_companies
+                accounts: CoreDataServiceResolvers.data_account_list,
+                companies: CoreDataServiceResolvers.data_company_list
             }
         }).when("/admin/account/:account_id", {
             controller: AdminAccountController,
@@ -35,13 +35,22 @@
             templateUrl: 'static/admin-account.html',
             resolve: {
                 account: CoreDataServiceResolvers.data_account,
-                circles: CoreDataServiceResolvers.data_circles
+                circles: CoreDataServiceResolvers.data_circle_list
+            }
+        }).when("/admin/company/new", {
+            controller: AdminCompanyDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: 'static/admin-company-detail.html',
+            resolve: {
+                accounts: CoreDataServiceResolvers.data_account_list,
+                company: _.constant({})
             }
         }).when("/admin/company/:company_id", {
-            controller: AdminCompanyController,
+            controller: AdminCompanyDetailController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-company.html',
+            templateUrl: 'static/admin-company-detail.html',
             resolve: {
+                accounts: CoreDataServiceResolvers.data_account_list,
                 company: CoreDataServiceResolvers.data_company
             }
         }).otherwise("/");
@@ -229,70 +238,25 @@
 
     /**
      * @param $http
-     * @param $uibModal
+     * @param $location
      * @param {CoreDataService} CoreDataService
      * @param accounts
      * @param companies
      * @constructor
      */
-    function AdminController($http, $uibModal, CoreDataService, accounts, companies) {
+    function AdminController($http, $location, CoreDataService, accounts, companies) {
+        // console.log('CoreDataService.data_account_list()', CoreDataService.data_account_list);
         var self = this;
 
         self.accounts = accounts;
         self.companies = companies;
 
-        self.openCompanyModal = function ($event, company) {
-            $event.preventDefault();
+        // console.log('CoreDataService.data_account_list()', CoreDataService.data_account_list);
+        CoreDataService.data_account_list();
 
-            company = company || {active: true};
-
-            var instance = $uibModal.open({
-                controller: CompanyModalController,
-                controllerAs: 'modal',
-                templateUrl: 'admin/company-modal.html',
-                resolve: {
-                    company: company
-                }
-            });
-
-            instance.result.then(function (company) {
-                return CoreDataService.data_companies();
-            }).then(function (res) {
-                self.companies = res.data;
-            });
+        self.newCompany = function () {
+            $location.url("/admin/company/new");
         };
-
-        function CompanyModalController($uibModalInstance, company) {
-            var self = this;
-
-            self.accounts = accounts;
-            self.company = angular.copy(company);
-
-            console.log('company', self.company);
-            self.ok = function () {
-                var body = {
-                    name: self.company.name,
-                    contact: self.company.contact,
-                    active: self.company.active
-                };
-                console.log('body', body);
-                console.log('company', self.company);
-                var q;
-                if (self.company.id) {
-                    q = CoreDataService.data_company_update(self.company.id, body);
-                } else {
-                    q = CoreDataService.data_company_register(body);
-                }
-                q.then(function (res) {
-                    console.log('res.data', res.data);
-                    return $uibModalInstance.close(res.data);
-                })
-            };
-
-            self.cancel = function () {
-                $uibModalInstance.dismiss('cancel');
-            };
-        }
     }
 
     /**
@@ -320,11 +284,38 @@
         }
     }
 
-    function AdminCompanyController($http, CoreDataService, company) {
+    /**
+     * @param $location
+     * @param accounts
+     * @param company
+     * @param {CoreDataService} CoreDataService
+     * @constructor
+     */
+    function AdminCompanyDetailController($location, accounts, company, CoreDataService) {
         var self = this;
+        var isNew;
 
-        self.company = company;
+        self.accounts = accounts;
 
+        function setCompany(company) {
+            self.company = angular.copy(company);
+            isNew = !self.company.id;
+            self.title = isNew ? "New company" : self.company.name;
+        }
+        setCompany(company);
+
+        self.save = function () {
+            var q = self.company.id ? CoreDataService.data_company_update(self.company) : CoreDataService.data_company_add(self.company);
+
+            q.then(function (res) {
+                if (isNew) {
+                    $location.url("/admin/company/" + res.data.id);
+                } else {
+                    setCompany(res.data);
+                    self.form.$setPristine();
+                }
+            });
+        };
     }
 
     /**

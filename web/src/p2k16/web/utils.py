@@ -76,7 +76,11 @@ class DataServiceTool(object):
     def generate(self, ):
         s = "'use strict';\n"
         s += "/**\n * @constructor\n */\n"
-        s += "var {} = function ($http) {{\n".format(self.name)
+        s += "function {}($http) {{\n".format(self.name)
+        s += "  this.$http = $http;\n"
+        # s += "  console.log('{}', this);\n".format(self.name)
+        s += "  return this;\n"
+        s += "}\n"
         s += "\n"
 
         names = [r.name for r in self._routes]
@@ -104,7 +108,7 @@ class DataServiceTool(object):
             else:
                 raise Exception("Hm..")
 
-            has_payload = r.method == "POST"
+            has_payload = r.method != "GET" and r.method != "HEAD"
 
             # print("url_parts={}".format(url_parts))
 
@@ -128,7 +132,8 @@ class DataServiceTool(object):
 
             middle = '='
             f_args = args + ['payload'] if has_payload else args
-            s += "  function {}({}) {{\n".format(r.name, ", ".join(f_args))
+            s += "{}.prototype.{} = function ({}) {{\n".format(self.name, r.name, ", ".join(f_args))
+            # s += "    console.log('{}: this', this);\n".format(r.name)
             s += "    var req = {{}};\n".format()
             s += "    req.method = '{}';\n".format(r.method)
 
@@ -141,8 +146,8 @@ class DataServiceTool(object):
 
             if has_payload:
                 s += "    req.data = payload;\n".format(r.url)
-            s += "    return $http(req);\n"
-            s += "  }\n"
+            s += "    return this.$http(req);\n"
+            s += "};\n"
 
             if not has_payload:
                 # resolvers.append(r.name)
@@ -162,15 +167,6 @@ class DataServiceTool(object):
 
             s += "\n"
 
-        s += "\n"
-        s += "  /**\n   * @lends {}.prototype\n   */\n".format(self.name)
-        s += "  return {\n"
-        s += "    " + ",\n".join(["    {}: {}".format(n, n) for n in names]).strip()
-        s += "\n  };\n"
-
-        s += "}};\n".format()
-
-        s += "\n"
         s += "var CoreDataServiceResolvers = {};\n"
         for (name, fun) in resolvers:
             s += "CoreDataServiceResolvers.{} = ".format(name) + fun

@@ -230,11 +230,56 @@
         var self = this;
     }
 
-    function MembershipController() {
+    function MembershipController($uibModal, $log) {
         var self = this;
 
         self.doCheckout = function (token) {
             alert("Got Stripe token: " + token.id);
+        };
+
+        self.items = ['Vanlig medlemskap (500 kr)', 'Støttemedlemskap (300 kr)', 'Inaktiv (0 kr)'];
+
+        self.openChangeMembership = function() {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                ariaLabelledBy: 'modal-title',
+                ariaDescribedBy: 'modal-body',
+                templateUrl: 'updateMembershipTemplate.html',
+                controller: ChangeMembershipController,
+                controllerAs: 'ctrl',
+                resolve: {
+                    items: function () {
+                        return self.items;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (selectedItem) {
+                ctrl.selected = selectedItem;
+            }, function () {
+                $log.info('Modal dismissed at: ' + new Date());
+            });
+        }
+
+        self.openCancelMembership = function() {
+            alert('Not implemented.');
+        }
+    }
+
+    function ChangeMembershipController($uibModalInstance, items) {
+        var self = this;
+
+        self.items = items;
+        self.selected = {
+            item: self.items[0]
+        };
+
+        self.ok = function () {
+            $uibModalInstance.close(self.selected.item);
+        };
+
+        self.cancel = function () {
+            $uibModalInstance.dismiss('cancel');
         };
     }
 

@@ -24,3 +24,9 @@ def parse_stripe_event(event):
     print("Received event: id={id}, type={type}".format(id=event.id, type=event.type))
 
     pass
+
+def member_set_stripe_token(account, stripe_token):
+
+    print("Received token for user " + account.username + ": " + stripe_token);
+
+    return True

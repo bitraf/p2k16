@@ -239,11 +239,11 @@
         ];
     }
 
-    function MembershipController($uibModal, $log) {
+    function MembershipController($uibModal, $log, CoreDataService) {
         var self = this;
 
         self.doCheckout = function (token) {
-            alert("Got Stripe token: " + token.id);
+            CoreDataService.set_stripe_token(p2k16.account.id, token);
         };
 
         self.items = getMembershipTypes();

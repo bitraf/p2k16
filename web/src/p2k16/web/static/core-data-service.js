@@ -66,6 +66,16 @@ CoreDataService.prototype.create_membership = function (account_id, payload) {
     return this.$http(req);
 };
 
+CoreDataService.prototype.set_stripe_token = function (account_id, payload) {
+    var req = {};
+    req.method = 'POST';
+    req.url = '/data/account';
+    req.url += '/' + account_id;
+    req.url += '/cmd/set-stripe-token';
+    req.data = payload;
+    return this.$http(req);
+};
+
 CoreDataService.prototype.data_circle_list = function () {
     var req = {};
     req.method = 'GET';

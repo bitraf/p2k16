@@ -230,6 +230,15 @@
         var self = this;
     }
 
+    function getMembershipTypes() {
+        // TODO: Move this to model
+        return [
+            { name: 'Vanlig medlemskap (500 kr)', price: 500 },
+            { name: 'Støttemedlemskap (300 kr)', price: 300 },
+            { name: 'Inaktiv (0 kr)', price: 0 }
+        ];
+    }
+
     function MembershipController($uibModal, $log) {
         var self = this;
 
@@ -237,7 +246,7 @@
             alert("Got Stripe token: " + token.id);
         };
 
-        self.items = ['Vanlig medlemskap (500 kr)', 'Støttemedlemskap (300 kr)', 'Inaktiv (0 kr)'];
+        self.items = getMembershipTypes();
 
         self.openChangeMembership = function() {
             var modalInstance = $uibModal.open({
@@ -255,7 +264,8 @@
             });
 
             modalInstance.result.then(function (selectedItem) {
-                ctrl.selected = selectedItem;
+                $log.info('New membership price: ' + selectedItem.price);
+
             }, function () {
                 $log.info('Modal dismissed at: ' + new Date());
             });
@@ -266,8 +276,10 @@
         }
     }
 
-    function ChangeMembershipController($uibModalInstance, items) {
+    function ChangeMembershipController($scope, $uibModalInstance, items) {
         var self = this;
+
+        $scope.items = getMembershipTypes();
 
         self.items = items;
         self.selected = {
@@ -275,7 +287,8 @@
         };
 
         self.ok = function () {
-            $uibModalInstance.close(self.selected.item);
+            self.selected = $scope.membershipList;
+            $uibModalInstance.close(self.selected);
         };
 
         self.cancel = function () {

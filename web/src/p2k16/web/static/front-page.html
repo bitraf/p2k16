@@ -4,7 +4,19 @@
   <p>
     Welcome {{ p2k16.currentAccount().username }}!
   </p>
-  <p>
-    TODO: put something useful here.
+
+  <h2>Open a door</h2>
+  <p class="door-buttons">
+    <button class="btn btn-default" ng-click="ctrl.openDoor('front-and-lab')">Frontdoor and lab</button>
+  </p>
+  <p class="door-buttons">
+    <button class="btn btn-default" ng-click="ctrl.openDoor('3rd-floor')">
+      3rd floor
+    </button>
+  </p>
+  <p class="door-buttons">
+    <button class="btn btn-default" ng-click="ctrl.openDoor('4th-floor')">
+      4th floor
+    </button>
   </p>
 </div>

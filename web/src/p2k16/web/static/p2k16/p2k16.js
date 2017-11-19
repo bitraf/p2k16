@@ -4,38 +4,30 @@
         $routeProvider.when("/public/unauthenticated", {
             controller: UnauthenticatedController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/unauthenticated.html'
+            templateUrl: p2k16_resources.unauthenticated_html
         }).when("/", {
             controller: FrontPageController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/front-page.html'
-        }).when("/tools", {
-            controller: ToolsController,
-            controllerAs: 'ctrl',
-            templateUrl: 'static/tools.html'
+            templateUrl: p2k16_resources.front_page_html
         }).when("/membership", {
             controller: MembershipController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/membership.html'
-        }).when("/doors", {
-            controller: DoorsController,
-            controllerAs: 'ctrl',
-            templateUrl: 'static/doors.html'
+            templateUrl: p2k16_resources.membership_html
         }).when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin.html'
+            templateUrl: p2k16_resources.admin_html
         }).when("/admin/account", {
             controller: AdminAccountListController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-account-list.html',
+            templateUrl: p2k16_resources.admin_account_list_html,
             resolve: {
                 accounts: CoreDataServiceResolvers.data_account_list
             }
         }).when("/admin/account/:account_id", {
             controller: AdminAccountDetailController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-account-detail.html',
+            templateUrl: p2k16_resources.admin_account_detail_html,
             resolve: {
                 account: CoreDataServiceResolvers.data_account,
                 circles: CoreDataServiceResolvers.data_circle_list
@@ -43,14 +35,14 @@
         }).when("/admin/company", {
             controller: AdminCompanyListController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-company-list.html',
+            templateUrl: p2k16_resources.admin_company_list_html,
             resolve: {
                 companies: CoreDataServiceResolvers.data_company_list
             }
         }).when("/admin/company/new", {
             controller: AdminCompanyDetailController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-company-detail.html',
+            templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
                 accounts: CoreDataServiceResolvers.data_account_list,
                 company: _.constant({})
@@ -58,7 +50,7 @@
         }).when("/admin/company/:company_id", {
             controller: AdminCompanyDetailController,
             controllerAs: 'ctrl',
-            templateUrl: 'static/admin-company-detail.html',
+            templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
                 accounts: CoreDataServiceResolvers.data_account_list,
                 company: CoreDataServiceResolvers.data_company
@@ -199,7 +191,7 @@
             scope: {active: '@', woot: '='},
             controller: p2k16HeaderController,
             controllerAs: 'header',
-            templateUrl: "static/p2k16-header.html"
+            templateUrl: p2k16_resources.p2k16_header_html
         }
     }
 
@@ -224,10 +216,10 @@
 
     function FrontPageController() {
         var self = this;
-    }
 
-    function ToolsController() {
-        var self = this;
+        self.openDoor = function (door) {
+            $http.post('/service/door/open', {door: door});
+        }
     }
 
     function getMembershipTypes() {
@@ -269,7 +261,7 @@
             }, function () {
                 $log.info('Modal dismissed at: ' + new Date());
             });
-        }
+        };
 
         self.openCancelMembership = function() {
             alert('Not implemented.');
@@ -294,14 +286,6 @@
         self.cancel = function () {
             $uibModalInstance.dismiss('cancel');
         };
-    }
-
-    function DoorsController($http) {
-        var self = this;
-
-        self.openDoor = function (door) {
-            $http.post('/service/door/open', {door: door});
-        }
     }
 
     /**

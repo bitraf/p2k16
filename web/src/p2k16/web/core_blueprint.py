@@ -1,3 +1,5 @@
+import io
+import os
 from typing import List
 
 import flask
@@ -8,7 +10,7 @@ from p2k16.core import auth, account_management
 from p2k16.core.database import db
 from p2k16.core.membership_management import member_set_stripe_token
 from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
-from p2k16.web.utils import validate_schema, DataServiceTool
+from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
 id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
@@ -464,3 +466,12 @@ def core_service():
 
 
 core_service.content = None
+
+
+@core.route("/p2k16_resources.js")
+def p2k16_resources():
+    static = os.path.normpath(app.static_folder)
+    buf = io.StringIO()
+    ResourcesTool.run(static, buf)
+
+    return flask.Response(buf.getvalue(), content_type='application/javascript')

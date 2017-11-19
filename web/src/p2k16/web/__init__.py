@@ -4,6 +4,7 @@ from datetime import date
 import flask
 import flask_bower
 import flask_login
+import p2k16.web.utils
 from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException, app
 from p2k16.core.database import db
@@ -13,6 +14,7 @@ from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
 
 @app.url_defaults
 def hashed_url_for_static_file(endpoint, values):
+    # print("hashed_url_for_static_file: endpoint={}, values={}".format(endpoint, values))
     if 'static' == endpoint or endpoint.endswith('.static'):
         filename = values.get('filename')
         if filename:
@@ -28,15 +30,21 @@ def hashed_url_for_static_file(endpoint, values):
             if not static_folder:
                 static_folder = app.static_folder
 
-            param_name = 'h'
-            while param_name in values:
-                param_name = '_' + param_name
+            hash = create_hash(os.path.join(static_folder, filename))
 
-            values[param_name] = static_file_hash(os.path.join(static_folder, filename))
+            if hash:
+                param_name = 'h'
+                while param_name in values:
+                    param_name = '_' + param_name
+
+                values[param_name] = hash
 
 
-def static_file_hash(filename):
-    return int(os.stat(filename).st_mtime)  # or app.config['last_build_timestamp'] or md5(filename) or etc...
+def create_hash(filename):
+    t = flask.current_app.config.get("RESOURCE_HASH_TYPE", None)
+
+    if t == "mtime":
+        return int(os.stat(filename).st_mtime)
 
 
 @app.errorhandler(P2k16TechnicalException)
@@ -122,5 +130,17 @@ app.register_blueprint(membership_blueprint.membership)
 with open(os.path.join(app.static_folder, core_blueprint.registry.jsName), "w") as f:
     # print("app.static_folder={}".format(app.static_folder))
     f.write(core_blueprint.registry.generate())
+
+with app.test_request_context():
+    static = os.path.normpath(app.static_folder)
+
+    resource_hash_type = flask.current_app.config.get("RESOURCE_HASH_TYPE", None)
+
+    try:
+        flask.current_app.config["RESOURCE_HASH_TYPE"] = None
+        with open(os.path.join(app.static_folder, "{}/p2k16_resources.js".format(static)), "w") as f:
+            utils.ResourcesTool.run(static, f)
+    finally:
+        flask.current_app.config["RESOURCE_HASH_TYPE"] = resource_hash_type
 
 flask_bower.Bower(app)

@@ -1,9 +1,11 @@
-import jsonschema as js
+import os
 import re
-from flask import request, Blueprint
 from functools import wraps
-from p2k16.core import P2k16UserException
 from symtable import Function
+
+import flask
+import jsonschema as js
+from p2k16.core import P2k16UserException
 
 
 def validate_schema(schema):
@@ -11,7 +13,7 @@ def validate_schema(schema):
         @wraps(f)
         def wrapper(*args, **kw):
             try:
-                js.validate(request.json, schema)
+                js.validate(flask.request.json, schema)
                 return f(*args, **kw)
             except js.ValidationError as e:
                 raise P2k16UserException(e.message)
@@ -19,6 +21,71 @@ def validate_schema(schema):
         return wrapper
 
     return decorator
+
+
+class ResourcesTool(object):
+    class Dir(object):
+        def __init__(self, name):
+            self.name = name
+            self.dirs = []
+            self.files = []
+            pass
+
+    class File(object):
+        def __init__(self, name):
+            self.name = name
+
+    @staticmethod
+    def scan(path, dir: Dir):
+        # print("scanning {}, dir={}".format(path, dir.name))
+        with os.scandir(path) as it:
+            for entry in it:
+                if entry.name.startswith("."):
+                    continue
+                if entry.name == "bower_components":
+                    continue
+
+                if entry.is_file():
+                    # print("file: {}".format(entry.name))
+                    dir.files.append(entry.name)
+                if entry.is_dir():
+                    p = os.path.join(path, entry.path)
+                    # print("dir: {}".format(p))
+                    d = ResourcesTool.Dir(entry.name)
+                    dir.dirs.append(d)
+                    ResourcesTool.scan(p, d)
+
+                dir.dirs.sort(key=lambda d: d.name)
+                dir.files.sort()
+
+    @staticmethod
+    def generate(file, depth: int, prefix: str, dir: Dir, path: str):
+        # print("// depth={}, prefix={}, dir.name={}, path={}".format(depth, prefix, dir.name, path))
+
+        for f in dir.files:
+            # print("// {}{}".format(" " * depth, f))
+            filename = "{}{}".format(path, f)
+            # print("// filename={}".format(filename))
+            url = flask.url_for("static", filename=filename)
+            symbol = f.replace("-", "_").replace(".", "_")
+            file.write("{}.{} = \"{}\";\n".format(prefix, symbol, url))
+
+        for d in dir.dirs:
+            if len(d.files) == 0:
+                continue
+
+            child_prefix = "{}.{}".format(prefix, d.name)
+            file.write("{} = {{}};\n".format(child_prefix))
+            ResourcesTool.generate(file, depth + 1, child_prefix, d, "{}{}/".format(path, d.name))
+
+        return len(dir.files)
+
+    @staticmethod
+    def run(path: str, file):
+        root = ResourcesTool.Dir("")
+        ResourcesTool.scan(path, root)
+        file.write("var p2k16_resources = {};\n")
+        ResourcesTool.generate(file, 0, "p2k16_resources", root, "")
 
 
 class DataServiceTool(object):
@@ -36,7 +103,7 @@ class DataServiceTool(object):
             else:
                 self.method = "GET"
 
-    def __init__(self, name, jsName, blueprint: Blueprint):
+    def __init__(self, name, jsName, blueprint: flask.Blueprint):
         self.name = name
         self.jsName = jsName
         self.blueprint = blueprint

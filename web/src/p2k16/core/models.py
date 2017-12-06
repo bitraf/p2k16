@@ -284,6 +284,20 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
             self.id, self.created_by_id, self.start_date, self.end_date, self.amount)
 
+class StripeCustomer(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+    __tablename__ = 'stripe_customer'
+    __versioned__ = {}
+
+    stripe_id = Column("stripe_id", String(50), unique=True, nullable=False)
+
+    def __init__(self, stripe_id):
+        super().__init__()
+        self.stripe_id = stripe_id
+
+    def __repr__(self):
+        return '<StripeCustomer:%r, %r, stripe_id=%r>' % (
+            self.id, self.created_by_id, self.stripe_id)
+
 
 class Company(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'company'

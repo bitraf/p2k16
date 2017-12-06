@@ -231,11 +231,11 @@
         ];
     }
 
-    function MembershipController($uibModal, $log, CoreDataService) {
+    function MembershipController($uibModal, $log, P2k16, CoreDataService) {
         var self = this;
 
         self.doCheckout = function (token) {
-            CoreDataService.set_stripe_token(p2k16.account.id, token);
+            CoreDataService.set_stripe_token(P2k16.currentAccount().id, token);
         };
 
         self.items = getMembershipTypes();

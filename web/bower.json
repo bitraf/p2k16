@@ -22,7 +22,8 @@
     "angular-route": "1.6.6",
     "angular-stripe-checkout": "^5.1.0",
     "bootstrap": "3.3.7",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "spin-js": "2.0.1"
   },
   "resolutions": {
     "angular": "1.6.6"

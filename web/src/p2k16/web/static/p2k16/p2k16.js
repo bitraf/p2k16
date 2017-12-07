@@ -240,10 +240,18 @@
         self.membership_details = membership_details;
 
         self.doCheckout = function (token) {
+
+            // Stripe takes a long time. Need a spinner
+            spinner = new Spinner().spin();
+            document.body.appendChild(spinner.el)
+
             CoreDataService.membership_set_stripe_token(token).
-                then(function successCallback(response) {
-                    // XXX: Ugly hack. No idea how to do this properly.
+                then(function (response) {
+                    // Update membership_details from api
                     CoreDataService.membership_details().then(function (res) { self.membership_details = res.data; });
+
+                    // Stop spinner
+                    document.body.removeChild(spinner.el)
             });
         };
 

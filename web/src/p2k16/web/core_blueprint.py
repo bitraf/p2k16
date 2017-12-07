@@ -207,32 +207,16 @@ def _manage_membership(account_id: int, create: bool):
     return jsonify(account_to_json(account, circles))
 
 
-@registry.route('/data/account/<int:account_id>/cmd/set-stripe-token', methods=["POST"])
-def set_stripe_token(account_id):
-    account = Account.find_account_by_id(account_id)
-
-    if account is None:
-        abort(404)
-
-    # TODO: If admin, allow setting tokens for others?
-    assert (account == flask_login.current_user.account)
-
-    stripe_token = request.json['id'];
+@registry.route('/membership/set-stripe-token', methods=["POST"])
+def membership_set_stripe_token():
+    account = flask_login.current_user.account
+    stripe_token = request.json['id']
 
     return jsonify(member_set_credit_card(account, stripe_token))
 
-@registry.route('/data/account/<int:account_id>/membership_details')
-def membership_details(account_id):
-    account = Account.find_account_by_id(account_id)
-
-    if account is None:
-        abort(404)
-
-    # TODO: If admin, allow for for others?
-    assert (account == flask_login.current_user.account)
-
-    return jsonify(member_get_details(account))
-
+@registry.route('/membership/details')
+def membership_details():
+    return jsonify(member_get_details(flask_login.current_user.account))
 
 @registry.route('/data/circle')
 def data_circle_list():

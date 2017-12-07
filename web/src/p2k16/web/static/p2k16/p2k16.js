@@ -12,7 +12,10 @@
         }).when("/membership", {
             controller: MembershipController,
             controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.membership_html
+            templateUrl: p2k16_resources.membership_html,
+            resolve: {
+                membership_details: CoreDataServiceResolvers.membership_details
+            }
         }).when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
@@ -231,11 +234,16 @@
         ];
     }
 
-    function MembershipController($uibModal, $log, P2k16, CoreDataService) {
+    function MembershipController($uibModal, $log, $scope, P2k16, CoreDataService, membership_details) {
         var self = this;
 
+        self.membership_details = membership_details;
+
         self.doCheckout = function (token) {
-            CoreDataService.set_stripe_token(P2k16.currentAccount().id, token);
+            CoreDataService.membership_set_stripe_token(token).
+                then(function successCallback(response) {
+                    alert('Stripe token set. Should reload state.')
+            });
         };
 
         self.items = getMembershipTypes();

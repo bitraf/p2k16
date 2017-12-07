@@ -13,15 +13,15 @@
                     <table class="table">
                         <tr>
                             <th>Credit card:</th>
-                            <td>**** **** **** 3690</td>
+                            <td>{{ ctrl.membership_details.card }}</td>
                         </tr>
                         <tr>
                             <th>Expire date:</th>
-                            <td>10/2018</td>
+                            <td>{{ ctrl.membership_details.card_exp }}</td>
                         </tr>
                         <tr>
                             <th>Member price:</th>
-                            <td>300</td>
+                            <td>{{ ctrl.membership_details.fee }}</td>
                         </tr>
                     </table>
 

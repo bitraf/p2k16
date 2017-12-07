@@ -242,7 +242,8 @@
         self.doCheckout = function (token) {
             CoreDataService.membership_set_stripe_token(token).
                 then(function successCallback(response) {
-                    alert('Stripe token set. Should reload state.')
+                    // XXX: Ugly hack. No idea how to do this properly.
+                    CoreDataService.membership_details().then(function (res) { self.membership_details = res.data; });
             });
         };
 

@@ -46,8 +46,51 @@ def parse_stripe_event(event):
 
     pass
 
+def member_get_details(account):
+    # Get mapping from account to stripe_id
+    stripe_customer_id = get_stripe_customer(account)
 
-def member_set_credit_card(account, stripe_token) -> bool:
+    details = {}
+
+    try:
+        # Get payment details
+        details['card'] = "N / A"
+        details['card_exp'] = ""
+        details['stripe_price'] = "0"
+        details['stripe_subscription_status'] = "none"
+
+        if stripe_customer_id is not None:
+            # Get customer object
+            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+
+            if len(cu.sources.data) > 0:
+                card = cu.sources.data[0]
+                details['card'] = "**** **** **** " + card.last4
+                details['card_exp'] = "%r/%r" % (card.exp_month, card.exp_year)
+
+            # Get stripe subscription to make sure it matches local database
+            assert len(cu.subscriptions.data) <= 1
+            for sub in cu.subscriptions.data:
+                details['stripe_subscription_status'] = sub.status
+                details['stripe_price'] = sub.plan.amount / 100
+
+        # Get current membership
+        membership = get_membership(account)
+        if membership is not None:
+            details['fee'] = membership.fee
+            details['first_membership'] = membership.first_membership
+            details['start_membership'] = membership.start_membership
+        else:
+            details['fee'] = 0
+
+        # TODO: Add payments
+
+    except stripe.error.StripeError as e:
+        raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
+
+    return details
+
+def member_set_credit_card(account, stripe_token):
     # Get mapping from account to stripe_id
     stripe_customer_id = get_stripe_customer(account)
 

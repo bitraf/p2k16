@@ -8,7 +8,7 @@ from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16.core import app, P2k16UserException
 from p2k16.core import auth, account_management
 from p2k16.core.database import db
-from p2k16.core.membership_management import member_set_credit_card
+from p2k16.core.membership_management import member_set_credit_card, member_get_details
 from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
@@ -220,6 +220,18 @@ def set_stripe_token(account_id):
     stripe_token = request.json['id'];
 
     return jsonify(member_set_credit_card(account, stripe_token))
+
+@registry.route('/data/account/<int:account_id>/membership_details')
+def membership_details(account_id):
+    account = Account.find_account_by_id(account_id)
+
+    if account is None:
+        abort(404)
+
+    # TODO: If admin, allow for for others?
+    assert (account == flask_login.current_user.account)
+
+    return jsonify(member_get_details(account))
 
 
 @registry.route('/data/circle')

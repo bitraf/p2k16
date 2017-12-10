@@ -179,11 +179,12 @@ def member_set_membership(account, membership_plan, membership_price):
         # Get customer object
         stripe_customer_id = get_stripe_customer(account)
 
+        new_sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
+
         # Remove existing subscriptions
         for sub in stripe.Subscription.list(customer=stripe_customer_id):
-            sub.delete(at_period_end=False)
-
-        stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
+            if new_sub.id != sub.id:
+                sub.delete(at_period_end=False)
 
         # Commit to db
         db.session.add(membership)

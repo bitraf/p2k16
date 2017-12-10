@@ -40,12 +40,66 @@ def get_stripe_customer(account: Account):
     return StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
 
 
+def get_membetship_payments(account: Account):
+    return MembershipPayment.query.filter(MembershipPayment.created_by_id == account.id).all()
+
+
+def find_account_from_stripe_customer(stripe_customer_id):
+    """
+    Get account from stripe customer
+    :param customer_id:
+    :return: account
+    """
+    id = StripeCustomer.query.filter(StripeCustomer.stripe_id == stripe_customer_id).one_or_none()
+    if id is None:
+        return None
+
+    return Account.find_account_by_id(id.created_by_id)
+
+
 def parse_stripe_event(event):
-    print("Hi")
-    repr(event)
-    print("Received event: id={id}, type={type}".format(id=event.id, type=event.type))
+    app.logger.info("Received stripe event: id={id}, type={type}".format(id=event.id, type=event.type))
+
+    if event.type == 'invoice.created':
+        handle_invoice_created(event)
+    if event.type == 'invoice.updated':
+        handle_invoice_updated(event)
+    if event.type == 'invoice.payment_succeeded':
+        handle_payment_success(event)
+    if event.type == 'invoice.payment_failed':
+        handle_payment_failed(event)
 
     pass
+
+
+def handle_invoice_created(event):
+    pass
+
+
+def handle_invoice_updated(event):
+    pass
+
+
+def handle_payment_success(event):
+    customer_id = event.data.object.customer
+    account = find_account_from_stripe_customer(customer_id)
+
+    with model_support.run_as(account):
+        invoice_id = event.data.object.id
+        timestamp = datetime.fromtimestamp(event.data.object.date)
+        items = event.data.object.lines.data[0]
+
+        payment = MembershipPayment(invoice_id, datetime.fromtimestamp(items.period.start),
+                                    datetime.fromtimestamp(items.period.end), items.amount / 100, timestamp)
+
+        db.session.add(payment)
+        db.session.commit()
+
+    return True
+
+def handle_payment_failed(event):
+    pass
+
 
 def member_get_details(account):
     # Get mapping from account to stripe_id
@@ -86,12 +140,24 @@ def member_get_details(account):
         else:
             details['fee'] = 0
 
-        # TODO: Add payments
+        # Export payments
+        payments = []
+        for pay in get_membetship_payments(account):
+            payments.append({
+                'id': pay.id,
+                'start_date': pay.start_date,
+                'end_date': pay.end_date,
+                'amount': float(pay.amount),
+                'payment_date': pay.payment_date
+            })
+
+        details['payments'] = payments
 
     except stripe.error.StripeError as e:
         raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
 
     return details
+
 
 def member_set_credit_card(account, stripe_token):
     # Get mapping from account to stripe_id
@@ -107,7 +173,7 @@ def member_set_credit_card(account, stripe_token):
             )
             stripe_customer_id = StripeCustomer(cu.stripe_id)
 
-            app.info("Created customer for user=%r" % account.username)
+            app.logger.info("Created customer for user=%r" % account.username)
         else:
             # Get customer object
             cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
@@ -155,7 +221,6 @@ def member_set_credit_card(account, stripe_token):
 
 
 def member_set_membership(account, membership_plan, membership_price):
-
     # TODO: Remove membership_price and look up price from model
 
     try:
@@ -165,7 +230,8 @@ def member_set_membership(account, membership_plan, membership_price):
         if membership is not None:
             if membership.fee is membership_price:
                 # Nothing's changed.
-                app.logger.info("No membership change for user=%r, type=%r, amount=%r" % (account.username, membership_plan, membership_price))
+                app.logger.info("No membership change for user=%r, type=%r, amount=%r" % (
+                account.username, membership_plan, membership_price))
                 return
             else:
                 membership.fee = membership_price
@@ -190,7 +256,8 @@ def member_set_membership(account, membership_plan, membership_price):
         db.session.add(membership)
         db.session.commit()
 
-        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (account.username, membership_plan, membership_price))
+        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
+        account.username, membership_plan, membership_price))
         return True
 
     except stripe.error.CardError as e:

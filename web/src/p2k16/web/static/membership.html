@@ -87,17 +87,11 @@
                             <th>Amount</th>
                             <th>Paid</th>
                         </tr>
-                        <tr>
-                            <td>2017-10-09</td>
-                            <td>2017-11-09</td>
-                            <td>300.00</td>
-                            <td>2017-10-17</td>
-                        </tr>
-                        <tr>
-                            <td>2017-09-09</td>
-                            <td>2017-10-09</td>
-                            <td>300.00</td>
-                            <td>2017-09-09</td>
+                        <tr ng-repeat="pay in ctrl.membership_details.payments | orderBy: 'start_date'">
+                            <td>{{ pay.start_date | date:'yyyy-MM-dd' }}</td>
+                            <td>{{ pay.end_date | date:'yyyy-MM-dd' }}</td>
+                            <td>{{ pay.amount }}</td>
+                            <td>{{ pay.payment_date | date:'yyyy-MM-dd' }}</td>
                         </tr>
                     </table>
 

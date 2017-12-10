@@ -8,7 +8,7 @@ from flask import abort, Blueprint, render_template, jsonify, request
 from p2k16.core import app, P2k16UserException
 from p2k16.core import auth, account_management
 from p2k16.core.database import db
-from p2k16.core.membership_management import member_set_credit_card, member_get_details
+from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
 from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
@@ -217,6 +217,15 @@ def membership_set_stripe_token():
 @registry.route('/membership/details')
 def membership_details():
     return jsonify(member_get_details(flask_login.current_user.account))
+
+@registry.route('/membership/set-membership', methods=["POST"])
+def membership_set_membership():
+    account = flask_login.current_user.account
+
+    membership_id = request.json['id']
+    membership_price = request.json['price']
+
+    return jsonify(member_set_membership(account, membership_id, membership_price))
 
 @registry.route('/data/circle')
 def data_circle_list():

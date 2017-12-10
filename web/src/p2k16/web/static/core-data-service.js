@@ -81,6 +81,14 @@ CoreDataService.prototype.membership_details = function () {
     return this.$http(req);
 };
 
+CoreDataService.prototype.membership_set_membership = function (payload) {
+    var req = {};
+    req.method = 'POST';
+    req.url = '/membership/set-membership';
+    req.data = payload;
+    return this.$http(req);
+};
+
 CoreDataService.prototype.data_circle_list = function () {
     var req = {};
     req.method = 'GET';

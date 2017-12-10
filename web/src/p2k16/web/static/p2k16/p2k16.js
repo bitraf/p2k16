@@ -228,9 +228,9 @@
     function getMembershipTypes() {
         // TODO: Move this to model
         return [
-            { name: 'Vanlig medlemskap (500 kr)', price: 500 },
-            { name: 'Støttemedlemskap (300 kr)', price: 300 },
-            { name: 'Inaktiv (0 kr)', price: 0 }
+            { id: 2, name: 'Vanlig medlemskap (500 kr)', price: 500 },
+            { id: 1, name: 'Støttemedlemskap (300 kr)', price: 300 },
+            { id: 0, name: 'Inaktiv (0 kr)', price: 0 }
         ];
     }
 
@@ -274,6 +274,7 @@
 
             modalInstance.result.then(function (selectedItem) {
                 $log.info('New membership price: ' + selectedItem.price);
+                CoreDataService.membership_set_membership(selectedItem)
 
             }, function () {
                 $log.info('Modal dismissed at: ' + new Date());

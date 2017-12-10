@@ -151,3 +151,22 @@ def member_set_credit_card(account, stripe_token):
 
         raise P2k16UserException("Error updating credit card due to stripe error. Contact kasserer@bitraf.no if the "
                                  "problem persists.")
+
+
+def member_set_membership(account, membership_id, membership_price):
+    # Get mapping from account to stripe_id
+    stripe_customer_id = get_stripe_customer(account)
+
+    try:
+        # Get customer object
+        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+
+        # Implement stripe code
+
+        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (account.username, membership_id, membership_price))
+        return True
+
+    except stripe.error.StripeError as e:
+        app.logger.error("Stripe error: " + repr(e.json_body))
+
+        raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")

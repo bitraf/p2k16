@@ -29,11 +29,11 @@
                         <div class="col-md-3">
                             <!-- Get stripe token. -->
                             <button stripe-checkout="ctrl.doCheckout"
-                                    data-key="pk_test_hUoh3MEu4Oa8RjVFwZrFge4b"
+                                    data-key="{{ ctrl.membership_details.stripe_pubkey }}"
                                     data-name="Bitraf membership"
                                     data-description="Update card"
-                                    class="btn btn-success"
-                                    data-amount="500">
+                                    data-panel-label="Update card"
+                                    class="btn btn-success">
                                 Set credit card
                             </button>
                         </div>

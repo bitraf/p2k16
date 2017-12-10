@@ -1,4 +1,5 @@
 import datetime
+import os
 import stripe
 from p2k16.core.models import Account, MembershipPayment, model_support, Membership, StripeCustomer
 from p2k16.core.database import db
@@ -51,6 +52,8 @@ def member_get_details(account):
     stripe_customer_id = get_stripe_customer(account)
 
     details = {}
+
+    details['stripe_pubkey'] = os.environ.get('STRIPE_PUBLIC_KEY')
 
     try:
         # Get payment details

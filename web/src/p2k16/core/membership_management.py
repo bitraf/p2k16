@@ -130,7 +130,7 @@ def member_set_credit_card(account, stripe_token):
         db.session.add(stripe_customer_id)
         db.session.commit()
 
-        # Check if there is any outstanding invoices on this account that needs billing
+        # Check if there are any outstanding invoices on this account that needs billing
         for invoice in stripe.Invoice.list(customer=cu.stripe_id):
             if invoice.paid is False:
                 invoice.pay()

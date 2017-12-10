@@ -214,18 +214,21 @@ def membership_set_stripe_token():
 
     return jsonify(member_set_credit_card(account, stripe_token))
 
+
 @registry.route('/membership/details')
 def membership_details():
     return jsonify(member_get_details(flask_login.current_user.account))
+
 
 @registry.route('/membership/set-membership', methods=["POST"])
 def membership_set_membership():
     account = flask_login.current_user.account
 
-    membership_id = request.json['id']
+    membership_plan = request.json['plan']
     membership_price = request.json['price']
 
-    return jsonify(member_set_membership(account, membership_id, membership_price))
+    return jsonify(member_set_membership(account, membership_plan, membership_price))
+
 
 @registry.route('/data/circle')
 def data_circle_list():

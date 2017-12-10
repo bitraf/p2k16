@@ -100,7 +100,7 @@ class AccountTest(TestCase):
             payment2 = MembershipPayment('tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
                                          datetime(2017, 2, 1))
             payment3 = MembershipPayment('tok_stripe_xx1338', datetime(2017, 3, 1),
-                                         datetime.utcnow() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
+                                         datetime.now() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
             session.add_all([m3, payment1, payment2, payment3])
 
         with model_support.run_as(a4):

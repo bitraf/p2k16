@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 import stripe
 from p2k16.core.models import Account, MembershipPayment, model_support, Membership, StripeCustomer
@@ -9,7 +9,7 @@ from p2k16.core import app, P2k16UserException
 def paid_members():
     return Account.query. \
         join(MembershipPayment, MembershipPayment.created_by_id == Account.id). \
-        filter(MembershipPayment.end_date >= datetime.datetime.utcnow()). \
+        filter(MembershipPayment.end_date >= datetime.now()). \
         all()
 
 
@@ -19,7 +19,7 @@ def active_member(account: Account = None) -> bool:
     """
     return MembershipPayment.query. \
                filter(MembershipPayment.created_by_id == account.id,
-                      MembershipPayment.end_date >= datetime.datetime.utcnow()).scalar() is not None
+                      MembershipPayment.end_date >= datetime.now()).scalar() is not None
 
 
 def get_membership(account: Account):
@@ -153,18 +153,51 @@ def member_set_credit_card(account, stripe_token):
                                  "problem persists.")
 
 
-def member_set_membership(account, membership_id, membership_price):
-    # Get mapping from account to stripe_id
-    stripe_customer_id = get_stripe_customer(account)
+def member_set_membership(account, membership_plan, membership_price):
+
+    # TODO: Remove membership_price and look up price from model
 
     try:
+        membership = get_membership(account)
+
+        # --- Update membership in local db ---
+        if membership is not None:
+            if membership.fee is membership_price:
+                # Nothing's changed.
+                app.logger.info("No membership change for user=%r, type=%r, amount=%r" % (account.username, membership_plan, membership_price))
+                return
+            else:
+                membership.fee = membership_price
+                membership.start_membership = datetime.now()
+        else:
+            # New membership
+            membership = Membership(membership_price)
+
+        # --- Update membership in stripe ---
+
         # Get customer object
-        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+        stripe_customer_id = get_stripe_customer(account)
 
-        # Implement stripe code
+        # Remove existing subscriptions
+        for sub in stripe.Subscription.list(customer=stripe_customer_id):
+            sub.delete(at_period_end=False)
 
-        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (account.username, membership_id, membership_price))
+        stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
+
+        # Commit to db
+        db.session.add(membership)
+        db.session.commit()
+
+        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (account.username, membership_plan, membership_price))
         return True
+
+    except stripe.error.CardError as e:
+        err = e.json_body.get('error', {})
+        msg = err.get('message')
+
+        app.logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
+
+        raise P2k16UserException("Error charging credit card: %r" % msg)
 
     except stripe.error.StripeError as e:
         app.logger.error("Stripe error: " + repr(e.json_body))

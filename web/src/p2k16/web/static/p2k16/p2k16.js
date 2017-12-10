@@ -228,30 +228,42 @@
     function getMembershipTypes() {
         // TODO: Move this to model
         return [
-            { id: 2, name: 'Vanlig medlemskap (500 kr)', price: 500 },
-            { id: 1, name: 'Støttemedlemskap (300 kr)', price: 300 },
-            { id: 0, name: 'Inaktiv (0 kr)', price: 0 }
+            { plan: 'medlem1500', name: 'Filantropmedlemskap (1500 kr)', price: 1500 },
+            { plan: 'medlem500', name: 'Vanlig medlemskap (500 kr)', price: 500 },
+            { plan: 'medlem300', name: 'Støttemedlemskap (300 kr)', price: 300 },
+            { plan: 'none', name: 'Inaktiv (0 kr)', price: 0 }
         ];
     }
 
-    function MembershipController($uibModal, $log, $scope, P2k16, CoreDataService, membership_details) {
+    function MembershipController($uibModal, $log, CoreDataService, membership_details) {
         var self = this;
 
         self.membership_details = membership_details;
 
-        self.doCheckout = function (token) {
+        var spinner = new Spinner().spin();
 
+        function startSpinner() {
             // Stripe takes a long time. Need a spinner
-            spinner = new Spinner().spin();
             document.body.appendChild(spinner.el)
+        }
+        function stopSpinner() {
+            document.body.removeChild(spinner.el)
+        }
 
+        function updateDetails() {
+            startSpinner();
+            CoreDataService.membership_details().then(function (res) {
+                self.membership_details = res.data;
+                stopSpinner();
+            });
+        }
+
+        self.doCheckout = function (token) {
+            startSpinner();
             CoreDataService.membership_set_stripe_token(token).
-                then(function (response) {
+                then(function () {
                     // Update membership_details from api
-                    CoreDataService.membership_details().then(function (res) { self.membership_details = res.data; });
-
-                    // Stop spinner
-                    document.body.removeChild(spinner.el)
+                    updateDetails();
             });
         };
 
@@ -273,8 +285,11 @@
             });
 
             modalInstance.result.then(function (selectedItem) {
-                $log.info('New membership price: ' + selectedItem.price);
-                CoreDataService.membership_set_membership(selectedItem)
+                startSpinner();
+                CoreDataService.membership_set_membership(selectedItem).
+                    then(function () {
+                        updateDetails();
+                });
 
             }, function () {
                 $log.info('Modal dismissed at: ' + new Date());

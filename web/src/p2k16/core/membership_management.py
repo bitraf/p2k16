@@ -117,14 +117,15 @@ def member_set_credit_card(account, stripe_token):
                                  (account.username, stripe_token))
                 raise P2k16UserException("Set credit card invalid state. Contact kasserer@bitraf.no")
 
+            # Create a new default card
+            new_card = cu.sources.create(source=stripe_token)
+            cu.default_source = new_card.id
+            cu.save()
+
             # Delete any old cards
             for card in cu.sources.list():
-                card.delete()
-
-            # Create a new default card
-            card = cu.sources.create(source=stripe_token)
-            cu.default_source = card.id
-            cu.save()
+                if card.id != new_card.id:
+                    card.delete()
 
         # Commit to db
         db.session.add(stripe_customer_id)

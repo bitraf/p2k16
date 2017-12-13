@@ -57,7 +57,7 @@
                         </div>
 
                         <div class="modal-body" id="modal-body">
-                            <select class="form-control" ng-model="membershipList" ng-options="item as item.name for item in items"> </select>
+                            <select class="form-control" ng-model="selectedItem" ng-options="item as item.name for item in items"> </select>
                             <!--<option ng-repeat="item in ctrl.items" value="{{ item.price }}" >{{ item.name }} </option>-->
                         </div>
 
@@ -87,7 +87,7 @@
                             <th>Amount</th>
                             <th>Paid</th>
                         </tr>
-                        <tr ng-repeat="pay in ctrl.membership_details.payments | orderBy: 'start_date'">
+                        <tr ng-repeat="pay in ctrl.membership_details.payments | orderBy: '-start_date'">
                             <td>{{ pay.start_date | date:'yyyy-MM-dd' }}</td>
                             <td>{{ pay.end_date | date:'yyyy-MM-dd' }}</td>
                             <td>{{ pay.amount }}</td>

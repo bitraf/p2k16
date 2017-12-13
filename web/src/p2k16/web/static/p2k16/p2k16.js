@@ -280,7 +280,8 @@
                 resolve: {
                     items: function () {
                         return self.items;
-                    }
+                    },
+                    membership_details: self.membership_details
                 }
             });
 
@@ -301,19 +302,20 @@
         }
     }
 
-    function ChangeMembershipController($scope, $uibModalInstance, items) {
+    function ChangeMembershipController($scope, $uibModalInstance, membership_details) {
         var self = this;
 
         $scope.items = getMembershipTypes();
 
-        self.items = items;
-        self.selected = {
-            item: self.items[0]
-        };
+        $scope.selectedItem = $scope.items[0];
+        for (var i=0; i < $scope.items.length; ++i)
+            if ($scope.items[i].price == membership_details.fee) {
+                $scope.selectedItem = $scope.items[i];
+                break;
+            }
 
         self.ok = function () {
-            self.selected = $scope.membershipList;
-            $uibModalInstance.close(self.selected);
+            $uibModalInstance.close($scope.selectedItem);
         };
 
         self.cancel = function () {

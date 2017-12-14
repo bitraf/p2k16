@@ -220,18 +220,42 @@ def member_set_credit_card(account, stripe_token):
                                  "problem persists.")
 
 
+def member_cancel_membership(account):
+    try:
+        # Update local db
+        membership = get_membership(account)
+        db.session.delete(membership)
+
+        # Update stripe
+        stripe_customer_id = get_stripe_customer(account)
+
+        for sub in stripe.Subscription.list(customer=stripe_customer_id):
+            sub.delete(at_period_end=True)
+
+        db.session.commit()
+
+    except stripe.error.StripeError as e:
+        app.logger.error("Stripe error: " + repr(e.json_body))
+
+        raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")
+
+
 def member_set_membership(account, membership_plan, membership_price):
     # TODO: Remove membership_price and look up price from model
 
     try:
         membership = get_membership(account)
 
+        if membership_plan == 'none':
+            member_cancel_membership(account)
+            return True
+
         # --- Update membership in local db ---
         if membership is not None:
             if membership.fee is membership_price:
                 # Nothing's changed.
                 app.logger.info("No membership change for user=%r, type=%r, amount=%r" % (
-                account.username, membership_plan, membership_price))
+                    account.username, membership_plan, membership_price))
                 return
             else:
                 membership.fee = membership_price
@@ -257,7 +281,7 @@ def member_set_membership(account, membership_plan, membership_price):
         db.session.commit()
 
         app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
-        account.username, membership_plan, membership_price))
+            account.username, membership_plan, membership_price))
         return True
 
     except stripe.error.CardError as e:

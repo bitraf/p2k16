@@ -26,7 +26,7 @@
                     </table>
 
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <!-- Get stripe token. -->
                             <button stripe-checkout="ctrl.doCheckout"
                                     data-key="{{ ctrl.membership_details.stripe_pubkey }}"
@@ -40,10 +40,6 @@
 
                         <div class="col-md-4">
                             <button type="button" class="btn btn-info" ng-click="ctrl.openChangeMembership()">Change membership</button>
-                        </div>
-
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-warning" ng-click="ctrl.openCancelMembership()">Cancel membership</button>
                         </div>
                     </div>
 

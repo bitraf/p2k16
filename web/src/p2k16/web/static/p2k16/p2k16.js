@@ -296,10 +296,6 @@
                 $log.info('Modal dismissed at: ' + new Date());
             });
         };
-
-        self.openCancelMembership = function() {
-            alert('Not implemented.');
-        }
     }
 
     function ChangeMembershipController($scope, $uibModalInstance, membership_details) {

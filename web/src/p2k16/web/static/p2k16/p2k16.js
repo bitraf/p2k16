@@ -85,11 +85,19 @@
     /**
      * @constructor
      */
+    function P2k16Message(text, cssClass) {
+        this.text = text;
+        this.cssClass = cssClass;
+    }
+
+    /**
+     * @constructor
+     */
     function P2k16() {
         var self = this;
-        self.errors = [];
-        self.errors.dismiss = function (index) {
-            self.errors.splice(index, 1);
+        self.messages = [];
+        self.messages.dismiss = function (index) {
+            self.messages.splice(index, 1);
         };
 
         self.account = null;
@@ -110,21 +118,30 @@
             self.account = data || null;
         }
 
+        function addInfos(messages) {
+            return addMessages(messages, "alert-info");
+        }
+
         function addErrors(messages) {
-            function add(m) {
-                m = typeof(m) === "string" ? m : "";
-                m = m.trim();
-                if (m.length) {
-                    self.errors.push(m);
+            return addMessages(messages, "alert-danger");
+        }
+
+        function addMessages(messages, cssClass) {
+            function add(text, cssClass) {
+                text = typeof(text) === "string" ? text : "";
+                text = text.trim();
+                if (text.length) {
+                    self.messages.push(new P2k16Message(text, cssClass));
                 }
             }
 
             if (typeof messages === 'string') {
-                add(messages);
+                add(messages, cssClass);
             }
             else {
                 angular.forEach(messages, add);
             }
+
         }
 
         if (window.p2k16.account) {
@@ -141,7 +158,8 @@
             setLoggedIn: setLoggedIn,
             hasRole: hasRole,
             addErrors: addErrors,
-            errors: self.errors
+            addInfos: addInfos,
+            messages: self.messages
         }
     }
 
@@ -228,10 +246,10 @@
     function getMembershipTypes() {
         // TODO: Move this to model
         return [
-            { plan: 'medlem1500', name: 'Filantropmedlemskap (1500 kr)', price: 1500 },
-            { plan: 'medlem500', name: 'Vanlig medlemskap (500 kr)', price: 500 },
-            { plan: 'medlem300', name: 'Støttemedlemskap (300 kr)', price: 300 },
-            { plan: 'none', name: 'Inaktiv (0 kr)', price: 0 }
+            {plan: 'medlem1500', name: 'Filantropmedlemskap (1500 kr)', price: 1500},
+            {plan: 'medlem500', name: 'Vanlig medlemskap (500 kr)', price: 500},
+            {plan: 'medlem300', name: 'Støttemedlemskap (300 kr)', price: 300},
+            {plan: 'none', name: 'Inaktiv (0 kr)', price: 0}
         ];
     }
 
@@ -246,6 +264,7 @@
             // Stripe takes a long time. Need a spinner
             document.body.appendChild(spinner.el)
         }
+
         function stopSpinner() {
             document.body.removeChild(spinner.el)
         }
@@ -260,16 +279,15 @@
 
         self.doCheckout = function (token) {
             startSpinner();
-            CoreDataService.membership_set_stripe_token(token).
-                then(function () {
-                    // Update membership_details from api
-                    updateDetails();
+            CoreDataService.membership_set_stripe_token(token).then(function () {
+                // Update membership_details from api
+                updateDetails();
             });
         };
 
         self.items = getMembershipTypes();
 
-        self.openChangeMembership = function() {
+        self.openChangeMembership = function () {
             var modalInstance = $uibModal.open({
                 animation: true,
                 ariaLabelledBy: 'modal-title',
@@ -287,9 +305,8 @@
 
             modalInstance.result.then(function (selectedItem) {
                 startSpinner();
-                CoreDataService.membership_set_membership(selectedItem).
-                    then(function () {
-                        updateDetails();
+                CoreDataService.membership_set_membership(selectedItem).then(function () {
+                    updateDetails();
                 });
 
             }, function () {
@@ -304,7 +321,7 @@
         $scope.items = getMembershipTypes();
 
         $scope.selectedItem = $scope.items[0];
-        for (var i=0; i < $scope.items.length; ++i)
+        for (var i = 0; i < $scope.items.length; ++i)
             if ($scope.items[i].price == membership_details.fee) {
                 $scope.selectedItem = $scope.items[i];
                 break;
@@ -433,12 +450,13 @@
     }
 
     /**
-     * @param $http
      * @param $location
+     * @param {P2k16} P2k16
+     * @param {CoreDataService} CoreDataService
      * @param {AuthzService} AuthzService
      * @constructor
      */
-    function UnauthenticatedController($location, $http, AuthzService) {
+    function UnauthenticatedController($location, P2k16, CoreDataService, AuthzService) {
         var self = this;
         self.signupForm = {};
         self.loginForm = {
@@ -447,8 +465,10 @@
         };
 
         self.registerAccount = function () {
-            $http.post('/service/register-account', self.signupForm).then(function () {
-            }).catch(angular.identity);
+            CoreDataService.register_account(self.signupForm).then(function (res) {
+                self.signupForm = {};
+                P2k16.addInfos("Account created, please log in.");
+            });
         };
 
         self.logIn = function () {

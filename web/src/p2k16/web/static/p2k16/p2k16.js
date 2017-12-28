@@ -48,7 +48,7 @@
             templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
                 accounts: CoreDataServiceResolvers.data_account_list,
-                company: _.constant({})
+                company: _.constant({active: true})
             }
         }).when("/admin/company/:company_id", {
             controller: AdminCompanyDetailController,

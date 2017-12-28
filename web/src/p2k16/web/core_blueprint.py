@@ -315,9 +315,9 @@ def _data_company_save():
     if not contact:
         raise P2k16UserException("No such account: {}".format(contact_id))
 
-    _id = request.json["id"]
+    _id = request.json.get("id", None)
 
-    if id:
+    if _id:
         company = Company.find_by_id(_id)
 
         if company is None:

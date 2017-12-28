@@ -73,6 +73,10 @@ CREATE VIEW p2k12.duplicate_emails AS
   HAVING count(email) > 1
   ORDER BY email;
 
+DELETE FROM public.company_employee_version;
+DELETE FROM public.company_employee;
+DELETE FROM public.company_version;
+DELETE FROM public.company;
 DELETE FROM public.circle_member_version;
 DELETE FROM public.circle_member;
 DELETE FROM public.circle_version;
@@ -80,8 +84,8 @@ DELETE FROM public.circle;
 DELETE FROM public.account_version;
 DELETE FROM public.account;
 
-INSERT INTO public.account (id, created_at, updated_at, username, email, password, name, phone)
-  SELECT *
+INSERT INTO public.account (id, created_at, updated_at, username, email, password, name)
+  SELECT id, created_at, updated_at, username, email, password, name
   FROM (
          WITH
              first_checkin AS (SELECT

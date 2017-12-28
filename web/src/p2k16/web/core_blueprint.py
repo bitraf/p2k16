@@ -124,7 +124,11 @@ def service_authz_login():
     account = Account.find_account_by_username(username)
     password = request.json['password']
 
-    if not account or not account.valid_password(password):
+    if not account:
+        app.logger.info("Login: Bad login attempt, no such user: {}".format(username))
+        raise P2k16UserException("Invalid credentials")
+    if not account.valid_password(password):
+        app.logger.info("Login: Bad login attempt, wrong password: {}".format(username))
         raise P2k16UserException("Invalid credentials")
     circles = account_management.get_circles_for_account(account.id)
 

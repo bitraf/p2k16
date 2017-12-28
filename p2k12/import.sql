@@ -117,7 +117,7 @@ SELECT setval('account_id_seq', (SELECT max(id) + 1
 DO $$
 DECLARE
   trygvis_id BIGINT;
-  admins_id  BIGINT;
+  admin_id  BIGINT;
   door_id    BIGINT;
   now        TIMESTAMP := (SELECT current_timestamp);
 BEGIN
@@ -128,9 +128,9 @@ BEGIN
   INTO trygvis_id;
 
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now, trygvis_id, now, trygvis_id, 'admins', 'Admin')
+    (now, trygvis_id, now, trygvis_id, 'admin', 'Admin')
   RETURNING id
-    INTO admins_id;
+    INTO admin_id;
 
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
     (now, trygvis_id, now, trygvis_id, 'door', 'Door access')
@@ -138,7 +138,7 @@ BEGIN
     INTO door_id;
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
-    (now, trygvis_id, now, trygvis_id, trygvis_id, admins_id);
+    (now, trygvis_id, now, trygvis_id, trygvis_id, admin_id);
 
   -- TODO: insert all members with valid memberships into the door group
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES

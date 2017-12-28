@@ -5,6 +5,7 @@ p2k16_resources.admin_company_detail_html = "/static/admin-company-detail.html";
 p2k16_resources.admin_company_list_html = "/static/admin-company-list.html";
 p2k16_resources.admin_html = "/static/admin.html";
 p2k16_resources.core_data_service_js = "/static/core-data-service.js";
+p2k16_resources.door_data_service_js = "/static/door-data-service.js";
 p2k16_resources.front_page_html = "/static/front-page.html";
 p2k16_resources.membership_html = "/static/membership.html";
 p2k16_resources.p2k16_header_html = "/static/p2k16-header.html";

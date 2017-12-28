@@ -75,7 +75,9 @@ CREATE VIEW p2k12.duplicate_emails AS
 
 DELETE FROM public.circle_member_version;
 DELETE FROM public.circle_member;
+DELETE FROM public.circle_version;
 DELETE FROM public.circle;
+DELETE FROM public.account_version;
 DELETE FROM public.account;
 
 INSERT INTO public.account (id, created_at, updated_at, username, email, password, name, phone)
@@ -110,4 +112,36 @@ INSERT INTO public.account (id, created_at, updated_at, username, email, passwor
          ORDER BY id ASC
        ) AS account
   ORDER BY account.username;
-select setval('account_id_seq', (select max(id) + 1 from account));
+SELECT setval('account_id_seq', (SELECT max(id) + 1
+                                 FROM account));
+DO $$
+DECLARE
+  trygvis_id BIGINT;
+  admins_id  BIGINT;
+  door_id    BIGINT;
+  now        TIMESTAMP := (SELECT current_timestamp);
+BEGIN
+
+  SELECT id
+  FROM account
+  WHERE username = 'trygvis'
+  INTO trygvis_id;
+
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
+    (now, trygvis_id, now, trygvis_id, 'admins', 'Admin')
+  RETURNING id
+    INTO admins_id;
+
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
+    (now, trygvis_id, now, trygvis_id, 'door', 'Door access')
+  RETURNING id
+    INTO door_id;
+
+  INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
+    (now, trygvis_id, now, trygvis_id, trygvis_id, admins_id);
+
+  -- TODO: insert all members with valid memberships into the door group
+  INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
+    (now, trygvis_id, now, trygvis_id, trygvis_id, door_id);
+END;
+$$;

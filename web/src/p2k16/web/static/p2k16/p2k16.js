@@ -235,11 +235,18 @@
         }
     }
 
-    function FrontPageController() {
+    /**
+     * @param {DoorDataService} DoorDataService
+     * @param {P2k16} P2k16
+     */
+    function FrontPageController(DoorDataService, P2k16) {
         var self = this;
 
         self.openDoor = function (door) {
-            $http.post('/service/door/open', {door: door});
+            DoorDataService.open_door({door: door}).then(function (res) {
+                var msg = res.message || "The door is open";
+                P2k16.addInfos(msg);
+            });
         }
     }
 
@@ -483,6 +490,7 @@
         .run(run)
         .service("P2k16", P2k16)
         .service("CoreDataService", CoreDataService)
+        .service("DoorDataService", DoorDataService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
         .directive("p2k16Header", p2k16HeaderDirective);

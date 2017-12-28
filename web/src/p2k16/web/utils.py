@@ -234,8 +234,8 @@ class DataServiceTool(object):
 
             s += "\n"
 
-        s += "var CoreDataServiceResolvers = {};\n"
+        s += "var {}Resolvers = {{}};\n".format(self.name)
         for (name, fun) in resolvers:
-            s += "CoreDataServiceResolvers.{} = ".format(name) + fun
+            s += "{}Resolvers.{} = ".format(self.name, name) + fun
 
         return s

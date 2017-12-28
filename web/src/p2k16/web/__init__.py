@@ -127,9 +127,10 @@ app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)
 app.register_blueprint(membership_blueprint.membership)
 
-with open(os.path.join(app.static_folder, core_blueprint.registry.jsName), "w") as f:
-    # print("app.static_folder={}".format(app.static_folder))
-    f.write(core_blueprint.registry.generate())
+for registry in [core_blueprint.registry, door_blueprint.registry]:
+    with open(os.path.join(app.static_folder, registry.jsName), "w") as f:
+        # print("app.static_folder={}".format(app.static_folder))
+        f.write(registry.generate())
 
 with app.test_request_context():
     static = os.path.normpath(app.static_folder)

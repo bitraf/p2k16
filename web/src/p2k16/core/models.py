@@ -1,3 +1,4 @@
+import crypt
 import string
 import uuid
 from datetime import datetime, timedelta
@@ -153,8 +154,14 @@ class Account(TimestampMixin, P2k16Mixin, db.Model):
         self.reset_token_validity = None
 
     def valid_password(self, password) -> bool:
-        bs = bytes(self._password, 'utf-8')
-        return flask_bcrypt.check_password_hash(bs, password)
+        if self.password.startswith("$2b$"):
+            bs = bytes(self._password, 'utf-8')
+            return flask_bcrypt.check_password_hash(bs, password)
+        if self.password.startswith("$6$"):
+            salt = self.password
+            crypted = crypt.crypt(password, salt)
+            return crypted == self._password
+        return False
 
     def __repr__(self):
         return '<Account:%r, username=%s>' % (self.id, self.username)
@@ -283,6 +290,7 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     def __repr__(self):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
             self.id, self.created_by_id, self.start_date, self.end_date, self.amount)
+
 
 class StripeCustomer(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
     __tablename__ = 'stripe_customer'

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-psql "user=p2k16-admin password=p2k16-admin dbname=p2k16 host=localhost" \
+psql "user=p2k16-flyway password=p2k16-flyway dbname=p2k16 host=localhost" \
     -1 \
     -f $(dirname $0)/import.sql

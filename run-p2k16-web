@@ -3,6 +3,8 @@
 set -e
 set -x
 
+basedir=$(cd $(dirname $0); pwd)
+
 if [[ ! -d env ]]
 then
     virtualenv -p python3 env
@@ -18,7 +20,7 @@ cd ..
 
 export FLASK_APP=p2k16.web.server
 export FLASK_DEBUG=1
-export P2K16_CONFIG=`pwd`/web/config-local.cfg
+export P2K16_CONFIG=$basedir/infrastructure/config-local.cfg
 
 # Use the Stripe non-prod API
 export WEBHOOK_SECRET='test'

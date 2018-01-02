@@ -3,6 +3,8 @@
 set -e
 set -x
 
+basedir=$(cd $(dirname $0); pwd)
+
 if [[ ! -d env ]]
 then
     virtualenv -p python3 env
@@ -15,9 +17,9 @@ env/bin/pip install -r requirements.txt
 
 export FLASK_APP=p2k16.web.server
 export FLASK_DEBUG=1
-export P2K16_CONFIG=`pwd`/web/config-test.cfg
+export P2K16_CONFIG=$(dirname $0)/infrastructure/config-test.cfg
 export WEBHOOK_SECRET='test'
 export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
 export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 
-env/bin/pytest
+exec env/bin/pytest

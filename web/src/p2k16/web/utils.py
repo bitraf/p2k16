@@ -38,7 +38,11 @@ class ResourcesTool(object):
     @staticmethod
     def scan(path, dir: Dir):
         # print("scanning {}, dir={}".format(path, dir.name))
-        with os.scandir(path) as it:
+        # This is a python3.6 ism
+        # with os.scandir(path) as it:
+        # but we run py3.5 in prod..
+        it = os.scandir(path)
+        if True:
             for entry in it:
                 if entry.name.startswith("."):
                     continue

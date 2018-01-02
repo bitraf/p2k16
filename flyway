@@ -3,6 +3,8 @@
 set -e
 
 v=4.2.0
+basedir="$(cd $(dirname $0); pwd)"
+cd "$basedir"
 
 if [ ! -d flyway-$v ]
 then

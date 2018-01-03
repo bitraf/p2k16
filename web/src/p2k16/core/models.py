@@ -147,7 +147,7 @@ class Account(TimestampMixin, P2k16Mixin, db.Model):
         return self._password
 
     @password.setter
-    def _set_password(self, plaintext):
+    def password(self, plaintext):
         pw = flask_bcrypt.generate_password_hash(plaintext)
         self._password = pw.decode('utf-8')
         self.reset_token = None

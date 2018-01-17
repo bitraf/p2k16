@@ -30,9 +30,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 p2k16_config = os.getenv('P2K16_CONFIG')
 if p2k16_config is not None:
+    config_default = os.path.join(os.path.dirname(p2k16_config), "config-default.cfg")
+
+    app.logger.info("Loading defaults from {}".format(config_default))
+    app.config.from_pyfile(config_default)
+
     app.logger.info("Loading config from {}".format(p2k16_config))
-    app.config.from_envvar('P2K16_CONFIG')
-    app.logger.info("current dir = {}".format(os.path.abspath(os.curdir)))
+    app.config.from_pyfile(p2k16_config)
 
 # Allow the environment variables to override by loading them lastly
 app.config.from_object(Configuration)

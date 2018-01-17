@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euo pipefail
+
+exec ./flyway -configFile=/etc/p2k16/flyway.conf "${@}"

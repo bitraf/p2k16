@@ -37,4 +37,4 @@ app.logger.addHandler(handler)
 
 auth.login_manager.init_app(app)
 
-door.init()
+door.init(app.config)

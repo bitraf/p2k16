@@ -2,35 +2,35 @@ DROP SCHEMA IF EXISTS p2k12 CASCADE;
 CREATE SCHEMA p2k12;
 
 CREATE TABLE p2k12.accounts (
-  id          BIGINT,
-  name        TEXT,
-  type        TEXT,
-  last_billed TEXT
+  id          integer,
+  name        text,
+  type        text,
+  last_billed timestamptz
 );
 
 CREATE TABLE p2k12.auth (
-  account BIGINT,
-  realm   TEXT,
-  data    TEXT
+  account integer,
+  realm   text,
+  data    text
 );
 
 CREATE TABLE p2k12.members (
-  id           BIGINT,
-  date         TEXT,
-  full_name    TEXT,
-  email        TEXT,
-  account      BIGINT,
-  organization TEXT,
-  price        TEXT,
-  recurrence   TEXT,
-  flag         TEXT
+  id           integer,
+  date         timestamptz,
+  full_name    text,
+  email        text,
+  account      integer,
+  organization text,
+  price        numeric(8,0),
+  recurrence   text,
+  flag         text
 );
 
 CREATE TABLE p2k12.checkins (
-  id      BIGINT    NOT NULL,
-  account BIGINT    NOT NULL,
-  date    TIMESTAMP NOT NULL,
-  type    TEXT      NOT NULL
+  id      integer       NOT NULL,
+  account integer       NOT NULL,
+  date    timestamptz   NOT NULL,
+  type    text          NOT NULL
 );
 
 \copy p2k12.accounts from 'p2k12/p2k12_accounts.csv' with csv header
@@ -84,6 +84,8 @@ DELETE FROM public.circle;
 DELETE FROM public.account_version;
 DELETE FROM public.account;
 
+-- TODO: import accounts without auth records
+-- TODO: p2k12 active_members.price -> p2k16 membership.fee
 INSERT INTO public.account (id, created_at, updated_at, username, email, password, name)
   SELECT id, created_at, updated_at, username, email, password, name
   FROM (
@@ -92,30 +94,35 @@ INSERT INTO public.account (id, created_at, updated_at, username, email, passwor
                                  account,
                                  min(checkins.date) date
                                FROM p2k12.checkins
+                               GROUP BY account),
+             last_member AS (SELECT
+                                 account,
+                                 max(members.date) date
+                               FROM p2k12.members
                                GROUP BY account)
          SELECT
-           m.account :: BIGINT AS id,
-           fc.date             AS created_at,
-           fc.date             AS updated_at,
-           a.name              AS username,
-           m.email             AS email,
-           auth.data           AS password,
-           m.full_name         AS name,
-           m.price             AS price
-         --     m.recurrence,
+           m.account    AS id,
+           fc.date      AS created_at,
+           lm.date      AS updated_at,
+           a.name       AS username,
+           m.email      AS email,
+           auth.data    AS password,
+           m.full_name  AS name,
+           m.price      AS price
          FROM p2k12.active_members m
            INNER JOIN p2k12.accounts a ON m.account = a.id
            INNER JOIN p2k12.auth auth ON a.id = auth.account
-           INNER JOIN first_checkin fc ON fc.account = m.account
-         WHERE 1 = 1
+           INNER JOIN first_checkin fc ON a.id = fc.account
+           INNER JOIN last_member lm ON a.id = lm.account
+         WHERE true
                AND auth.realm = 'door'
                AND a.type = 'user'
-               -- TODO: there shouldn't be any duplicate email addresses
                AND m.email NOT IN (SELECT email
                                    FROM p2k12.duplicate_emails)
          ORDER BY id ASC
        ) AS account
   ORDER BY account.username;
+
 SELECT setval('account_id_seq', (SELECT max(id) + 1
                                  FROM account));
 DO $$
@@ -123,7 +130,6 @@ DECLARE
   trygvis_id BIGINT;
   admin_id  BIGINT;
   door_id    BIGINT;
-  now        TIMESTAMP := (SELECT current_timestamp);
 BEGIN
 
   SELECT id
@@ -132,20 +138,36 @@ BEGIN
   INTO trygvis_id;
 
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now, trygvis_id, now, trygvis_id, 'admin', 'Admin')
+    (now(), trygvis_id, now(), trygvis_id, 'admin', 'Admin')
   RETURNING id
     INTO admin_id;
 
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now, trygvis_id, now, trygvis_id, 'door', 'Door access')
+    (now(), trygvis_id, now(), trygvis_id, 'door', 'Door access')
   RETURNING id
     INTO door_id;
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
-    (now, trygvis_id, now, trygvis_id, trygvis_id, admin_id);
+    (now(), trygvis_id, now(), trygvis_id, trygvis_id, admin_id);
 
-  -- TODO: insert all members with valid memberships into the door group
-  INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
-    (now, trygvis_id, now, trygvis_id, trygvis_id, door_id);
+  INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle)
+  WITH paying AS (
+      SELECT
+          am.account,
+          (0 < am.price OR am.flag IS NOT DISTINCT FROM 'm_office') AS paying
+      FROM p2k12.active_members am
+  )
+  SELECT
+      now()         AS created_at,
+      trygvis_id    AS created_by,
+      now()         AS updated_at,
+      trygvis_id    AS updated_by,
+      a.id          AS account,
+      door_id       AS circle
+  FROM public.account a
+  INNER JOIN paying p ON a.id = p.account
+  WHERE p.paying
+  ORDER BY a.id
+  ;
 END;
 $$;

@@ -1,5 +1,10 @@
 # Getting started without Docker
 
+Install:
+
+- virtualenv
+- bower
+
 Creating the database:
 
     # sudo -u postgres psql -f database-setup.sql

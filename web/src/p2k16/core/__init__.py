@@ -1,7 +1,10 @@
+import logging
 import os
 
 from flask import Flask
 from flask_env import MetaFlaskEnv
+
+logger = logging.getLogger(__name__)
 
 
 class Configuration(metaclass=MetaFlaskEnv):
@@ -22,21 +25,27 @@ class P2k16TechnicalException(Exception):
         self.msg = msg
 
 
-app = Flask(__name__, static_folder="../web/static")
+def make_app():
+    import flask.logging
+    # The debug log format is insane
+    flask.logging.DEBUG_LOG_FORMAT = flask.logging.PROD_LOG_FORMAT
+    app = Flask("p2k16", static_folder="web/static")
 
-app.config.BOWER_KEEP_DEPRECATED = False
-app.config['BOWER_COMPONENTS_ROOT'] = '../web/bower_components'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config.BOWER_KEEP_DEPRECATED = False
+    app.config['BOWER_COMPONENTS_ROOT'] = '../web/bower_components'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-p2k16_config = os.getenv('P2K16_CONFIG')
-if p2k16_config is not None:
-    config_default = os.path.join(os.path.dirname(p2k16_config), "config-default.cfg")
+    p2k16_config = os.getenv('P2K16_CONFIG')
+    if p2k16_config:
+        config_default = os.path.join(os.path.dirname(p2k16_config), "config-default.cfg")
 
-    app.logger.info("Loading defaults from {}".format(config_default))
-    app.config.from_pyfile(config_default)
+        logger.info("Loading defaults from {}".format(config_default))
+        app.config.from_pyfile(config_default)
 
-    app.logger.info("Loading config from {}".format(p2k16_config))
-    app.config.from_pyfile(p2k16_config)
+        logger.info("Loading config from {}".format(p2k16_config))
+        app.config.from_pyfile(p2k16_config)
 
-# Allow the environment variables to override by loading them lastly
-app.config.from_object(Configuration)
+    # Allow the environment variables to override by loading them lastly
+    app.config.from_object(Configuration)
+
+    return app

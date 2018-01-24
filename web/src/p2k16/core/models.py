@@ -5,12 +5,19 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import flask_bcrypt
+from flask_sqlalchemy import SQLAlchemy
 from p2k16.core import P2k16TechnicalException
-from p2k16.core.database import db
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+
+db = SQLAlchemy()
+
+from sqlalchemy_continuum.plugins import FlaskPlugin
+from sqlalchemy_continuum import make_versioned
+
+make_versioned(plugins=[FlaskPlugin()], user_cls=None)
 
 
 class ModelSupport(object):
@@ -356,3 +363,21 @@ class CompanyEmployee(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
             filter(CompanyEmployee.company_id == company_id,
                    CompanyEmployee.account_id == account_id) \
             .one_or_none()
+
+
+from itertools import chain
+from sqlalchemy import event
+
+
+@event.listens_for(db.session, 'before_flush')
+def receive_before_flush(session, flush_context, instances):
+    print("before flush!")
+    print("flush_context: {}".format(flush_context))
+    print("instances: {}".format(len(instances) if instances else "none!!"))
+
+    for obj in chain(session.new, session.dirty):
+        if session.is_modified(obj):
+            model_support.before_flush(obj)
+
+
+db.configure_mappers()

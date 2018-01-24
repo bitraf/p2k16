@@ -1,6 +1,11 @@
+import logging
+
 import flask_login
+
 from p2k16.core import account_management
 from p2k16.core.models import Account
+
+logger = logging.getLogger(__name__)
 
 login_manager = flask_login.LoginManager()
 
@@ -14,8 +19,7 @@ class AuthenticatedAccount(flask_login.UserMixin):
 
 @login_manager.user_loader
 def account_loader(account_id):
-    import flask
-    flask.current_app.logger.info("Loading account")
+    logger.info("Loading account")
 
     try:
         account = Account.find_account_by_id(account_id)
@@ -27,7 +31,7 @@ def account_loader(account_id):
 
         return AuthenticatedAccount(account, circles)
     finally:
-        flask.current_app.logger.info("account loaded")
+        logger.info("account loaded")
 
 
 @login_manager.request_loader

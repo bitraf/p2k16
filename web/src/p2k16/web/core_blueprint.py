@@ -1,16 +1,19 @@
 import io
+import logging
 import os
 from typing import List
 
 import flask
 import flask_login
-from flask import abort, Blueprint, render_template, jsonify, request
-from p2k16.core import app, P2k16UserException
-from p2k16.core import auth, account_management
-from p2k16.core.database import db
+from flask import current_app, abort, Blueprint, render_template, jsonify, request
+
+from p2k16.core import P2k16UserException, auth, account_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
 from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
+from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
+
+logger = logging.getLogger(__name__)
 
 id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
@@ -125,14 +128,14 @@ def service_authz_login():
     password = request.json['password']
 
     if not account:
-        app.logger.info("Login: Bad login attempt, no such user: {}".format(username))
+        logger.info("Login: Bad login attempt, no such user: {}".format(username))
         raise P2k16UserException("Invalid credentials")
     if not account.valid_password(password):
-        app.logger.info("Login: Bad login attempt, wrong password: {}".format(username))
+        logger.info("Login: Bad login attempt, wrong password: {}".format(username))
         raise P2k16UserException("Invalid credentials")
     circles = account_management.get_circles_for_account(account.id)
 
-    app.logger.info("Login: username={}, circles={}".format(username, circles))
+    logger.info("Login: username={}, circles={}".format(username, circles))
 
     authenticated_account = auth.AuthenticatedAccount(account, circles)
     flask_login.login_user(authenticated_account)
@@ -155,7 +158,7 @@ def register_account():
                                             request.json["password"],
                                             request.json.get("phone", None))
     db.session.commit()
-    app.logger.info("new account: {}/{}".format(u.username, u.id))
+    logger.info("new account: {}/{}".format(u.username, u.id))
     return jsonify({})
 
 
@@ -323,14 +326,14 @@ def _data_company_save():
         if company is None:
             abort(404)
 
-        app.logger.info("Updating company: {}".format(company))
+        logger.info("Updating company: {}".format(company))
         company.name = request.json["name"]
         company.contact_id = contact.id
         company.active = request.json["active"]
     else:
         name = request.json["name"]
         active = request.json["active"]
-        app.logger.info("Registering new company: {}".format(name))
+        logger.info("Registering new company: {}".format(name))
         company = Company(name, contact, active)
 
     db.session.add(company)
@@ -370,7 +373,7 @@ def login():
 
     if account.valid_password(password):
         circles = account_management.get_circles_for_account(account.id)
-        app.logger.info("User {} logged in, circles={}".format(username, circles))
+        logger.info("User {} logged in, circles={}".format(username, circles))
         authenticated_account = auth.AuthenticatedAccount(account, circles)
         flask_login.login_user(authenticated_account)
         return flask.redirect(flask.url_for('core.index'))
@@ -409,7 +412,7 @@ def set_new_password():
 
     password = flask.request.form['password']
     account.password = password
-    app.logger.info('Updating password for account={}'.format(account))
+    logger.info('Updating password for account={}'.format(account))
     db.session.commit()
     return flask.redirect(flask.url_for('.login'))
 
@@ -483,7 +486,7 @@ core_service.content = None
 
 @core.route("/p2k16_resources.js")
 def p2k16_resources():
-    static = os.path.normpath(app.static_folder)
+    static = os.path.normpath(current_app.static_folder)
     buf = io.StringIO()
     ResourcesTool.run(static, buf)
 

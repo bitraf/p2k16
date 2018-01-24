@@ -1,9 +1,11 @@
+import logging
 from datetime import datetime
 import os
 import stripe
-from p2k16.core.models import Account, MembershipPayment, model_support, Membership, StripeCustomer
-from p2k16.core.database import db
-from p2k16.core import app, P2k16UserException
+from p2k16.core.models import db, Account, MembershipPayment, model_support, Membership, StripeCustomer
+from p2k16.core import P2k16UserException
+
+logger = logging.getLogger(__name__)
 
 
 def paid_members():
@@ -58,7 +60,7 @@ def find_account_from_stripe_customer(stripe_customer_id):
 
 
 def parse_stripe_event(event):
-    app.logger.info("Received stripe event: id={id}, type={type}".format(id=event.id, type=event.type))
+    logger.info("Received stripe event: id={id}, type={type}".format(id=event.id, type=event.type))
 
     if event.type == 'invoice.created':
         handle_invoice_created(event)
@@ -173,13 +175,13 @@ def member_set_credit_card(account, stripe_token):
             )
             stripe_customer_id = StripeCustomer(cu.stripe_id)
 
-            app.logger.info("Created customer for user=%r" % account.username)
+            logger.info("Created customer for user=%r" % account.username)
         else:
             # Get customer object
             cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
 
             if cu is None or (hasattr(cu, 'deleted') and cu.deleted):
-                app.logger.error("Stripe customer does not exist. This should not happen! account=%r, stripe_id=%r" %
+                logger.error("Stripe customer does not exist. This should not happen! account=%r, stripe_id=%r" %
                                  (account.username, stripe_token))
                 raise P2k16UserException("Set credit card invalid state. Contact kasserer@bitraf.no")
 
@@ -202,19 +204,19 @@ def member_set_credit_card(account, stripe_token):
             if invoice.paid is False:
                 invoice.pay()
 
-        app.logger.info("Successfully updated credit card for user=%r" % account.username)
+        logger.info("Successfully updated credit card for user=%r" % account.username)
         return True
 
     except stripe.error.CardError as e:
         err = e.json_body.get('error', {})
         msg = err.get('message')
 
-        app.logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
+        logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
 
         raise P2k16UserException("Error updating credit card: %r" % msg)
 
     except stripe.error.StripeError as e:
-        app.logger.error("Stripe error: " + repr(e.json_body))
+        logger.error("Stripe error: " + repr(e.json_body))
 
         raise P2k16UserException("Error updating credit card due to stripe error. Contact kasserer@bitraf.no if the "
                                  "problem persists.")
@@ -235,7 +237,7 @@ def member_cancel_membership(account):
         db.session.commit()
 
     except stripe.error.StripeError as e:
-        app.logger.error("Stripe error: " + repr(e.json_body))
+        logger.error("Stripe error: " + repr(e.json_body))
 
         raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")
 
@@ -254,7 +256,7 @@ def member_set_membership(account, membership_plan, membership_price):
         if membership is not None:
             if membership.fee is membership_price:
                 # Nothing's changed.
-                app.logger.info("No membership change for user=%r, type=%r, amount=%r" % (
+                logger.info("No membership change for user=%r, type=%r, amount=%r" % (
                     account.username, membership_plan, membership_price))
                 return
             else:
@@ -280,7 +282,7 @@ def member_set_membership(account, membership_plan, membership_price):
         db.session.add(membership)
         db.session.commit()
 
-        app.logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
+        logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
             account.username, membership_plan, membership_price))
         return True
 
@@ -288,11 +290,11 @@ def member_set_membership(account, membership_plan, membership_price):
         err = e.json_body.get('error', {})
         msg = err.get('message')
 
-        app.logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
+        logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
 
         raise P2k16UserException("Error charging credit card: %r" % msg)
 
     except stripe.error.StripeError as e:
-        app.logger.error("Stripe error: " + repr(e.json_body))
+        logger.error("Stripe error: " + repr(e.json_body))
 
         raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")

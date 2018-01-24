@@ -1,10 +1,13 @@
+import logging
 import string
 from typing import Optional, List
 
 import flask
-from p2k16.core import P2k16UserException, app
-from p2k16.core.database import db
-from p2k16.core.models import Account, Circle, CircleMember
+
+from p2k16.core import P2k16UserException
+from p2k16.core.models import db, Account, Circle, CircleMember
+
+logger = logging.getLogger(__name__)
 
 
 def accounts_in_circle(circle_id):
@@ -53,7 +56,7 @@ def _check_is_circle_admin(circle: Circle, admin: Account):
 def add_account_to_circle(account_id, circle_id, admin_id):
     (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
 
-    app.logger.info("Adding %s to circle %s, issuer=%s" % (account.username, circle.name, admin.username))
+    logger.info("Adding %s to circle %s, issuer=%s" % (account.username, circle.name, admin.username))
 
     _check_is_circle_admin(circle, admin)
 
@@ -63,20 +66,20 @@ def add_account_to_circle(account_id, circle_id, admin_id):
 def remove_account_from_circle(account_id, circle_id, admin_id):
     (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
 
-    app.logger.info("Removing %s from circle %s, issuer=%s" % (account.username, circle.name, admin.username))
+    logger.info("Removing %s from circle %s, issuer=%s" % (account.username, circle.name, admin.username))
 
     _check_is_circle_admin(circle, admin)
 
     cm = CircleMember.query.filter_by(account_id=account.id, circle_id=circle.id).one_or_none()
 
-    app.logger.info("cm={}".format(cm))
+    logger.info("cm={}".format(cm))
 
     if cm:
         db.session.delete(cm)
 
 
 def start_reset_password(username: string) -> Optional[Account]:
-    app.logger.info('Resetting password for {}'.format(username))
+    logger.info('Resetting password for {}'.format(username))
 
     account = Account.find_account_by_username(username)
 
@@ -84,13 +87,13 @@ def start_reset_password(username: string) -> Optional[Account]:
         account = Account.find_account_by_email(username)
 
     if account is None:
-        app.logger.info('Could not find account by username or email: {}'.format(username))
+        logger.info('Could not find account by username or email: {}'.format(username))
         return None
 
     account.create_new_reset_token()
 
     url = flask.url_for('core.reset_password_form', reset_token=account.reset_token, _external=True)
-    app.logger.info('Reset URL: {}'.format(url))
+    logger.info('Reset URL: {}'.format(url))
 
     # TODO: send email
     return account

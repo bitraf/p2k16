@@ -55,7 +55,7 @@ class DoorClient(object):
             logger.info('Opening door. username={}, door={}, open_time={}'.format(
                 account.username, door.key, door.open_time))
             db.session.add(AuditRecord('door/{}'.format(door.key), 'open'))
-            publishes.append((self.prefix + door.topic, door.open_time))
+            publishes.append((self.prefix + door.topic, str(door.open_time)))
 
         # Make sure everything has been written to the database before actually opening the door.
         db.session.flush()

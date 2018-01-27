@@ -26,14 +26,15 @@ class DoorClient(object):
 
         host = cfg["MQTT_HOST"]
         port = cfg["MQTT_PORT"]
-        keep_alive = 60
         username = cfg["MQTT_USERNAME"]
         password = cfg["MQTT_PASSWORD"]
+        self.prefix = cfg["MQTT_PREFIX"]
 
         logger.info("Connecting to {}:{}".format(host, port))
         logger.info("config: u={}, p={}".format(username, password))
         logger.info("config: u={}, p={}".format(type(username), type(password)))
 
+        keep_alive = 60
         c = mqtt.Client()
         c.username_pw_set(username=username, password=password)
         c.connect_async(host, port, keep_alive)
@@ -53,7 +54,7 @@ class DoorClient(object):
             logger.info('Opening door. username={}, door={}, open_time={}'.format(
                 account.username, door.key, door.open_time))
             db.session.add(AuditRecord('door/{}'.format(door.key), 'open'))
-            publishes.append((door.topic, door.open_time))
+            publishes.append((self.prefix + door.topic, door.open_time))
 
         # Make sure everything has been written to the database before actually opening the door.
         db.session.flush()
@@ -72,8 +73,8 @@ def create_client(cfg: typing.Mapping[str, str]) -> DoorClient:
 
 
 doors = {
-    "frontdoor": Door("front", "/bitraf/door/frontdoor/open", 10),
-    "2rd-floor": Door("2nd-floor", "/bitraf/door/2floor/open", 60),
-    "3rd-floor": Door("3rd-floor", "/bitraf/door/3floor/open", 60),
-    "4th-floor": Door("4th-floor", "/bitraf/door/4floor/open", 60),
+    "frontdoor": Door("front", "frontdoor/open", 10),
+    "2rd-floor": Door("2nd-floor", "2floor/open", 60),
+    "3rd-floor": Door("3rd-floor", "3floor/open", 60),
+    "4th-floor": Door("4th-floor", "4floor/open", 60),
 }

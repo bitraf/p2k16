@@ -17,20 +17,25 @@ logger = logging.getLogger(__name__)
 
 
 def configure_logging():
-    l = logging.getLogger("p2k16")
-
     log_format = '[%(asctime)s] [%(name)-30s] [%(levelname)-8s] %(message)s'
     formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S %z')
     handler = logging.StreamHandler(stream=sys.stdout)
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
 
+    l = logging.getLogger("p2k16")
+    [l.removeHandler(h) for h in l.handlers]
     l.addHandler(handler)
     l.setLevel(logging.DEBUG)
 
     l = logging.getLogger("sqlalchemy.engine.base.Engine")
+    [l.removeHandler(h) for h in l.handlers]
     l.addHandler(handler)
 
+    l = logging.getLogger("paho.mqtt")
+    l.setLevel(logging.DEBUG)
+    [l.removeHandler(h) for h in l.handlers]
+    l.addHandler(handler)
 
 app = make_app()
 
@@ -149,7 +154,7 @@ auth.login_manager.init_app(app)
 db.init_app(app)
 
 app.json_encoder = P2k16JSONEncoder
-app.door_client = door.create_client(app.config)
+app.config.door_client = door.create_client(app.config)
 
 from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
 

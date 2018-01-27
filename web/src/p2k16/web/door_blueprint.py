@@ -5,6 +5,7 @@ import p2k16.core.door
 import flask
 from flask import Blueprint, jsonify, request
 from p2k16.core import P2k16UserException
+from p2k16.core.door import DoorClient
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool
 
@@ -16,9 +17,9 @@ registry = DataServiceTool("DoorDataService", "door-data-service.js", door)
 door_form = {
     "type": "object",
     "properties": {
-        "door": {"type": "string", "minLength": 1},
+        "doors": {"type": "array", "minLength": 1, "items": {"type": "string"}},
     },
-    "required": ["door"]
+    "required": ["doors"]
 }
 
 
@@ -28,16 +29,19 @@ door_form = {
 def open_door():
     a = flask_login.current_user.account
 
-    door_name = request.json["door"]
+    dc = flask.current_app.config.door_client  # type: DoorClient
 
-    for d in p2k16.core.door.doors:
-        if d.key == door_name:
-            flask.current_app.door_client.open_doors(a, [d])
+    doors = []
 
-            db.session.commit()
-            return jsonify(dict())
+    for key in request.json["doors"]:
+        if key in p2k16.core.door.doors:
+            doors.append(p2k16.core.door.doors[key])
+        else:
+            raise P2k16UserException("Unknown door: {}".format(key))
 
-    raise P2k16UserException("Unknown door: {}".format(door_name))
+    dc.open_doors(a, doors)
+    db.session.commit()
+    return jsonify(dict())
 
 
 @registry.route('/door-data-service.js')

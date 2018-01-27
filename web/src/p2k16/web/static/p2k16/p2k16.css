@@ -12,3 +12,7 @@ div.error-container {
 .door-buttons .btn {
     width: 100%;
 }
+
+.row.door-buttons {
+    margin-bottom: 15px;
+}

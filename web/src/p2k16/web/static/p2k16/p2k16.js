@@ -242,8 +242,8 @@
     function FrontPageController(DoorDataService, P2k16) {
         var self = this;
 
-        self.openDoor = function (door) {
-            DoorDataService.open_door({door: door}).then(function (res) {
+        self.openDoors = function (doors) {
+            DoorDataService.open_door({doors: doors}).then(function (res) {
                 var msg = res.message || "The door is open";
                 P2k16.addInfos(msg);
             });

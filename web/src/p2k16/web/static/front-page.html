@@ -6,17 +6,23 @@
   </p>
 
   <h2>Open a door</h2>
-  <p class="door-buttons">
-    <button class="btn btn-default" ng-click="ctrl.openDoor('front-and-lab')">Frontdoor and lab</button>
-  </p>
-  <p class="door-buttons">
-    <button class="btn btn-default" ng-click="ctrl.openDoor('3rd-floor')">
-      3rd floor
-    </button>
-  </p>
-  <p class="door-buttons">
-    <button class="btn btn-default" ng-click="ctrl.openDoor('4th-floor')">
-      4th floor
-    </button>
-  </p>
+
+  <div class="row door-buttons">
+    <div class="col-md-6">
+      <button class="btn btn-default" ng-click="ctrl.openDoors(['frontdoor'])">Frontdoor only</button>
+    </div>
+    <div class="col-md-6 door-buttons">
+      <button class="btn btn-default" ng-click="ctrl.openDoors(['frontdoor', '2floor'])">Frontdoor and lab / 2nd floor</button>
+    </div>
+  </div>
+  <div class="row door-buttons">
+    <div class="col-md-12 door-buttons">
+      <button class="btn btn-default" ng-click="ctrl.openDoors(['3floor'])">3rd floor</button>
+    </div>
+  </div>
+  <div class="row door-buttons">
+    <div class="col-md-12 door-buttons">
+      <button class="btn btn-default" ng-click="ctrl.openDoors(['4floor'])">4th floor</button>
+    </div>
+  </div>
 </div>

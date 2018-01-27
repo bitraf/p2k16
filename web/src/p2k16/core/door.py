@@ -31,13 +31,14 @@ class DoorClient(object):
         self.prefix = cfg["MQTT_PREFIX"]
 
         logger.info("Connecting to {}:{}".format(host, port))
-        logger.info("config: u={}, p={}".format(username, password))
-        logger.info("config: u={}, p={}".format(type(username), type(password)))
+        logger.info("config: username={}, prefix={}".format(username, self.prefix))
 
         keep_alive = 60
         c = mqtt.Client()
-        c.username_pw_set(username=username, password=password)
+        if username:
+            c.username_pw_set(username=username, password=password)
         c.connect_async(host, port, keep_alive)
+        c.enable_logger()
         c.loop_start()
 
         self._client = c
@@ -60,7 +61,9 @@ class DoorClient(object):
         db.session.flush()
 
         # TODO: move this to a handler that runs after the transaction is done
+        # TODO: we can look at the responses and see if they where successfully sent/received.
         for topic, open_time in publishes:
+            logger.info("Sending message: {}: {}".format(topic, open_time))
             self._client.publish(topic, open_time)
 
 
@@ -72,9 +75,11 @@ def create_client(cfg: typing.Mapping[str, str]) -> DoorClient:
     return DoorClient(cfg)
 
 
-doors = {
-    "frontdoor": Door("front", "frontdoor/open", 10),
-    "2rd-floor": Door("2nd-floor", "2floor/open", 60),
-    "3rd-floor": Door("3rd-floor", "3floor/open", 60),
-    "4th-floor": Door("4th-floor", "4floor/open", 60),
-}
+_doors = [
+    Door("frontdoor", "frontdoor/open", 10),
+    Door("2floor", "2floor/open", 60),
+    Door("3floor", "3floor/open", 60),
+    Door("4floor", "4floor/open", 60),
+]
+
+doors = {d.key: d for d in _doors}

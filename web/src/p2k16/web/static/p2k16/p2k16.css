@@ -9,8 +9,8 @@ div.error-container {
     cursor: pointer;
 }
 
-.door-buttons .btn {
-    width: 100%;
+.row.door-buttons .btn {
+    white-space: normal;
 }
 
 .row.door-buttons {

@@ -1,13 +1,19 @@
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">P2k16</a>
-    </div>
+<nav class="navbar navbar-default" role="navigation">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" ng-click="isNavCollapsed = !isNavCollapsed">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#">P2k16</a>
+  </div>
+  <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
     <ul class="nav navbar-nav">
       <li ng-class="{'front-page': 'active'}[active]"><a href="#">Home</a></li>
       <li ng-class="{'membership': 'active'}[active]"><a href="#!membership">Membership</a></li>
-      <li ng-if="$root.p2k16.hasRole('admin')"
-          ng-class="{'admin': 'active'}[active]"><a href="#!admin">Admin</a></li>
+      <li ng-class="{'admin': 'active'}[active]" ng-if="$root.p2k16.hasRole('admin')">
+        <a href="#!admin">Admin</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">

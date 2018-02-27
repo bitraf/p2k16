@@ -205,6 +205,10 @@
                     $location.url("/?random=" + Date.now());
                 });
             };
+
+            $scope.isNavCollapsed = true;
+            $scope.isCollapsed = false;
+            $scope.isCollapsedHorizontal = false;
         }
 
         return {

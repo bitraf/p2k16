@@ -18,7 +18,6 @@ cd web
 bower install
 cd ..
 
-export FLASK_APP=p2k16.web.server
 export FLASK_DEBUG=1
 export P2K16_CONFIG=$basedir/infrastructure/config-local.cfg
 
@@ -27,5 +26,4 @@ export WEBHOOK_SECRET='test'
 export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
 export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 
-#exec env/bin/flask run
-exec env/bin/gunicorn -b 127.0.0.1:5000 p2k16.web:app
+exec env/bin/gunicorn -b 127.0.0.1:5000 p2k16.web.server:app

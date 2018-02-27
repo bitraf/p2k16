@@ -65,3 +65,44 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 # TODOs (fix at any time)
 
 * Drop BIGSERIAL on _version tables. Should be BIGINT instead.
+
+
+# Badge system
+
+## Motivation
+
+Enforce users have neccesary course for dangerous machines 
+Make holding courses more atractive
+Easier to find who knows what
+Encourage people to be active members at Bitraf
+
+## Examples
+
+lasercutter
+CNC-operator
+woodworking
+metalworking
+lathe
+
+soldering
+Kicad, Eagle
+SMT
+PCB-etching
+oscilloscope
+
+## Data model
+
+BadgeDescription
+
+    id/slug
+    title
+    icon
+    needs_certification
+
+UserBadge
+
+    account FOREIGN NON NULL
+    badge_description NULL
+    awarded_at NOT NULL
+    awarded_by NULL
+

@@ -37,6 +37,7 @@ def configure_logging():
     [l.removeHandler(h) for h in l.handlers]
     l.addHandler(handler)
 
+
 app = make_app()
 
 configure_logging()

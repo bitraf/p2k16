@@ -37,7 +37,10 @@ def make_app():
 
     p2k16_config = os.getenv('P2K16_CONFIG')
     if p2k16_config:
+        p2k16_config = os.path.abspath(p2k16_config)
+
         config_default = os.path.join(os.path.dirname(p2k16_config), "config-default.cfg")
+        config_default = os.path.abspath(config_default)
 
         logger.info("Loading defaults from {}".format(config_default))
         app.config.from_pyfile(config_default)

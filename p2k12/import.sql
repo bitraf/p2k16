@@ -82,7 +82,8 @@ DELETE FROM public.circle_member;
 DELETE FROM public.circle_version;
 DELETE FROM public.circle;
 DELETE FROM public.account_version;
-DELETE FROM public.account;
+TRUNCATE public.account_version;
+TRUNCATE public.account CASCADE;
 
 -- TODO: import accounts without auth records
 -- TODO: p2k12 active_members.price -> p2k16 membership.fee

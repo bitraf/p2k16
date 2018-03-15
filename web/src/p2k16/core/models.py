@@ -1,5 +1,4 @@
 import crypt
-import string
 import uuid
 from datetime import datetime, timedelta
 from itertools import chain
@@ -56,17 +55,20 @@ class ModelSupport(object):
         return self.stack[-1]
 
     def before_flush(self, obj):
-        if isinstance(obj, TimestampMixin):
-            print("TimestampMixin: created={}, updated={}".format(obj.created_at, obj.updated_at))
+        if isinstance(obj, CreatedAtMixin):
             obj.created_at = datetime.now()
+
+        if isinstance(obj, UpdatedAtMixin):
             obj.updated_at = datetime.now()
 
-        if isinstance(obj, ModifiedByMixin):
+        if isinstance(obj, CreatedByMixin):
             account = model_support.current_account
-            print("ModifiedByMixin: created={}, updated={}, ca={}".
-                  format(obj.created_by_id, obj.updated_by_id, account.username if account else "None"))
 
             obj.created_by_id = account.id if account else None
+
+        if isinstance(obj, UpdatedByMixin):
+            account = model_support.current_account
+
             obj.updated_by_id = account.id if account else None
 
 
@@ -77,27 +79,40 @@ class P2k16Mixin(object):
     id = Column(Integer, primary_key=True)
 
 
-class TimestampMixin(object):
+class CreatedAtMixin(object):
     created_at = Column(DateTime, nullable=False)
+
+    def __init__(self):
+        super().__init__()
+
+
+class UpdatedAtMixin(object):
     updated_at = Column(DateTime, nullable=False)
 
     def __init__(self):
         super().__init__()
 
 
-class ModifiedByMixin(object):
+class CreatedByMixin(object):
 
     @declared_attr
     def created_by_id(cls):
         return Column("created_by", Integer, ForeignKey('account.id'))
 
     @declared_attr
-    def updated_by_id(cls):
-        return Column("updated_by", Integer, ForeignKey('account.id'))
-
-    @declared_attr
     def created_by(cls):
         return relationship("Account", foreign_keys=[cls.created_by_id])
+
+    def __init__(self):
+        super().__init__()
+        self.created_by_id = None
+
+
+class UpdatedByMixin(object):
+
+    @declared_attr
+    def updated_by_id(cls):
+        return Column("updated_by", Integer, ForeignKey('account.id'))
 
     @declared_attr
     def updated_by(cls):
@@ -105,11 +120,20 @@ class ModifiedByMixin(object):
 
     def __init__(self):
         super().__init__()
-        self.created_by_id = None
         self.updated_by_id = None
 
 
-class Account(TimestampMixin, P2k16Mixin, db.Model):
+# This is probably the mixin you should use
+class DefaultMixin(P2k16Mixin, CreatedAtMixin, CreatedByMixin, UpdatedAtMixin, UpdatedByMixin):
+    pass
+
+
+class ImmutableDefaultMixin(P2k16Mixin, CreatedAtMixin, CreatedByMixin):
+    pass
+
+
+# This is the default Mixin without the CreatedBy/UpdatedBy mixins to prevent recursion.
+class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
     __tablename__ = 'account'
     __versioned__ = {}
 
@@ -191,7 +215,7 @@ class Account(TimestampMixin, P2k16Mixin, db.Model):
         return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
 
-class Circle(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class Circle(DefaultMixin, db.Model):
     __tablename__ = 'circle'
     __versioned__ = {}
 
@@ -220,7 +244,7 @@ class Circle(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         return Circle.query.filter(Circle.name == name).one()
 
 
-class CircleMember(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class CircleMember(DefaultMixin, db.Model):
     __tablename__ = 'circle_member'
     __versioned__ = {}
 
@@ -241,25 +265,74 @@ class CircleMember(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)
 
 
-class AuditRecord(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
-    __tablename__ = 'audit_record'
-    __versioned__ = {}
+class OpenDoorEvent(object):
+    def __init__(self, created_at, created_by, door):
+        self.created_at = created_at
+        self.created_by = created_by
+        self.door = door
 
-    timestamp = Column(DateTime, nullable=False)
-    object = Column(String(100), nullable=False)
-    action = Column(String(100), nullable=False)
+    def to_event(self):
+        return Event("door", text1="open", text2=self.door)
 
-    def __init__(self, object: string, action: string):
+    @staticmethod
+    def create(door: str):
+        return OpenDoorEvent(None, None, door)
+
+    @staticmethod
+    def from_event(event: "Event"):
+        return OpenDoorEvent(event.created_at, event.created_by, event.text2) \
+            if event.domain == "door" and event.text1 == "open" else None
+
+
+class Event(ImmutableDefaultMixin, db.Model):
+    __tablename__ = 'event'
+    # Not versioned, events are append-only
+
+    domain = Column(String(100), nullable=False)
+
+    int1 = Column(Integer)
+    int2 = Column(Integer)
+    int3 = Column(Integer)
+    int4 = Column(Integer)
+    int5 = Column(Integer)
+
+    text1 = Column(String(100))
+    text2 = Column(String(100))
+    text3 = Column(String(100))
+    text4 = Column(String(100))
+    text5 = Column(String(100))
+
+    def __init__(self, domain: str,
+                 int1: int = None, int2: int = None, int3: int = None, int4: int = None, int5: int = None,
+                 text1: str = None, text2: str = None, text3: str = None, text4: str = None, text5: str = None):
         super().__init__()
-        self.timestamp = datetime.now()
-        self.object = object
-        self.action = action
+
+        self.domain = domain
+        self.int1 = int1
+        self.int2 = int2
+        self.int3 = int3
+        self.int4 = int4
+        self.int5 = int5
+        self.text1 = text1
+        self.text2 = text2
+        self.text3 = text3
+        self.text4 = text4
+        self.text5 = text5
+
+    def add_type(self):
+        typers = [OpenDoorEvent.from_event]
+
+        for typer in typers:
+            converted = typer(self)
+
+            if converted:
+                return converted
 
     def __repr__(self):
-        return '<AuditRecord:%r, account=%s>' % (self.id, self.created_by)
+        return '<Event:%r, created_by=%s, domain=%s>' % (self.id, self.created_by_id, self.domain)
 
 
-class Membership(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class Membership(DefaultMixin, db.Model):
     __tablename__ = 'membership'
     __versioned__ = {}
 
@@ -277,7 +350,7 @@ class Membership(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         return '<Membership:%r, fee=%r>' % (self.id, self.fee)
 
 
-class MembershipPayment(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class MembershipPayment(DefaultMixin, db.Model):
     __tablename__ = 'membership_payment'
     __versioned__ = {}
 
@@ -300,7 +373,7 @@ class MembershipPayment(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
             self.id, self.created_by_id, self.start_date, self.end_date, self.amount)
 
 
-class StripeCustomer(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class StripeCustomer(DefaultMixin, db.Model):
     __tablename__ = 'stripe_customer'
     __versioned__ = {}
 
@@ -315,7 +388,7 @@ class StripeCustomer(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
             self.id, self.created_by_id, self.stripe_id)
 
 
-class Company(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class Company(DefaultMixin, db.Model):
     __tablename__ = 'company'
     __versioned__ = {}
 
@@ -338,7 +411,7 @@ class Company(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         return Company.query.filter(Company.id == _id).one_or_none()
 
 
-class CompanyEmployee(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class CompanyEmployee(DefaultMixin, db.Model):
     __tablename__ = 'company_employee'
     __versioned__ = {}
 
@@ -371,7 +444,7 @@ class CompanyEmployee(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
 #
 
 
-class BadgeDescription(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class BadgeDescription(DefaultMixin, db.Model):
     __tablename__ = 'badge_description'
     __versioned__ = {}
 
@@ -390,7 +463,7 @@ class BadgeDescription(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
         self.certification_circle = None
 
 
-class AccountBadge(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+class AccountBadge(DefaultMixin, db.Model):
     __tablename__ = 'account_badge'
     __versioned__ = {}
 

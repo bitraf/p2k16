@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 from p2k16.core import P2k16UserException
 from p2k16.core import account_management
-from p2k16.core.models import db, Account, Circle, AuditRecord
+from p2k16.core.models import db, Account, Circle, Event, OpenDoorEvent
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class DoorClient(object):
         for door in doors:
             logger.info('Opening door. username={}, door={}, open_time={}'.format(
                 account.username, door.key, door.open_time))
-            db.session.add(AuditRecord('door/{}'.format(door.key), 'open'))
+            db.session.add(OpenDoorEvent.create(door.key).to_event())
             publishes.append((self.prefix + door.topic, str(door.open_time)))
 
         # Make sure everything has been written to the database before actually opening the door.

@@ -28,7 +28,7 @@
 
   <ul>
     <li ng-repeat="c in ctrl.recent_events">
-      {{ c.timestamp | date:'shortTime' }}: {{ c.created_by_username }}
+      {{ c.created_by_username }} opened {{ c.door }} at {{ c.created_at | date:'shortTime' }}
     </li>
   </ul>
 

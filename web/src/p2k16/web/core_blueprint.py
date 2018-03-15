@@ -6,10 +6,10 @@ from typing import List
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
-from p2k16.core import P2k16UserException, auth, account_management, badge_management
+from p2k16.core import P2k16UserException, auth, account_management, badge_management, models
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
 from p2k16.core.models import AccountBadge, BadgeDescription
-from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
+from p2k16.core.models import Account, Circle, Company, CompanyEmployee
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
@@ -75,12 +75,16 @@ def model_to_json(obj) -> dict:
     if hasattr(obj, "id"):
         d["id"] = str(obj.id)
 
-    if isinstance(obj, TimestampMixin):
+    if isinstance(obj, models.CreatedAtMixin):
         d["createdAt"] = obj.created_at
+
+    if isinstance(obj, models.UpdatedAtMixin):
         d["updatedAt"] = obj.updated_at
 
-    if isinstance(obj, ModifiedByMixin):
+    if isinstance(obj, models.CreatedByMixin):
         d["createdBy"] = obj.created_by.username
+
+    if isinstance(obj, models.UpdatedByMixin):
         d["updatedBy"] = obj.updated_by.username
 
     return d

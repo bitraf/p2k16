@@ -7,6 +7,13 @@ function DoorDataService($http) {
   return this;
 }
 
+DoorDataService.prototype.recent_events = function () {
+    var req = {};
+    req.method = 'GET';
+    req.url = '/service/door/recent-events';
+    return this.$http(req);
+};
+
 DoorDataService.prototype.open_door = function (payload) {
     var req = {};
     req.method = 'POST';
@@ -23,6 +30,9 @@ DoorDataService.prototype.door_service = function () {
 };
 
 var DoorDataServiceResolvers = {};
-DoorDataServiceResolvers.door_service = function (CoreDataService) {
-  return CoreDataService.door_service().then(function (res) { return res.data; });
+DoorDataServiceResolvers.recent_events = function (DoorDataService) {
+  return DoorDataService.recent_events().then(function (res) { return res.data; });
+};
+DoorDataServiceResolvers.door_service = function (DoorDataService) {
+  return DoorDataService.door_service().then(function (res) { return res.data; });
 };

@@ -222,7 +222,7 @@ class DataServiceTool(object):
 
             if not has_payload:
                 # resolvers.append(r.name)
-                r_args = ["CoreDataService"]
+                r_args = [self.name]
                 if len(args):
                     r_args.append("$route")
 
@@ -230,9 +230,8 @@ class DataServiceTool(object):
                 for a in args:
                     r_s += "  var {} = $route.current.params.{};\n".format(a, a)
 
-                r_s += "  return CoreDataService.{}({}).then(function (res) {{ return res.data; }});\n".format(r.name,
-                                                                                                               ", ".join(
-                                                                                                                   args))
+                r_s += "  return {}.{}({}).then(function (res) {{ return res.data; }});\n". \
+                    format(self.name, r.name, ", ".join(args))
                 r_s += "};\n"
                 resolvers.append((r.name, r_s))
 

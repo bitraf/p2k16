@@ -1,12 +1,13 @@
 import logging
+import typing
 
+import flask
 import flask_login
 import p2k16.core.door
-import flask
 from flask import Blueprint, jsonify, request
 from p2k16.core import P2k16UserException
 from p2k16.core.door import DoorClient
-from p2k16.core.models import db
+from p2k16.core.models import db, AuditRecord
 from p2k16.web.utils import validate_schema, DataServiceTool
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,24 @@ door_form = {
     },
     "required": ["doors"]
 }
+
+
+@registry.route('/service/door/recent-events', methods=['GET'])
+def recent_events():
+    from datetime import datetime, timedelta
+    start = datetime.now() - timedelta(hours=24)
+    records = AuditRecord.query. \
+        filter(AuditRecord.object.like("door/%")). \
+        filter(AuditRecord.timestamp > start). \
+        order_by(AuditRecord.timestamp).limit(100). \
+        all()  # type: typing.Collection[AuditRecord]
+
+    return jsonify([{
+        "object": r.object,
+        "timestamp": r.timestamp,
+        "created_by": r.created_by_id,
+        "created_by_username": r.created_by.username
+    } for r in records])
 
 
 @registry.route('/service/door/open', methods=['POST'])

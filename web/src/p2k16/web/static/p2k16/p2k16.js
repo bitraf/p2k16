@@ -8,7 +8,10 @@
         }).when("/", {
             controller: FrontPageController,
             controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.front_page_html
+            templateUrl: p2k16_resources.front_page_html,
+            resolve: {
+                recent_events: DoorDataServiceResolvers.recent_events
+            }
         }).when("/membership", {
             controller: MembershipController,
             controllerAs: 'ctrl',
@@ -303,7 +306,7 @@
      * @param {DoorDataService} DoorDataService
      * @param {P2k16} P2k16
      */
-    function FrontPageController(DoorDataService, P2k16) {
+    function FrontPageController(DoorDataService, P2k16, recent_events) {
         var self = this;
 
         self.openDoors = function (doors) {
@@ -311,7 +314,9 @@
                 var msg = res.message || "The door is open";
                 P2k16.addInfos(msg);
             });
-        }
+        };
+
+        self.recent_events = recent_events;
     }
 
     function getMembershipTypes() {

@@ -1,10 +1,6 @@
 <p2k16-header active="front-page"></p2k16-header>
 
 <div class="container">
-  <p>
-    Welcome {{ p2k16.currentAccount().username }}!
-  </p>
-
   <h2>Open a door</h2>
 
   <div class="row door-buttons">
@@ -27,4 +23,13 @@
       <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['4floor'])">4th floor</button>
     </div>
   </div>
+
+  <h3>Recent checkins</h3>
+
+  <ul>
+    <li ng-repeat="c in ctrl.recent_events">
+      {{ c.timestamp | date:'shortTime' }}: {{ c.created_by_username }}
+    </li>
+  </ul>
+
 </div>

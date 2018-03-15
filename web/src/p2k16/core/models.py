@@ -2,6 +2,7 @@ import crypt
 import string
 import uuid
 from datetime import datetime, timedelta
+from itertools import chain
 from typing import Optional
 
 import flask_bcrypt
@@ -365,15 +366,56 @@ class CompanyEmployee(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
             .one_or_none()
 
 
-from itertools import chain
+#
+# Badges
+#
+
+
+class BadgeDescription(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+    __tablename__ = 'badge_description'
+    __versioned__ = {}
+
+    title = Column(String(50), nullable=False)
+    slug = Column(String(50), nullable=True)
+    icon = Column(String(50), nullable=True)
+    color = Column(String(50), nullable=True)
+    certification_circle_id = Column("certification_circle", Integer, ForeignKey('circle.id'), nullable=True)
+    certification_circle = relationship("Circle")
+
+    def __init__(self, title: str):
+        self.title = title
+        self.slug = None
+        self.icon = None
+        self.color = None
+        self.certification_circle = None
+
+
+class AccountBadge(TimestampMixin, ModifiedByMixin, P2k16Mixin, db.Model):
+    __tablename__ = 'account_badge'
+    __versioned__ = {}
+
+    account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
+    account = relationship("Account", foreign_keys=[account_id])
+    description_id = Column("badge_description", Integer, ForeignKey('badge_description.id'), nullable=False)
+    description = relationship("BadgeDescription", foreign_keys=[description_id])
+
+    awarded_by_id = Column("awarded_by", Integer, ForeignKey('account.id'), nullable=False)
+    awarded_by = relationship("Account", foreign_keys=[awarded_by_id])
+
+    def __init__(self, account: Account, awarded_by: Optional[Account], description: BadgeDescription):
+        self.account_id = account.id
+        self.awarded_by = awarded_by.id if awarded_by else None
+        self.description_id = description.id
+
+
 from sqlalchemy import event
 
 
 @event.listens_for(db.session, 'before_flush')
 def receive_before_flush(session, flush_context, instances):
-    print("before flush!")
-    print("flush_context: {}".format(flush_context))
-    print("instances: {}".format(len(instances) if instances else "none!!"))
+    # print("before flush!")
+    # print("flush_context: {}".format(flush_context))
+    # print("instances: {}".format(len(instances) if instances else "none!!"))
 
     for obj in chain(session.new, session.dirty):
         if session.is_modified(obj):

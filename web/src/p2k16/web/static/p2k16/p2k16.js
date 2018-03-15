@@ -16,6 +16,13 @@
             resolve: {
                 membership_details: CoreDataServiceResolvers.membership_details
             }
+        }).when("/my-profile", {
+            controller: MyProfileController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.my_profile_html,
+            resolve: {
+                badgeDescriptions: CoreDataServiceResolvers.badge_descriptions
+            }
         }).when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
@@ -93,8 +100,43 @@
     /**
      * @constructor
      */
-    function P2k16() {
+    function Listeners($rootScope, key) {
         var self = this;
+        self.args = [];
+
+        var eventName = "Listeners-" + key;
+
+        function add($scope, listener) {
+            var destructor = $rootScope.$on(eventName, function (event) {
+                console.log("listener args", self.args);
+                listener.apply(null, self.args);
+            });
+            $scope.$on("$destroy", destructor);
+        }
+
+        function notify() {
+            console.log("args", self.args);
+
+            self.args = arguments;
+            $rootScope.$emit(eventName);
+            self.args = [];
+        }
+
+        /**
+         * @lends Listeners.prototype
+         */
+        return {
+            add: add,
+            notify: notify
+        };
+    }
+
+    /**
+     * @constructor
+     */
+    function P2k16($rootScope) {
+        var self = this;
+        self.$rootScope = $rootScope;
         self.messages = [];
         self.messages.dismiss = function (index) {
             self.messages.splice(index, 1);
@@ -102,12 +144,27 @@
 
         self.account = null;
 
+        /**
+         * @type {Listeners}
+         */
+        self.accountListeners = new Listeners($rootScope, "account");
+
         function isLoggedIn() {
             return !!self.account;
         }
 
         function currentAccount() {
             return self.account;
+        }
+
+        function refreshAccount(updated) {
+            console.log("refreshing account");
+            _.merge(self.account, updated);
+            self.accountListeners.notify(self.account);
+        }
+
+        function refreshAccountFromResponse(res) {
+            return refreshAccount(res.data);
         }
 
         function hasRole(circleName) {
@@ -155,6 +212,9 @@
         return {
             isLoggedIn: isLoggedIn,
             currentAccount: currentAccount,
+            refreshAccount: refreshAccount,
+            refreshAccountFromResponse: refreshAccountFromResponse,
+            accountListeners: self.accountListeners,
             setLoggedIn: setLoggedIn,
             hasRole: hasRole,
             addErrors: addErrors,
@@ -344,6 +404,36 @@
 
         self.cancel = function () {
             $uibModalInstance.dismiss('cancel');
+        };
+    }
+
+    /**
+     * @param $scope
+     * @param {P2k16} P2k16
+     * @param {CoreDataService} CoreDataService
+     * @param badgeDescriptions
+     * @constructor
+     */
+    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions) {
+        var self = this;
+
+        P2k16.accountListeners.add($scope, function (newValue) {
+            console.log("updated", newValue);
+            updateBadges(newValue);
+        });
+
+        function updateBadges(account) {
+            self.badges = _.values(account.badges);
+        }
+
+        self.badges = [];
+        self.newBadge = {};
+        self.descriptions = badgeDescriptions;
+
+        updateBadges(P2k16.currentAccount());
+
+        self.createBadge = function () {
+            CoreDataService.badge_create(self.newBadge).then(P2k16.refreshAccountFromResponse);
         };
     }
 

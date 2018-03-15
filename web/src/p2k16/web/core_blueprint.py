@@ -6,9 +6,9 @@ from typing import List
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
-
-from p2k16.core import P2k16UserException, auth, account_management
+from p2k16.core import P2k16UserException, auth, account_management, badge_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
+from p2k16.core.models import AccountBadge, BadgeDescription
 from p2k16.core.models import TimestampMixin, ModifiedByMixin, Account, Circle, Company, CompanyEmployee
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
@@ -57,6 +57,14 @@ single_company_form = {
     "required": ["name", "contact"]
 }
 
+create_badge_form = {
+    "type": "object",
+    "properties": {
+        "title": nonempty_string
+    },
+    "required": ["title"]
+}
+
 core = Blueprint('core', __name__, template_folder='templates')
 registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
@@ -84,14 +92,33 @@ def circle_to_json(circle: Circle):
     }}
 
 
-def account_to_json(account: Account, circles: List[Circle]):
+def badge_to_json(b: AccountBadge):
+    return {**model_to_json(b), **{
+        "account_id": b.account_id,
+        "awarded_by_id": b.awarded_by_id,
+        "description_id": b.description_id
+    }}
+
+
+def badge_description_to_json(bd: BadgeDescription):
+    return {**model_to_json(bd), **{
+        "title": bd.title,
+        "slug": bd.slug,
+        "icon": bd.icon,
+        "color": bd.color,
+        "certification_circle_id": bd.certification_circle_id
+    }}
+
+
+def account_to_json(account: Account, circles: List[Circle], badges: List[AccountBadge]):
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
         "email": account.email,
         "name": account.name,
         "phone": account.phone,
-        "circles": {c.id: {"id": c.id, "name": c.name} for c in circles}
+        "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
+        "badges": {b.id: badge_to_json(b) for b in badges}
     }}
 
 
@@ -134,13 +161,14 @@ def service_authz_login():
         logger.info("Login: Bad login attempt, wrong password: {}".format(username))
         raise P2k16UserException("Invalid credentials")
     circles = account_management.get_circles_for_account(account.id)
+    badges = badge_management.badges_for_account(account.id)
 
     logger.info("Login: username={}, circles={}".format(username, circles))
 
     authenticated_account = auth.AuthenticatedAccount(account, circles)
     flask_login.login_user(authenticated_account)
 
-    return jsonify(account_to_json(account, circles))
+    return jsonify(account_to_json(account, circles, badges))
 
 
 @registry.route('/service/authz/log-out', methods=['POST'])
@@ -162,11 +190,14 @@ def register_account():
     return jsonify({})
 
 
+# This is not very optimal at all
 @registry.route('/data/account')
 def data_account_list():
-    accounts_with_circles = [(account, account_management.get_circles_for_account(account.id)) for account in
-                             Account.query.all()]
-    accounts = [account_to_json(account, circles) for (account, circles) in accounts_with_circles]
+    accounts_plus_plus = [(account,
+                           account_management.get_circles_for_account(account.id),
+                           badge_management.badges_for_account(account.id))
+                          for account in Account.query.all()]
+    accounts = [account_to_json(account, circles, badges) for (account, circles, badges) in accounts_plus_plus]
     return jsonify(accounts)
 
 
@@ -178,8 +209,9 @@ def data_account(account_id):
         abort(404)
 
     circles = account_management.get_circles_for_account(account.id)
+    badges = badge_management.badges_for_account(account.id)
 
-    return jsonify(account_to_json(account, circles))
+    return jsonify(account_to_json(account, circles, badges))
 
 
 @registry.route('/data/account/<int:account_id>/cmd/remove-membership', methods=["POST"])
@@ -209,9 +241,10 @@ def _manage_membership(account_id: int, create: bool):
         account_management.remove_account_from_circle(account.id, circle_id, a.id)
 
     circles = account_management.get_circles_for_account(account.id)
+    badges = badge_management.badges_for_account(account.id)
 
     db.session.commit()
-    return jsonify(account_to_json(account, circles))
+    return jsonify(account_to_json(account, circles, badges))
 
 
 @registry.route('/membership/set-stripe-token', methods=["POST"])
@@ -235,6 +268,28 @@ def membership_set_membership():
     membership_price = request.json['price']
 
     return jsonify(member_set_membership(account, membership_plan, membership_price))
+
+
+@registry.route('/badge/badge-descriptions', methods=["GET"])
+def badge_descriptions():
+    bds = BadgeDescription.query.all()
+    return jsonify({bd.id: badge_description_to_json(bd) for bd in bds})
+
+
+@registry.route('/badge/create-badge', methods=["POST"])
+@validate_schema(create_badge_form)
+def badge_create():
+    account = flask_login.current_user.account
+
+    title = request.json["title"]
+    badge_management.create_badge(account, awarder=None, title=title)
+
+    circles = account_management.get_circles_for_account(account.id)
+    badges = badge_management.badges_for_account(account.id)
+
+    db.session.commit()
+
+    return jsonify(account_to_json(account, circles, badges))
 
 
 @registry.route('/data/circle')
@@ -347,7 +402,8 @@ def index():
     if flask_login.current_user.is_authenticated:
         account = flask_login.current_user.account
         circles = account_management.get_circles_for_account(account.id)
-        account = account_to_json(account, circles)
+        badges = badge_management.badges_for_account(account.id)
+        account = account_to_json(account, circles, badges)
     else:
         account = None
 
@@ -397,7 +453,7 @@ def reset_password_form():
     account = Account.find_account_by_reset_token(reset_token)
 
     if account and account.is_valid_reset_token(reset_token):
-        return render_template('reset-password.html', reset_token=reset_token, account=account_to_json(account, []))
+        return render_template('reset-password.html', reset_token=reset_token, account=account_to_json(account, [], []))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 

@@ -89,6 +89,21 @@ CoreDataService.prototype.membership_set_membership = function (payload) {
     return this.$http(req);
 };
 
+CoreDataService.prototype.badge_descriptions = function () {
+    var req = {};
+    req.method = 'GET';
+    req.url = '/badge/badge-descriptions';
+    return this.$http(req);
+};
+
+CoreDataService.prototype.badge_create = function (payload) {
+    var req = {};
+    req.method = 'POST';
+    req.url = '/badge/create-badge';
+    req.data = payload;
+    return this.$http(req);
+};
+
 CoreDataService.prototype.data_circle_list = function () {
     var req = {};
     req.method = 'GET';
@@ -157,6 +172,9 @@ CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
 };
 CoreDataServiceResolvers.membership_details = function (CoreDataService) {
   return CoreDataService.membership_details().then(function (res) { return res.data; });
+};
+CoreDataServiceResolvers.badge_descriptions = function (CoreDataService) {
+  return CoreDataService.badge_descriptions().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_circle_list = function (CoreDataService) {
   return CoreDataService.data_circle_list().then(function (res) { return res.data; });

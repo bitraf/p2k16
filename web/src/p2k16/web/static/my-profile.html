@@ -1,0 +1,29 @@
+<p2k16-header active="membership"></p2k16-header>
+
+<div class="container">
+  <h1>My profile</h1>
+
+  <h2>Badges</h2>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <ul ng-show="ctrl.badges.length">
+        <span class="label label-default" ng-repeat="b in ctrl.badges" ng-init="bd=ctrl.descriptions[b.description_id]">
+          {{ bd.title }}
+        </span>
+      </ul>
+      <ul ng-hide="ctrl.badges.length">
+        Aaw, you don't have any badges yet.
+      </ul>
+    </div>
+  </div>
+
+  <form class="form-inline">
+    <div class="form-group">
+      <label for="title">Badge</label>
+      <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.title">
+    </div>
+    <button type="submit" class="btn btn-default" ng-click="ctrl.createBadge()">Add badge</button>
+  </form>
+
+</div>

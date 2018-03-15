@@ -71,38 +71,38 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 ## Motivation
 
-Enforce users have neccesary course for dangerous machines 
-Make holding courses more atractive
-Easier to find who knows what
-Encourage people to be active members at Bitraf
+ * Enforce users have neccesary course for dangerous machines
+ * Make holding courses more atractive
+ * Easier to find who knows what
+ * Encourage people to be active members at Bitraf
 
 ## Examples
 
-lasercutter
-CNC-operator
-woodworking
-metalworking
-lathe
+ * lasercutter
+ * CNC-operator
+ * woodworking
+ * metalworking
+ * lathe
 
-soldering
-Kicad, Eagle
-SMT
-PCB-etching
-oscilloscope
+ * soldering
+ * Kicad, Eagle
+ * SMT
+ * PCB-etching
+ * oscilloscope
 
 ## Data model
 
 BadgeDescription
 
-    id/slug
-    title
-    icon
-    needs_certification
+ * id/slug
+ * title
+ * icon
+ * needs_certification
 
-UserBadge
+AccountBadge
 
-    account FOREIGN NON NULL
-    badge_description NULL
-    awarded_at NOT NULL
-    awarded_by NULL
+ * account FOREIGN NON NULL
+ * badge_description NULL
+ * awarded_at NOT NULL
+ * awarded_by NULL
 

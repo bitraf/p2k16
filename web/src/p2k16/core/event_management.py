@@ -36,13 +36,14 @@ def save_event(event):
     if not converter:
         raise P2k16TechnicalException("Could not find converter for {}".format(type(event)))
 
-    db.session.add(event.to_event())
+    params = event.to_event()
+    db.session.add(Event(converter.domain, converter.name, **params))
 
 
 def _convert(events: Collection[Event]):
     records = []
     for e in events:
-        converter = _from_key[(e.domain, e.name)]
+        converter = _from_key.get((e.domain, e.name), None)
 
         if not converter:
             continue
@@ -54,6 +55,11 @@ def _convert(events: Collection[Event]):
     return records
 
 
+def base_dict(event):
+    converter = _from_type[type(event)]
+    return {"domain": converter.domain, "name": converter.name}
+
+
 def get_public_recent_events(start: datetime):
     events = Event.query. \
         filter(or_((Event.domain == "door") & (Event.name == "open"),
@@ -63,3 +69,11 @@ def get_public_recent_events(start: datetime):
         all()  # type: Collection[Event]
 
     return _convert(events)
+
+
+def has_opened_door(account: Account):
+    import sqlalchemy
+    x = db.session.query(
+        sqlalchemy.exists().where(
+            (Event.created_by == account) & (Event.domain == "door") & (Event.name == "open"))).scalar()
+    return x

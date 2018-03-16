@@ -4,7 +4,7 @@ from typing import Optional, Mapping, List
 
 import paho.mqtt.client as mqtt
 from p2k16.core import P2k16UserException
-from p2k16.core import account_management, event_management
+from p2k16.core import account_management, event_management, badge_management
 from p2k16.core.models import db, Account, Circle, Event
 
 logger = logging.getLogger(__name__)
@@ -28,20 +28,20 @@ class OpenDoorEvent(object):
         self.created_at = created_at
         self.created_by = created_by
 
-    def to_event(self) -> Event:
-        return Event("door", name="open", text1=self.door)
+    def to_event(self):
+        return {"text1": self.door}
 
     @staticmethod
     def from_event(event: Event) -> "OpenDoorEvent":
         return OpenDoorEvent(event.text1, event.created_at, event.created_by)
 
     def to_dict(self):
-        return {
+        return {**event_management.base_dict(self), **{
             "created_at": self.created_at,
             "created_by": self.created_by,
             "created_by_username": self.created_by.username,
             "door": self.door
-        }
+        }}
 
 
 class DoorClient(object):
@@ -73,6 +73,10 @@ class DoorClient(object):
             raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
 
         publishes = []
+
+        if not event_management.has_opened_door(account):
+            logger.info("First door opening for {}".format(account))
+            badge_management.create_badge(account, None, "first-door-opening")
 
         for door in doors:
             logger.info('Opening door. username={}, door={}, open_time={}'.format(

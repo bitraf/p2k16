@@ -27,8 +27,15 @@
   <h3>Recent events</h3>
 
   <ul>
-    <li ng-repeat="c in ctrl.recent_events">
-      {{ c.created_by_username }} opened {{ c.door }} at {{ c.created_at | date:'shortTime' }}
+    <li ng-repeat="e in ctrl.recent_events">
+      <span ng-switch="e.domain + '-' + e.name">
+        <span ng-switch-when="door-open">
+          {{ e.created_by_username }} opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
+        </span>
+        <span ng-switch-when="badge-awarded">
+          {{ e.created_by_username }} got the <span class="label label-default">{{ e.badge_description.title }}</span> bagde!
+        </span>
+      </span>
     </li>
   </ul>
 

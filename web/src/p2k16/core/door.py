@@ -1,11 +1,11 @@
 import logging
-import typing
+from datetime import datetime
+from typing import Optional, Mapping, List
 
 import paho.mqtt.client as mqtt
-
 from p2k16.core import P2k16UserException
-from p2k16.core import account_management
-from p2k16.core.models import db, Account, Circle, Event, OpenDoorEvent
+from p2k16.core import account_management, event_management
+from p2k16.core.models import db, Account, Circle, Event
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,31 @@ class DummyClient(object):
     pass
 
 
+@event_management.converter_for("door", "open")
+class OpenDoorEvent(object):
+    def __init__(self, door, created_at: Optional[datetime] = None, created_by: Optional[Account] = None):
+        self.door = door
+        self.created_at = created_at
+        self.created_by = created_by
+
+    def to_event(self) -> Event:
+        return Event("door", name="open", text1=self.door)
+
+    @staticmethod
+    def from_event(event: Event) -> "OpenDoorEvent":
+        return OpenDoorEvent(event.text1, event.created_at, event.created_by)
+
+    def to_dict(self):
+        return {
+            "created_at": self.created_at,
+            "created_by": self.created_by,
+            "created_by_username": self.created_by.username,
+            "door": self.door
+        }
+
+
 class DoorClient(object):
-    def __init__(self, cfg: typing.Mapping[str, str]):
+    def __init__(self, cfg: Mapping[str, str]):
 
         host = cfg["MQTT_HOST"]
         port = cfg["MQTT_PORT"]
@@ -43,7 +66,7 @@ class DoorClient(object):
 
         self._client = c
 
-    def open_doors(self, account: Account, doors: typing.List[Door]):
+    def open_doors(self, account: Account, doors: List[Door]):
         door_circle = Circle.get_by_name('door')
 
         if not account_management.is_account_in_circle(account, door_circle):
@@ -54,7 +77,7 @@ class DoorClient(object):
         for door in doors:
             logger.info('Opening door. username={}, door={}, open_time={}'.format(
                 account.username, door.key, door.open_time))
-            db.session.add(OpenDoorEvent.create(door.key).to_event())
+            event_management.save_event(OpenDoorEvent(door.key))
             publishes.append((self.prefix + door.topic, str(door.open_time)))
 
         # Make sure everything has been written to the database before actually opening the door.
@@ -67,7 +90,7 @@ class DoorClient(object):
             self._client.publish(topic, open_time)
 
 
-def create_client(cfg: typing.Mapping[str, str]) -> DoorClient:
+def create_client(cfg: Mapping[str, str]) -> DoorClient:
     if "MQTT_HOST" not in cfg:
         logger.info("No MQTT host configured for door, not starting door mqtt client")
         return DummyClient()

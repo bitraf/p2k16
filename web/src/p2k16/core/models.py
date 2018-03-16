@@ -265,30 +265,12 @@ class CircleMember(DefaultMixin, db.Model):
         return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)
 
 
-class OpenDoorEvent(object):
-    def __init__(self, created_at, created_by, door):
-        self.created_at = created_at
-        self.created_by = created_by
-        self.door = door
-
-    def to_event(self):
-        return Event("door", text1="open", text2=self.door)
-
-    @staticmethod
-    def create(door: str):
-        return OpenDoorEvent(None, None, door)
-
-    @staticmethod
-    def from_event(event: "Event"):
-        return OpenDoorEvent(event.created_at, event.created_by, event.text2) \
-            if event.domain == "door" and event.text1 == "open" else None
-
-
 class Event(ImmutableDefaultMixin, db.Model):
     __tablename__ = 'event'
     # Not versioned, events are append-only
 
     domain = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=False)
 
     int1 = Column(Integer)
     int2 = Column(Integer)
@@ -302,12 +284,13 @@ class Event(ImmutableDefaultMixin, db.Model):
     text4 = Column(String(100))
     text5 = Column(String(100))
 
-    def __init__(self, domain: str,
+    def __init__(self, domain: str, name: str,
                  int1: int = None, int2: int = None, int3: int = None, int4: int = None, int5: int = None,
                  text1: str = None, text2: str = None, text3: str = None, text4: str = None, text5: str = None):
         super().__init__()
 
         self.domain = domain
+        self.name = name
         self.int1 = int1
         self.int2 = int2
         self.int3 = int3
@@ -319,17 +302,8 @@ class Event(ImmutableDefaultMixin, db.Model):
         self.text4 = text4
         self.text5 = text5
 
-    def add_type(self):
-        typers = [OpenDoorEvent.from_event]
-
-        for typer in typers:
-            converted = typer(self)
-
-            if converted:
-                return converted
-
     def __repr__(self):
-        return '<Event:%r, created_by=%s, domain=%s>' % (self.id, self.created_by_id, self.domain)
+        return '<Event:%r, created_by=%s, domain=%s, name=%s>' % (self.id, self.created_by_id, self.domain, self.name)
 
 
 class Membership(DefaultMixin, db.Model):

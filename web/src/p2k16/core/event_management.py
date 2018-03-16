@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Collection, MutableMapping, Tuple
+from typing import List, MutableMapping, Tuple
 
 from p2k16.core import P2k16TechnicalException
 from p2k16.core.models import db, Account, Event
@@ -40,7 +40,7 @@ def save_event(event):
     db.session.add(Event(converter.domain, converter.name, **params))
 
 
-def _convert(events: Collection[Event]):
+def _convert(events: List[Event]):
     records = []
     for e in events:
         converter = _from_key.get((e.domain, e.name), None)
@@ -66,7 +66,7 @@ def get_public_recent_events(start: datetime):
                    Event.domain == "badge")). \
         filter(Event.created_at > start). \
         order_by(Event.created_at.desc()).limit(100). \
-        all()  # type: Collection[Event]
+        all()  # type: List[Event]
 
     return _convert(events)
 

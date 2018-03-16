@@ -1,5 +1,5 @@
 from flask_testing import TestCase
-from p2k16.core import app, account_management, membership_management, P2k16UserException
+from p2k16.core import make_app, account_management, membership_management, P2k16UserException
 from p2k16.core.membership_management import get_membership
 from p2k16.core.models import *
 
@@ -21,6 +21,8 @@ class AccountTest(TestCase):
     #     return app
 
     def create_app(self):
+        app = make_app()
+        db.init_app(app)
         return app
 
     def setUp(self):
@@ -61,11 +63,9 @@ class AccountTest(TestCase):
         with model_support.run_as(admin):
             c_admin = Circle('circle-1-admin', 'Circle 1 Admins')
             session.add_all([admin, a1, a2, c, c_admin])
-            session.flush()
 
         with model_support.run_as(admin):
             session.add(CircleMember(c_admin, admin))
-            session.flush()
 
         # non-admin account trying to add
         try:

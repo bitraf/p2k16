@@ -17,7 +17,7 @@ env/bin/pip install -r requirements.txt
 
 export FLASK_APP=p2k16.web.server
 export FLASK_DEBUG=1
-export P2K16_CONFIG=$basedir/infrastructure/config-local.cfg
+export P2K16_CONFIG=$basedir/infrastructure/config-it.cfg
 
 # Use the Stripe non-prod API
 export WEBHOOK_SECRET='test'

@@ -7,6 +7,7 @@
       </label>
       <div class="col-sm-4">
         <input class="form-control" type="text" name="email" id="login-username" placeholder="username"
+               autocomplete="username"
                ng-model="ctrl.loginForm.username"/>
       </div>
     </div>
@@ -16,6 +17,7 @@
       </label>
       <div class="col-sm-4">
         <input class="form-control" type="password" name="password" id="login-password" placeholder="Password"
+               autocomplete="current-password"
                ng-model="ctrl.loginForm.password"/>
       </div>
     </div>
@@ -34,6 +36,7 @@
       </label>
       <div class="col-sm-4">
         <input class="form-control" type="text" name="email" id="email" placeholder="Email"
+               autocomplete="email"
                ng-model="ctrl.signupForm.email"/>
       </div>
     </div>
@@ -43,6 +46,7 @@
       </label>
       <div class="col-sm-4">
         <input class="form-control" type="text" name="username" id="username" placeholder="Username"
+               autocomplete="username"
                ng-model="ctrl.signupForm.username"/>
       </div>
       <div class="col-sm-4 form-control-static">
@@ -55,6 +59,7 @@
       </label>
       <div class="col-sm-4">
         <input class="form-control" type="password" name="password" id="password" placeholder="Password"
+               autocomplete="new-password"
                ng-model="ctrl.signupForm.password"/>
       </div>
     </div>

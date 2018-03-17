@@ -1,166 +1,165 @@
 'use strict';
+
 /**
  * @constructor
  */
 function CoreDataService($http) {
-  this.$http = $http;
-  return this;
+
+    this.service_authz_login = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/service/authz/log-in';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.service_authz_logout = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/service/authz/log-out';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.register_account = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/service/register-account';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.data_account_list = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/account';
+        return $http(req);
+    };
+
+    this.data_account = function (account_id) {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/account';
+        req.url += '/' + account_id;
+        return $http(req);
+    };
+
+    this.remove_membership = function (account_id, payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/account';
+        req.url += '/' + account_id;
+        req.url += '/cmd/remove-membership';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.create_membership = function (account_id, payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/account';
+        req.url += '/' + account_id;
+        req.url += '/cmd/create-membership';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.membership_set_stripe_token = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/membership/set-stripe-token';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.membership_details = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/membership/details';
+        return $http(req);
+    };
+
+    this.membership_set_membership = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/membership/set-membership';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.badge_descriptions = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/badge/badge-descriptions';
+        return $http(req);
+    };
+
+    this.badge_create = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/badge/create-badge';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.data_circle_list = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/circle';
+        return $http(req);
+    };
+
+    this.data_company_list = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/company';
+        return $http(req);
+    };
+
+    this.data_company = function (company_id) {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/company';
+        req.url += '/' + company_id;
+        return $http(req);
+    };
+
+    this.data_company_add_employee = function (company_id, payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/company';
+        req.url += '/' + company_id;
+        req.url += '/cmd/add-employee';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.data_company_remove_employee = function (company_id, payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/company';
+        req.url += '/' + company_id;
+        req.url += '/cmd/remove-employee';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.data_company_add = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/company';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.data_company_update = function (payload) {
+        var req = {};
+        req.method = 'PUT';
+        req.url = '/data/company';
+        req.data = payload;
+        return $http(req);
+    };
 }
-
-CoreDataService.prototype.service_authz_login = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/service/authz/log-in';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.service_authz_logout = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/service/authz/log-out';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.register_account = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/service/register-account';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_account_list = function () {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/data/account';
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_account = function (account_id) {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/data/account';
-    req.url += '/' + account_id;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.remove_membership = function (account_id, payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/data/account';
-    req.url += '/' + account_id;
-    req.url += '/cmd/remove-membership';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.create_membership = function (account_id, payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/data/account';
-    req.url += '/' + account_id;
-    req.url += '/cmd/create-membership';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.membership_set_stripe_token = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/membership/set-stripe-token';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.membership_details = function () {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/membership/details';
-    return this.$http(req);
-};
-
-CoreDataService.prototype.membership_set_membership = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/membership/set-membership';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.badge_descriptions = function () {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/badge/badge-descriptions';
-    return this.$http(req);
-};
-
-CoreDataService.prototype.badge_create = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/badge/create-badge';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_circle_list = function () {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/data/circle';
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company_list = function () {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/data/company';
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company = function (company_id) {
-    var req = {};
-    req.method = 'GET';
-    req.url = '/data/company';
-    req.url += '/' + company_id;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company_add_employee = function (company_id, payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/data/company';
-    req.url += '/' + company_id;
-    req.url += '/cmd/add-employee';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company_remove_employee = function (company_id, payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/data/company';
-    req.url += '/' + company_id;
-    req.url += '/cmd/remove-employee';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company_add = function (payload) {
-    var req = {};
-    req.method = 'POST';
-    req.url = '/data/company';
-    req.data = payload;
-    return this.$http(req);
-};
-
-CoreDataService.prototype.data_company_update = function (payload) {
-    var req = {};
-    req.method = 'PUT';
-    req.url = '/data/company';
-    req.data = payload;
-    return this.$http(req);
-};
 
 var CoreDataServiceResolvers = {};
 CoreDataServiceResolvers.data_account_list = function (CoreDataService) {

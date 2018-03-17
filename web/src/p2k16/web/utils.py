@@ -145,20 +145,17 @@ class DataServiceTool(object):
     segments_re = re.compile("(/<([^:]+)+:([^>]+)>)|(/[^/]*)")
 
     def generate(self, ):
-        s = "'use strict';\n"
+        s = "'use strict';\n\n"
         s += "/**\n * @constructor\n */\n"
         s += "function {}($http) {{\n".format(self.name)
-        s += "  this.$http = $http;\n"
-        # s += "  console.log('{}', this);\n".format(self.name)
-        s += "  return this;\n"
-        s += "}\n"
-        s += "\n"
 
         names = [r.name for r in self._routes]
 
         resolvers = []
 
         for r in self._routes:
+            s += "\n"
+
             args = []
             url_parts = []
 
@@ -203,22 +200,22 @@ class DataServiceTool(object):
 
             middle = '='
             f_args = args + ['payload'] if has_payload else args
-            s += "{}.prototype.{} = function ({}) {{\n".format(self.name, r.name, ", ".join(f_args))
+            s += "    this.{} = function ({}) {{\n".format(r.name, ", ".join(f_args))
             # s += "    console.log('{}: this', this);\n".format(r.name)
-            s += "    var req = {{}};\n".format()
-            s += "    req.method = '{}';\n".format(r.method)
+            s += "        var req = {{}};\n".format()
+            s += "        req.method = '{}';\n".format(r.method)
 
             for p in up:
                 if p[1]:
-                    s += "    req.url {} '{}';\n".format(middle, p[1])
+                    s += "        req.url {} '{}';\n".format(middle, p[1])
                 else:
-                    s += "    req.url {} '/' + {};\n".format(middle, p[0])
+                    s += "        req.url {} '/' + {};\n".format(middle, p[0])
                 middle = '+='
 
             if has_payload:
-                s += "    req.data = payload;\n".format(r.url)
-            s += "    return this.$http(req);\n"
-            s += "};\n"
+                s += "        req.data = payload;\n".format(r.url)
+            s += "        return $http(req);\n"
+            s += "    };\n"
 
             if not has_payload:
                 # resolvers.append(r.name)
@@ -235,7 +232,7 @@ class DataServiceTool(object):
                 r_s += "};\n"
                 resolvers.append((r.name, r_s))
 
-            s += "\n"
+        s += "}\n\n"
 
         s += "var {}Resolvers = {{}};\n".format(self.name)
         for (name, fun) in resolvers:

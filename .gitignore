@@ -6,5 +6,6 @@ bower_components
 node_modules/
 *.egg-info
 .cache/
+.pytest_cache/
 
 flyway-*.*.*

@@ -11,9 +11,7 @@
   <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
     <ul class="nav navbar-nav">
       <li ng-class="{'front-page': 'active'}[active]"><a href="#">Home</a></li>
-      <li ng-class="{'membership': 'active'}[active]"><a href="#!membership">Membership</a></li>
-      <li ng-class="{'admin': 'active'}[active]" ng-if="$root.p2k16.hasRole('admin')">
-        <a href="#!admin">Admin</a></li>
+      <li ng-class="{'admin': 'active'}[active]" ng-if="$root.p2k16.hasRole('admin')"><a href="#!admin">Admin</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">
@@ -25,6 +23,8 @@
         </a>
         <ul uib-dropdown-menu>
           <li><a href="#!my-profile">My profile</a></li>
+          <li><a href="#!membership">Membership</a></li>
+          <li role="separator" class="divider"></li>
           <li><a href ng-click="header.logout($event)">Log out</a></li>
         </ul>
       </li>

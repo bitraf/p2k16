@@ -73,7 +73,7 @@ def model_to_json(obj) -> dict:
     d = {}
 
     if hasattr(obj, "id"):
-        d["id"] = str(obj.id)
+        d["id"] = int(obj.id)
 
     if isinstance(obj, models.CreatedAtMixin):
         d["createdAt"] = obj.created_at

@@ -142,6 +142,7 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
     _password = Column('password', String(100))
     name = Column(String(100), nullable=True)
     phone = Column(String(50), nullable=True)
+    system = Column(Boolean, nullable=False)
 
     reset_token = Column(String(50), unique=True)
     reset_token_validity = Column(DateTime)
@@ -180,12 +181,18 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
 
     @password.setter
     def password(self, plaintext):
+        if self.system:
+            raise P2k16TechnicalException("System users can't have a password")
+
         pw = flask_bcrypt.generate_password_hash(plaintext)
         self._password = pw.decode('utf-8')
         self.reset_token = None
         self.reset_token_validity = None
 
     def valid_password(self, password) -> bool:
+        if self.system:
+            raise P2k16TechnicalException("System users can't log in")
+
         if self.password.startswith("$2b$"):
             bs = bytes(self._password, 'utf-8')
             return flask_bcrypt.check_password_hash(bs, password)

@@ -85,9 +85,15 @@ DELETE FROM public.account_version;
 TRUNCATE public.account_version;
 TRUNCATE public.account CASCADE;
 
+-- TODO: reset all sequences to 1?
+SELECT setval('account_id_seq', 1);
+
+INSERT INTO public.account (created_at, updated_at, username, email, system)
+VALUES (current_timestamp, current_timestamp, 'system', 'root@bitraf.no', TRUE);
+
 -- TODO: import accounts without auth records
 -- TODO: p2k12 active_members.price -> p2k16 membership.fee
-INSERT INTO public.account (id, created_at, updated_at, username, email, password, name)
+INSERT INTO public.account (membership_number, created_at, updated_at, username, email, password, name)
   SELECT
     id,
     created_at,
@@ -131,8 +137,6 @@ INSERT INTO public.account (id, created_at, updated_at, username, email, passwor
        ) AS account
   ORDER BY account.username;
 
-SELECT setval('account_id_seq', (SELECT max(id) + 1
-                                 FROM account));
 DO $$
 DECLARE
   trygvis_id BIGINT;

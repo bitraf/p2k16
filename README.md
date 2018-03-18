@@ -56,7 +56,6 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 * Migrate data from p2k12 database
 * Actually open doors.
-  * Audit log
 
 # TODOs post production / p2k12 migration
 
@@ -65,7 +64,8 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 # TODOs (fix at any time)
 
 * Drop BIGSERIAL on _version tables. Should be BIGINT instead.
-
+* Prevent updates to certain fields like Account.username.
+  SQLAlchemy's event systems seems like a useful method: http://docs.sqlalchemy.org/en/latest/orm/events.html
 
 # Badge system
 

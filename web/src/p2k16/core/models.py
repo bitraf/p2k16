@@ -1,6 +1,6 @@
 import crypt
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import chain
 from typing import Optional
 
@@ -174,7 +174,9 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
         self.reset_token_validity = datetime.now() + timedelta(hours=24)
 
     def is_valid_reset_token(self, reset_token):
-        return self.reset_token == reset_token and datetime.now() < self.reset_token_validity
+        now = datetime.now(timezone.utc)
+
+        return self.reset_token == reset_token and now < self.reset_token_validity
 
     @hybrid_property
     def password(self):

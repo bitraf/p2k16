@@ -557,12 +557,13 @@
 
     /**
      * @param $location
+     * @param $uibModal
      * @param {P2k16} P2k16
      * @param {CoreDataService} CoreDataService
      * @param {AuthzService} AuthzService
      * @constructor
      */
-    function UnauthenticatedController($location, P2k16, CoreDataService, AuthzService) {
+    function UnauthenticatedController($location, $uibModal, P2k16, CoreDataService, AuthzService) {
         var self = this;
         self.signupForm = {};
         self.loginForm = {
@@ -582,6 +583,36 @@
                 $location.url("/");
             });
         };
+
+        self.resetPassword = function () {
+            var username = self.loginForm.username;
+            console.log('username', username);
+            var modalInstance = $uibModal.open({
+                animation: true,
+                templateUrl: 'unauthenticated/reset-password-modal.html',
+                controller: function ($uibModalInstance) {
+                    var self = this;
+                    console.log('username', username);
+                    self.username = username;
+                    self.ok = function () {
+                        CoreDataService.service_start_reset_password({username: self.username}).then(function (res) {
+                            console.log("res", res.data);
+                            self.message = res.data.message;
+                        });
+                    };
+                    self.dismiss = function () {
+                        $uibModalInstance.dismiss('dismissed');
+                    };
+                    self.cancel = function () {
+                        $uibModalInstance.dismiss('cancel');
+                    };
+                },
+                controllerAs: 'ctrl'
+            });
+
+            modalInstance.result.then(function (values) {
+            }, angular.identity);
+        }
     }
 
     angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])

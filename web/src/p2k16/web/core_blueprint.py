@@ -8,8 +8,8 @@ import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
-from p2k16.core.models import AccountBadge, BadgeDescription
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee
+from p2k16.core.models import AccountBadge, BadgeDescription
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
@@ -28,6 +28,14 @@ register_account_form = {
         "phone": {"type": "string"},
     },
     "required": ["email", "username", "password"]
+}
+
+start_reset_password_form = {
+    "type": "object",
+    "properties": {
+        "username": nonempty_string
+    },
+    # "required": ["username"]
 }
 
 login_form = {
@@ -441,14 +449,16 @@ def login():
     return flask.redirect(flask.url_for('.login', show_message='bad-login', username=username))
 
 
-@core.route('/start-reset-password', methods=['POST'])
-def start_reset_password():
-    username = flask.request.form['username']
+@registry.route('/service/start-reset-password', methods=['POST'])
+@validate_schema(start_reset_password_form)
+def service_start_reset_password():
+    username = flask.request.json['username']
     account = account_management.start_reset_password(username)
     if account:
         db.session.commit()
 
-    return flask.redirect(flask.url_for('.login', show_message='recovery', username=username))
+    response = {"message": "If we found your user in our systems we have sent an email to your registered email."}
+    return jsonify(response)
 
 
 @core.route('/reset-password-form', methods=['GET'])
@@ -474,7 +484,7 @@ def set_new_password():
     account.password = password
     logger.info('Updating password for account={}'.format(account))
     db.session.commit()
-    return flask.redirect(flask.url_for('.login'))
+    return flask.redirect(flask.url_for('core.index'))
 
 
 @core.route('/protected')

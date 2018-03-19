@@ -159,6 +159,14 @@ function CoreDataService($http) {
         req.data = payload;
         return $http(req);
     };
+
+    this.service_start_reset_password = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/service/start-reset-password';
+        req.data = payload;
+        return $http(req);
+    };
 }
 
 var CoreDataServiceResolvers = {};

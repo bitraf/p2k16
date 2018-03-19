@@ -164,6 +164,7 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
         self.password = password
         self.name = name
         self.phone = phone
+        self.system = False
 
     def display_name(self):
         return self.username

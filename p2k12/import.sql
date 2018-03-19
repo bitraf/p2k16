@@ -62,7 +62,7 @@ CREATE VIEW p2k12.active_members AS
     m.recurrence,
     m.account,
     m.organization,
-    m.flag
+    m.flag = 'm_office' AS office_user
   FROM p2k12.members m
   ORDER BY m.account, m.id DESC;
 
@@ -72,6 +72,31 @@ CREATE VIEW p2k12.duplicate_emails AS
   GROUP BY email
   HAVING count(email) > 1
   ORDER BY email;
+
+CREATE VIEW p2k12.first_checkin AS
+  SELECT
+    account,
+    min(checkins.date) date
+  FROM p2k12.checkins
+  GROUP BY account;
+
+CREATE VIEW p2k12.export AS
+  SELECT
+    m.account   AS account_id,
+    fc.date     AS created_at,
+    fc.date     AS updated_at,
+    a.name      AS username,
+    m.email     AS email,
+    m.full_name AS name,
+    m.price     AS price
+  FROM p2k12.active_members m
+    LEFT OUTER JOIN p2k12.accounts a ON m.account = a.id
+    LEFT OUTER JOIN p2k12.first_checkin fc ON a.id = fc.account
+  WHERE TRUE
+        AND a.type = 'user'
+        AND m.email NOT IN (SELECT email
+                            FROM p2k12.duplicate_emails)
+  ORDER BY account_id ASC;
 
 DELETE FROM public.company_employee_version;
 DELETE FROM public.company_employee;
@@ -92,93 +117,86 @@ INSERT INTO public.account (created_at, updated_at, username, email, system)
 VALUES (current_timestamp, current_timestamp, 'system', 'root@bitraf.no', TRUE);
 
 -- TODO: import accounts without auth records
--- TODO: p2k12 active_members.price -> p2k16 membership.fee
-INSERT INTO public.account (membership_number, created_at, updated_at, username, email, password, name)
+-- TODO: p2k12 user.price -> p2k16 membership.fee
+INSERT INTO public.account (membership_number, created_at, updated_at, username, email, name)
   SELECT
-    id,
-    created_at,
-    updated_at,
+    account_id,
+    coalesce(created_at, now()),
+    coalesce(updated_at, now()),
     username,
     email,
-    password,
     name
-  FROM (
-         WITH
-             first_checkin AS (SELECT
-                                 account,
-                                 min(checkins.date) date
-                               FROM p2k12.checkins
-                               GROUP BY account),
-             last_member AS (SELECT
-                               account,
-                               max(members.date) date
-                             FROM p2k12.members
-                             GROUP BY account)
-         SELECT
-           m.account   AS id,
-           fc.date     AS created_at,
-           lm.date     AS updated_at,
-           a.name      AS username,
-           m.email     AS email,
-           auth.data   AS password,
-           m.full_name AS name,
-           m.price     AS price
-         FROM p2k12.active_members m
-           INNER JOIN p2k12.accounts a ON m.account = a.id
-           INNER JOIN p2k12.auth auth ON a.id = auth.account
-           INNER JOIN first_checkin fc ON a.id = fc.account
-           INNER JOIN last_member lm ON a.id = lm.account
-         WHERE TRUE
-               AND auth.realm = 'door'
-               AND a.type = 'user'
-               AND m.email NOT IN (SELECT email
-                                   FROM p2k12.duplicate_emails)
-         ORDER BY id ASC
-       ) AS account
-  ORDER BY account.username;
+  FROM p2k12.export
+  ORDER BY account_id;
+
+-- Update passwords
+UPDATE public.account a
+SET password = (SELECT data
+                FROM p2k12.auth auth
+                WHERE a.membership_number = auth.account AND auth.realm = 'door');
 
 DO $$
 DECLARE
-  trygvis_id BIGINT;
-  admin_id   BIGINT;
-  door_id    BIGINT;
+  system_id        BIGINT := (SELECT id
+                              FROM account
+                              WHERE username = 'system');
+  trygvis_id       BIGINT := (SELECT id
+                              FROM account
+                              WHERE username = 'trygvis');
+  admin_id         BIGINT;
+  door_id          BIGINT;
+  p2k12_company_id BIGINT;
 BEGIN
 
-  SELECT id
-  FROM account
-  WHERE username = 'trygvis'
-  INTO trygvis_id;
-
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now(), trygvis_id, now(), trygvis_id, 'admin', 'Admin')
+    (now(), system_id, now(), system_id, 'admin', 'Admin')
   RETURNING id
     INTO admin_id;
 
   INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now(), trygvis_id, now(), trygvis_id, 'door', 'Door access')
+    (now(), system_id, now(), system_id, 'door', 'Door access')
   RETURNING id
     INTO door_id;
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
-    (now(), trygvis_id, now(), trygvis_id, trygvis_id, admin_id);
+    (now(), system_id, now(), system_id, trygvis_id, admin_id);
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle)
     WITH paying AS (
         SELECT
           am.account,
-          (0 < am.price OR am.flag IS NOT DISTINCT FROM 'm_office') AS paying
+          0 < am.price AS paying
         FROM p2k12.active_members am
     )
     SELECT
-      now()      AS created_at,
-      trygvis_id AS created_by,
-      now()      AS updated_at,
-      trygvis_id AS updated_by,
-      a.id       AS account,
-      door_id    AS circle
+      now()     AS created_at,
+      system_id AS created_by,
+      now()     AS updated_at,
+      system_id AS updated_by,
+      a.id      AS account,
+      door_id   AS circle
     FROM public.account a
-      INNER JOIN paying p ON a.id = p.account
+      INNER JOIN paying p ON a.membership_number = p.account
     WHERE p.paying
+    ORDER BY a.id;
+
+  INSERT INTO company (created_at, created_by, updated_at, updated_by, name, active, contact)
+  VALUES (now(), system_id, now(), system_id, 'P2k12 Office Users', TRUE, system_id)
+  RETURNING id
+    INTO p2k12_company_id;
+
+  INSERT INTO company_employee (created_at, created_by, updated_at, updated_by, company, account)
+    SELECT
+      now()     AS created_at,
+      system_id AS created_by,
+      now()     AS updated_at,
+      system_id AS updated_by,
+      p2k12_company_id,
+      a.id      AS account
+    FROM public.account a
+      INNER JOIN p2k12.accounts ON a.membership_number = p2k12.accounts.id
+      INNER JOIN p2k12.active_members am ON am.account = a.id
+    WHERE am.office_user
     ORDER BY a.id;
 END;
 $$;

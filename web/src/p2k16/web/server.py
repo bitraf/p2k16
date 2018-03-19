@@ -9,7 +9,7 @@ import flask_login
 from flask.json import JSONEncoder
 
 from p2k16.core import P2k16UserException, P2k16TechnicalException
-from p2k16.core import make_app, auth, door
+from p2k16.core import make_app, auth, door, mail
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
 
@@ -184,3 +184,5 @@ if _env == "local":
             flask.current_app.config["RESOURCE_HASH_TYPE"] = resource_hash_type
 
 flask_bower.Bower(app)
+
+mail.get_templates() # Preload templates

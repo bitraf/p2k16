@@ -4,7 +4,7 @@ from typing import Optional, List
 
 import flask
 
-from p2k16.core import P2k16UserException
+from p2k16.core import P2k16UserException, mail
 from p2k16.core.models import db, Account, Circle, CircleMember
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,8 @@ def start_reset_password(username: string) -> Optional[Account]:
     url = flask.url_for('core.reset_password_form', reset_token=account.reset_token, _external=True)
     logger.info('Reset URL: {}'.format(url))
 
-    # TODO: send email
+    mail.send_password_recovery(account, url)
+
     return account
 
 

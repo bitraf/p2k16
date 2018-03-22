@@ -1,0 +1,51 @@
+<p2k16-header active="home"></p2k16-header>
+
+<div class="container">
+  <h1>User: {{ ctrl.account.username }}</h1>
+
+    <form class="form-horizontal">
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Last seen</label>
+      <div class="col-sm-6">
+        <p class="form-control-static">{{ ctrl.summary.lastDoorOpen.created_at | date:'short' }}</p>
+      </div>
+    </div>
+  </form>
+
+  <h3>Contact information</h3>
+
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Username</label>
+      <div class="col-sm-6">
+        <p class="form-control-static">{{ ctrl.account.username }}</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Name</label>
+      <div class="col-sm-6">
+        <p class="form-control-static">{{ ctrl.account.name }}</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Email</label>
+      <div class="col-sm-6">
+        <p class="form-control-static"><a href="mailto:{{ ctrl.account.email }}">{{ ctrl.account.email }}</a></p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Phone number</label>
+      <div class="col-sm-6">
+        <p class="form-control-static"><a href="tel:{{ ctrl.account.phone }}">{{ ctrl.account.phone }}</a></p>
+      </div>
+    </div>
+  </form>
+
+  <h2>Badges</h2>
+
+  <ul>
+    <li ng-repeat="b in ctrl.badges | orderBy:'createdAt'" ng-init="bd=ctrl.badgeDescriptions[b.description_id]">
+      {{ b.createdAt | date }} <span class="label label-success">{{ bd.title }}</span>
+    </li>
+  </ul>
+</div>

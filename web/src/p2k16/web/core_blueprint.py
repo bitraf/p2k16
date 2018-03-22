@@ -1,15 +1,15 @@
 import io
 import logging
 import os
-from typing import List
+from typing import List, Optional
 
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
-from p2k16.core import P2k16UserException, auth, account_management, badge_management, models
+from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee
-from p2k16.core.models import AccountBadge, BadgeDescription
+from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
 
@@ -65,17 +65,6 @@ single_company_form = {
     "required": ["name", "contact"]
 }
 
-create_badge_form = {
-    "type": "object",
-    "properties": {
-        "title": nonempty_string
-    },
-    "required": ["title"]
-}
-
-core = Blueprint('core', __name__, template_folder='templates')
-registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
-
 
 def model_to_json(obj) -> dict:
     d = {}
@@ -104,25 +93,9 @@ def circle_to_json(circle: Circle):
     }}
 
 
-def badge_to_json(b: AccountBadge):
-    return {**model_to_json(b), **{
-        "account_id": b.account_id,
-        "awarded_by_id": b.awarded_by_id,
-        "description_id": b.description_id
-    }}
+def account_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]]):
+    from .badge_blueprint import badge_to_json
 
-
-def badge_description_to_json(bd: BadgeDescription):
-    return {**model_to_json(bd), **{
-        "title": bd.title,
-        "slug": bd.slug,
-        "icon": bd.icon,
-        "color": bd.color,
-        "certification_circle_id": bd.certification_circle_id
-    }}
-
-
-def account_to_json(account: Account, circles: List[Circle], badges: List[AccountBadge]):
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
@@ -130,7 +103,7 @@ def account_to_json(account: Account, circles: List[Circle], badges: List[Accoun
         "name": account.name,
         "phone": account.phone,
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
-        "badges": {b.id: badge_to_json(b) for b in badges}
+        "badges": {b.id: badge_to_json(b) for b in badges} if badges else None
     }}
 
 
@@ -157,6 +130,10 @@ def check_is_in_circle(circle_name: str):
     TODO: implement
     """
     pass
+
+
+core = Blueprint('core', __name__, template_folder='templates')
+registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
 
 @registry.route('/service/authz/log-in', methods=['POST'])
@@ -187,6 +164,10 @@ def service_authz_login():
 def service_authz_logout():
     flask_login.logout_user()
     return jsonify({})
+
+
+###############################################################################
+# Account
 
 
 @registry.route('/service/register-account', methods=['POST'])
@@ -221,9 +202,29 @@ def data_account(account_id):
         abort(404)
 
     circles = account_management.get_circles_for_account(account.id)
+
+    return jsonify(account_to_json(account, circles, None))
+
+
+@registry.route('/data/account-summary/<int:account_id>')
+def data_account_summary(account_id):
+    account = Account.find_account_by_id(account_id)
+
+    if account is None:
+        abort(404)
+
+    circles = account_management.get_circles_for_account(account.id)
     badges = badge_management.badges_for_account(account.id)
 
-    return jsonify(account_to_json(account, circles, badges))
+    open_door_event = event_management.last_door_open(account)
+
+    from .badge_blueprint import badge_to_json
+    summary = {
+        "account": account_to_json(account, circles, None),
+        "badges": [badge_to_json(b) for b in badges],
+        "lastDoorOpen": open_door_event.to_dict()
+    }
+    return jsonify(summary)
 
 
 @registry.route('/data/account/<int:account_id>/cmd/remove-membership', methods=["POST"])
@@ -236,6 +237,10 @@ def remove_membership(account_id):
 @validate_schema(single_circle_form)
 def create_membership(account_id):
     return _manage_membership(account_id, True)
+
+
+###############################################################################
+# Membership
 
 
 def _manage_membership(account_id: int, create: bool):
@@ -282,32 +287,14 @@ def membership_set_membership():
     return jsonify(member_set_membership(account, membership_plan, membership_price))
 
 
-@registry.route('/badge/badge-descriptions', methods=["GET"])
-def badge_descriptions():
-    bds = BadgeDescription.query.all()
-    return jsonify({bd.id: badge_description_to_json(bd) for bd in bds})
-
-
-@registry.route('/badge/create-badge', methods=["POST"])
-@validate_schema(create_badge_form)
-def badge_create():
-    account = flask_login.current_user.account
-
-    title = request.json["title"]
-    badge_management.create_badge(account, awarder=None, title=title)
-
-    circles = account_management.get_circles_for_account(account.id)
-    badges = badge_management.badges_for_account(account.id)
-
-    db.session.commit()
-
-    return jsonify(account_to_json(account, circles, badges))
-
-
 @registry.route('/data/circle')
 def data_circle_list():
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
+
+
+###############################################################################
+# Company
 
 
 @registry.route('/data/company')
@@ -407,6 +394,10 @@ def _data_company_save():
     employees = CompanyEmployee.list_by_company(company.id)
     db.session.commit()
     return jsonify(company_to_json(company, employees))
+
+
+###############################################################################
+# HTML Pages
 
 
 @core.route('/')

@@ -44,6 +44,14 @@ function CoreDataService($http) {
         return $http(req);
     };
 
+    this.data_account_summary = function (account_id) {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/account-summary';
+        req.url += '/' + account_id;
+        return $http(req);
+    };
+
     this.remove_membership = function (account_id, payload) {
         var req = {};
         req.method = 'POST';
@@ -83,21 +91,6 @@ function CoreDataService($http) {
         var req = {};
         req.method = 'POST';
         req.url = '/membership/set-membership';
-        req.data = payload;
-        return $http(req);
-    };
-
-    this.badge_descriptions = function () {
-        var req = {};
-        req.method = 'GET';
-        req.url = '/badge/badge-descriptions';
-        return $http(req);
-    };
-
-    this.badge_create = function (payload) {
-        var req = {};
-        req.method = 'POST';
-        req.url = '/badge/create-badge';
         req.data = payload;
         return $http(req);
     };
@@ -177,11 +170,12 @@ CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
   var account_id = $route.current.params.account_id;
   return CoreDataService.data_account(account_id).then(function (res) { return res.data; });
 };
+CoreDataServiceResolvers.data_account_summary = function (CoreDataService, $route) {
+  var account_id = $route.current.params.account_id;
+  return CoreDataService.data_account_summary(account_id).then(function (res) { return res.data; });
+};
 CoreDataServiceResolvers.membership_details = function (CoreDataService) {
   return CoreDataService.membership_details().then(function (res) { return res.data; });
-};
-CoreDataServiceResolvers.badge_descriptions = function (CoreDataService) {
-  return CoreDataService.badge_descriptions().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_circle_list = function (CoreDataService) {
   return CoreDataService.data_circle_list().then(function (res) { return res.data; });

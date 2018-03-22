@@ -40,15 +40,16 @@ def save_event(event):
     db.session.add(Event(converter.domain, converter.name, **params))
 
 
-def _convert(events: List[Event]):
+def _convert(e: Event):
+    converter = _from_key.get((e.domain, e.name), None)
+
+    return converter.instance.from_event(e) if converter else None
+
+
+def _convert_all(events: List[Event]):
     records = []
     for e in events:
-        converter = _from_key.get((e.domain, e.name), None)
-
-        if not converter:
-            continue
-
-        r = converter.instance.from_event(e)
+        r = _convert(e)
         if r:
             records.append(r)
 
@@ -68,12 +69,21 @@ def get_public_recent_events(start: datetime):
         order_by(Event.created_at.desc()).limit(100). \
         all()  # type: List[Event]
 
-    return _convert(events)
+    return _convert_all(events)
 
 
 def has_opened_door(account: Account):
     import sqlalchemy
-    x = db.session.query(
-        sqlalchemy.exists().where(
-            (Event.created_by == account) & (Event.domain == "door") & (Event.name == "open"))).scalar()
-    return x
+    q = sqlalchemy.exists().where((Event.created_by == account) & (Event.domain == "door") & (Event.name == "open"))
+    return db.session.query(q).scalar()
+
+
+def last_door_open(account: Account):
+    e = Event.query. \
+        filter(Event.created_by == account). \
+        filter((Event.domain == "door") & (Event.name == "open")). \
+        order_by(Event.created_at). \
+        limit(1). \
+        one_or_none()
+
+    return _convert(e)

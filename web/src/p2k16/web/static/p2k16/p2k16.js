@@ -24,9 +24,34 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.my_profile_html,
             resolve: {
-                badgeDescriptions: CoreDataServiceResolvers.badge_descriptions
+                badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions
             }
-        }).when("/admin", {
+        });
+
+        // Badge
+        $routeProvider.when("/badges", {
+            controller: BadgesFrontPageController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.badges_front_page_html,
+            resolve: {
+                recentBadges: BadgeDataServiceResolvers.recent_badges,
+                badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions
+            }
+        });
+
+        // User
+        $routeProvider.when("/user/:account_id", {
+            controller: UserDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.user_detail_html,
+            resolve: {
+                summary: CoreDataServiceResolvers.data_account_summary,
+                badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions
+            }
+        });
+
+        // Admin
+        $routeProvider.when("/admin", {
             controller: AdminController,
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_html
@@ -305,6 +330,7 @@
     /**
      * @param {DoorDataService} DoorDataService
      * @param {P2k16} P2k16
+     * @param recent_events
      */
     function FrontPageController(DoorDataService, P2k16, recent_events) {
         var self = this;
@@ -415,11 +441,11 @@
     /**
      * @param $scope
      * @param {P2k16} P2k16
-     * @param {CoreDataService} CoreDataService
+     * @param {BadgeDataService} BadgeDataService
      * @param badgeDescriptions
      * @constructor
      */
-    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions) {
+    function MyProfileController($scope, P2k16, BadgeDataService, badgeDescriptions) {
         var self = this;
 
         P2k16.accountListeners.add($scope, function (newValue) {
@@ -438,9 +464,52 @@
         updateBadges(P2k16.currentAccount());
 
         self.createBadge = function () {
-            CoreDataService.badge_create(self.newBadge).then(P2k16.refreshAccountFromResponse);
+            BadgeDataService.create(self.newBadge).then(P2k16.refreshAccountFromResponse);
         };
     }
+
+    /*************************************************************************
+     * Badges
+     */
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param {BadgeDataService} BadgeDataService
+     * @param {P2k16} P2k16
+     * @param badgeDescriptions
+     * @param recentBadges
+     */
+    function BadgesFrontPageController(CoreDataService, BadgeDataService, P2k16, badgeDescriptions, recentBadges) {
+        var self = this;
+
+        self.badgeDescriptions = badgeDescriptions;
+        self.recentBadges = recentBadges;
+    }
+
+    /*************************************************************************
+     * User
+     */
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param {BadgeDataService} BadgeDataService
+     * @param {P2k16} P2k16
+     * @param summary
+     * @param badgeDescriptions
+     */
+    function UserDetailController(CoreDataService, BadgeDataService, P2k16, summary, badgeDescriptions) {
+        var self = this;
+
+        self.account = summary.account;
+        self.badges = summary.badges;
+        self.summary = summary;
+        self.badgeDescriptions = badgeDescriptions;
+    }
+
+
+    /*************************************************************************
+     * Admin
+     */
 
     /**
      * @param $http
@@ -619,6 +688,7 @@
         .config(config)
         .run(run)
         .service("P2k16", P2k16)
+        .service("BadgeDataService", BadgeDataService)
         .service("CoreDataService", CoreDataService)
         .service("DoorDataService", DoorDataService)
         .service("AuthzService", AuthzService)

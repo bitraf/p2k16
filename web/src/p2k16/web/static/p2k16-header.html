@@ -11,6 +11,7 @@
   <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
     <ul class="nav navbar-nav">
       <li ng-class="{'front-page': 'active'}[active]"><a href="#">Home</a></li>
+      <li ng-class="{'badges': 'active'}[active]"><a href="#!badges">Badges</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">
@@ -23,6 +24,7 @@
         </a>
         <ul uib-dropdown-menu>
           <li><a href="#!my-profile">My profile</a></li>
+          <li><a href="#!user/{{ header.currentAccount().id }}">My public page</a></li>
           <li><a href="#!membership">Membership</a></li>
           <li role="separator" class="divider"></li>
           <li><a href ng-click="header.logout($event)">Log out</a></li>

@@ -7,7 +7,6 @@ import flask
 import flask_bower
 import flask_login
 from flask.json import JSONEncoder
-
 from p2k16.core import P2k16UserException, P2k16TechnicalException
 from p2k16.core import make_app, auth, door, mail
 from p2k16.core.models import db, model_support, P2k16Mixin
@@ -157,8 +156,9 @@ db.init_app(app)
 app.json_encoder = P2k16JSONEncoder
 app.config.door_client = door.create_client(app.config)
 
-from p2k16.web import core_blueprint, door_blueprint, membership_blueprint
+from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, membership_blueprint
 
+app.register_blueprint(badge_blueprint.badge)
 app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)
 app.register_blueprint(membership_blueprint.membership)
@@ -166,7 +166,7 @@ app.register_blueprint(membership_blueprint.membership)
 _env = app.config.get("P2K16_ENV", None)
 
 if _env == "local":
-    for registry in [core_blueprint.registry, door_blueprint.registry]:
+    for registry in [badge_blueprint.registry, core_blueprint.registry, door_blueprint.registry]:
         with open(os.path.join(app.static_folder, registry.jsName), "w") as f:
             # print("app.static_folder={}".format(app.static_folder))
             f.write(registry.generate())

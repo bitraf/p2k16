@@ -30,13 +30,13 @@ class BadgeAwardedEvent(object):
         return BadgeAwardedEvent(account_badge, badge_description, event.created_at, event.created_by)
 
     def to_dict(self):
-        import p2k16.web.core_blueprint as core_blueprint
+        from p2k16.web import badge_blueprint
         return {**event_management.base_dict(self), **{
             "created_at": self.created_at,
             "created_by": self.created_by,
             "created_by_username": self.created_by.username,
-            "account_badge": core_blueprint.badge_to_json(self.account_badge),
-            "badge_description": core_blueprint.badge_description_to_json(self.badge_description) if self.badge_description else None,
+            "account_badge": badge_blueprint.badge_to_json(self.account_badge),
+            "badge_description": badge_blueprint.badge_description_to_json(self.badge_description) if self.badge_description else None,
         }}
 
 

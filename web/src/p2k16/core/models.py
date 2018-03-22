@@ -433,14 +433,17 @@ class BadgeDescription(DefaultMixin, db.Model):
     __versioned__ = {}
 
     title = Column(String(50), nullable=False)
+    description = Column(String(1000), nullable=False)
     slug = Column(String(50), nullable=True)
     icon = Column(String(50), nullable=True)
     color = Column(String(50), nullable=True)
+
     certification_circle_id = Column("certification_circle", Integer, ForeignKey('circle.id'), nullable=True)
     certification_circle = relationship("Circle")
 
     def __init__(self, title: str):
         self.title = title
+        self.description = None
         self.slug = None
         self.icon = None
         self.color = None

@@ -1,0 +1,24 @@
+<p2k16-header active="badges"></p2k16-header>
+
+<div class="container">
+  <h1>Recently issued badges</h1>
+
+  <ul>
+    <li ng-repeat="b in ctrl.recentBadges" ng-init="bd = ctrl.badgeDescriptions[b.description_id]">
+      <span class="label label-success">{{ bd.title }}</span> was awarded to
+      <a ng-href="#!/user/{{ b.account_id }}">{{ b.account_username }}</a><span
+      ng-if="b.awarded_by_id">, awarded by {{ b.awarded_by_username }}</span>.
+    </li>
+  </ul>
+
+  <h2>Badges</h2>
+
+  <ul>
+    <li ng-repeat="bd in ctrl.badgeDescriptions">
+      <span class="label label-success">{{ bd.title }}</span>
+      <span ng-if="bd.description">{{ bd.description }}</span>
+      <span ng-if="!bd.description">Boo, missing description :'(</span>
+    </li>
+  </ul>
+
+</div>

@@ -30,10 +30,12 @@
     <li ng-repeat="e in ctrl.recent_events">
       <span ng-switch="e.domain + '-' + e.name">
         <span ng-switch-when="door-open">
-          {{ e.created_by_username }} opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
+          <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
+          opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
         </span>
         <span ng-switch-when="badge-awarded">
-          {{ e.created_by_username }} got the <span class="label label-default">{{ e.badge_description.title }}</span> bagde!
+          <a href="#!/user/{{ e.created_by_id }}">{{ e.created_by_username }}</a>
+          got the <span class="label label-default">{{ e.badge_description.title }}</span> Badge!
         </span>
       </span>
     </li>

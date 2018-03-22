@@ -222,7 +222,7 @@ def data_account_summary(account_id):
     summary = {
         "account": account_to_json(account, circles, None),
         "badges": [badge_to_json(b) for b in badges],
-        "lastDoorOpen": open_door_event.to_dict()
+        "lastDoorOpen": open_door_event.to_dict() if open_door_event else None
     }
     return jsonify(summary)
 

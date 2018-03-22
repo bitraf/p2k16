@@ -86,4 +86,4 @@ def last_door_open(account: Account):
         limit(1). \
         one_or_none()
 
-    return _convert(e)
+    return _convert(e) if e else None

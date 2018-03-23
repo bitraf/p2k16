@@ -63,6 +63,13 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 # TODOs (fix at any time)
 
+* Add word completion to Add Badge text field.
+* Empty text field after clicking Add badge on user profile.
+* Show success message after adding badge on user profile.
+* Fix duplicate-check for badge names.
+* Add word cloud or similar for badges on Bitraf front page, to increase front page utility and engagement.
+* Add delete badge-button for self-made badges.
+* Limit line length for badges on user profile.
 * Drop BIGSERIAL on _version tables. Should be BIGINT instead.
 * Prevent updates to certain fields like Account.username.
   SQLAlchemy's event systems seems like a useful method: http://docs.sqlalchemy.org/en/latest/orm/events.html
@@ -88,13 +95,13 @@ Most badges can be awarded multiple times too.
 
 Badge categories:
 
- * Competence levels
+ * Competence levels (badges required to operate certain tools that require course)
 
    - laser cutter
    - CNC-operator
    - lathe
 
- * Interest areas:
+ * Interest areas: (for expressing hobbies and competence levels)
 
    - laser cutting
    - woodworking
@@ -110,3 +117,7 @@ Badge categories:
    - Cleaner
    - Dugnader
    - Bitraf project fixer
+   
+ * Various badge ideas
+    - Badge "Initiator"\"dugnadsånd"? Bade for fixing something at Bitraf, i.e repairing laser, workshop mentoring, implementing web solutions (like this badge thingie), etc.
+    - Profession badge category, i.e Professional Programmer, Professional Electrician, Professional Carpenter.

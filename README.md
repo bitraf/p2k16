@@ -78,31 +78,16 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 ## Examples
 
- * lasercutter
- * CNC-operator
- * woodworking
- * metalworking
- * lathe
+ * Competence
+  - lasercutter
+  - CNC-operator
+  - lathe
 
- * soldering
- * Kicad, Eagle
- * SMT
- * PCB-etching
- * oscilloscope
-
-## Data model
-
-BadgeDescription
-
- * id/slug
- * title
- * icon
- * needs_certification
-
-AccountBadge
-
- * account FOREIGN NON NULL
- * badge_description NULL
- * awarded_at NOT NULL
- * awarded_by NULL
-
+ * Interrest areas
+  - woodworking
+  - metalworking
+  - soldering
+  - Kicad, Eagle
+  - SMT
+  - PCB-etching
+  - oscilloscope

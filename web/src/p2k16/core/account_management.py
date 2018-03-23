@@ -47,7 +47,7 @@ def _check_is_circle_admin(circle: Circle, admin: Account):
     admin_circle = Circle.find_by_name(circle.name + '-admin')
 
     if admin_circle is None:
-        raise P2k16UserException('There is not an admin circle for circle "%s"' % circle.name)
+        raise P2k16UserException('There is no admin circle (%s-admin") for circle "%s"'.format(circle.name, circle.name))
 
     if not is_account_in_circle(admin, admin_circle):
         raise P2k16UserException('Account %s is not an administrator of %s' % (admin.username, circle.description))

@@ -465,10 +465,10 @@ class AccountBadge(DefaultMixin, db.Model):
     awarded_by_id = Column("awarded_by", Integer, ForeignKey('account.id'), nullable=False)
     awarded_by = relationship("Account", foreign_keys=[awarded_by_id])
 
-    def __init__(self, account: Account, awarded_by: Optional[Account], description: BadgeDescription):
+    def __init__(self, account: Account, awarded_by: Account, description: BadgeDescription):
         self.account_id = account.id
-        self.awarded_by = awarded_by.id if awarded_by else None
-        self.description_id = description.id
+        self.awarded_by = awarded_by
+        self.description = description
 
 
 from sqlalchemy import event

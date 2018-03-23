@@ -4,7 +4,7 @@ from typing import List
 import flask
 import flask_login
 from flask import Blueprint, jsonify, request
-from p2k16.core import account_management, badge_management
+from p2k16.core import account_management, badge_management, P2k16UserException
 from p2k16.core.models import Account, AccountBadge, BadgeDescription
 from p2k16.core.models import db
 from p2k16.web.core_blueprint import model_to_json, account_to_json
@@ -18,9 +18,11 @@ nonempty_string = {"type": "string", "minLength": 1}
 create_badge_form = {
     "type": "object",
     "properties": {
-        "title": nonempty_string
+        "title": nonempty_string,
+        "recipient": nonempty_string
     },
-    "required": ["title"]
+    "required": ["title"],
+    "additionalProperties": False,
 }
 
 badge = Blueprint('badge', __name__, template_folder='templates')
@@ -57,10 +59,20 @@ def badge_descriptions():
 @registry.route('/badge/create-badge', methods=["POST"])
 @validate_schema(create_badge_form)
 def create():
-    account = flask_login.current_user.account
+    account = flask_login.current_user.account  # type: Account
 
     title = request.json["title"]
-    badge_management.create_badge(account, awarder=None, title=title)
+    recipient_username = request.json.get("recipient", None)
+
+    if recipient_username:
+        recipient = Account.find_account_by_username(recipient_username)
+
+        if not recipient:
+            raise P2k16UserException("No such username: {}".format(recipient_username))
+    else:
+        recipient = account
+
+    badge_management.create_badge(recipient, account, title)
 
     circles = account_management.get_circles_for_account(account.id)
     badges = badge_management.badges_for_account(account.id)

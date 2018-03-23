@@ -7,7 +7,7 @@
     <li ng-repeat="b in ctrl.recentBadges" ng-init="bd = ctrl.badgeDescriptions[b.description_id]">
       <span class="label label-success">{{ bd.title }}</span> was awarded to
       <a ng-href="#!/user/{{ b.account_id }}">{{ b.account_username }}</a><span
-      ng-if="b.awarded_by_id">, awarded by {{ b.awarded_by_username }}</span>.
+      ng-if="b.awarded_by_id != b.account_id">, awarded by {{ b.awarded_by_username }}</span>
     </li>
   </ul>
 
@@ -20,5 +20,38 @@
       <span ng-if="!bd.description">Boo, missing description :'(</span>
     </li>
   </ul>
+
+  <h2>Award a badge</h2>
+
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label for="title" class="col-sm-2">Badge</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.title">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="title" class="col-sm-2">Recipient</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.recipient">
+      </div>
+      <div class="col-sm-6">
+        Leave blank to assign to yourself.
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-4">
+        <button type="submit" class="btn btn-default" ng-click="ctrl.createBadge()">Add badge</button>
+      </div>
+    </div>
+  </form>
+
+  <p>
+    You can give yourself almost any badge you want. Take those that you feel that you're entitled to.
+  </p>
+
+  <p>
+    Some badges are reserved and has to either be assigned by someone else
+  </p>
 
 </div>

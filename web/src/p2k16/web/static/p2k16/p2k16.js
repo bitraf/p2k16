@@ -441,11 +441,10 @@
     /**
      * @param $scope
      * @param {P2k16} P2k16
-     * @param {BadgeDataService} BadgeDataService
      * @param badgeDescriptions
      * @constructor
      */
-    function MyProfileController($scope, P2k16, BadgeDataService, badgeDescriptions) {
+    function MyProfileController($scope, P2k16, badgeDescriptions) {
         var self = this;
 
         P2k16.accountListeners.add($scope, function (newValue) {
@@ -462,10 +461,6 @@
         self.descriptions = badgeDescriptions;
 
         updateBadges(P2k16.currentAccount());
-
-        self.createBadge = function () {
-            BadgeDataService.create(self.newBadge).then(P2k16.refreshAccountFromResponse);
-        };
     }
 
     /*************************************************************************
@@ -484,6 +479,10 @@
 
         self.badgeDescriptions = badgeDescriptions;
         self.recentBadges = recentBadges;
+
+        self.createBadge = function () {
+            BadgeDataService.create(self.newBadge).then(P2k16.refreshAccountFromResponse);
+        };
     }
 
     /*************************************************************************

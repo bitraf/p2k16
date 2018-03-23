@@ -79,6 +79,13 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 ## Examples
 
+Badges is a way to tell something about a user. They have no monetary value, but can have a lot of social value.
+
+Certain badges are restricted so that they can only be given to a person by someone else (aka karma badges), and other
+badges are restricted so that only certain users can award them (for example course instructors).
+
+Most badges can be awarded multiple times too.
+
 Badge categories:
 
  * Competence levels
@@ -97,3 +104,9 @@ Badge categories:
    - SMT
    - PCB-etching
    - oscilloscope
+
+ * Karma badges
+
+   - Cleaner
+   - Dugnader
+   - Bitraf project fixer

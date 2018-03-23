@@ -75,8 +75,9 @@ class DoorClient(object):
         publishes = []
 
         if not event_management.has_opened_door(account):
+            system = Account.find_account_by_username("system")
             logger.info("First door opening for {}".format(account))
-            badge_management.create_badge(account, None, "first-door-opening")
+            badge_management.create_badge(account, system, "first-door-opening")
 
         for door in doors:
             logger.info('Opening door. username={}, door={}, open_time={}'.format(

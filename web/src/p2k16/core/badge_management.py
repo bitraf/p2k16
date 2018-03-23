@@ -52,18 +52,15 @@ def badges_for_account(account_id: int) -> List[AccountBadge]:
         filter(Account.id == account_id)
 
 
-def create_badge(receiver: Account, awarder: Optional[Account], title: str) -> AccountBadge:
+def create_badge(receiver: Account, awarder: Account, title: str) -> AccountBadge:
     desc = _load_description(title)
 
-    logger.info("Creating badge, title={}, receiver={}, awarder={}".format(title, receiver.username,
-                                                                           awarder.username if awarder else None))
+    logger.info("Creating badge: title={}, receiver={}, awarder={}".format(title, receiver.username, awarder.username))
     if desc:
         logger.info("desc.certification_circle={}".format(desc.certification_circle))
 
     if desc:
         if desc.certification_circle:
-            if not awarder:
-                raise P2k16UserException("The badge {} needs to be certified".format(title))
             if not account_management.is_account_in_circle(awarder, desc.certification_circle):
                 raise P2k16UserException("The awarder {} is not a valid certifier".format(awarder.username))
     else:

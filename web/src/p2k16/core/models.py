@@ -47,6 +47,9 @@ class ModelSupport(object):
 
         return RunAs()
 
+    def is_empty(self):
+        return len(self.stack) == 0
+
     @property
     def current_account(self) -> "Account":
         if len(self.stack) == 0:
@@ -62,12 +65,12 @@ class ModelSupport(object):
             obj.updated_at = datetime.now()
 
         if isinstance(obj, CreatedByMixin):
-            account = model_support.current_account
+            account = self.current_account
 
             obj.created_by_id = account.id if account else None
 
         if isinstance(obj, UpdatedByMixin):
-            account = model_support.current_account
+            account = self.current_account
 
             obj.updated_by_id = account.id if account else None
 

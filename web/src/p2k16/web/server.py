@@ -127,8 +127,10 @@ def modified_by_mixing_after_request(response):
 def _after_request(response, failed: bool):
     if hasattr(flask.g, "model_pushed"):
         del flask.g.model_pushed
-        logger.info("after: failed={}, request: {}".format(failed, flask.request))
+        logger.info("after: failed={}, request: {}".format(failed, type(response)))
         model_support.pop()
+        if not model_support.is_empty():
+            raise P2k16TechnicalException("The model_support stack is not empty.")
 
     return response
 

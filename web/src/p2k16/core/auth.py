@@ -19,26 +19,16 @@ class AuthenticatedAccount(flask_login.UserMixin):
 
 @login_manager.user_loader
 def account_loader(account_id):
-    logger.info("Loading account")
+    logger.info("login_manager.user_loader: account_id={}".format(account_id))
 
-    try:
-        account = Account.find_account_by_id(account_id)
+    account = Account.find_account_by_id(account_id)
 
-        if account is None:
-            return
+    logger.info("login_manager.user_loader: account.id={}".format(account.id))
 
-        circles = account_management.get_circles_for_account(account.id)
-
-        return AuthenticatedAccount(account, circles)
-    finally:
-        logger.info("account loaded")
-
-
-@login_manager.request_loader
-def request_loader(request):
-    account_id = request.form.get("account")
-
-    if account_id is None:
+    if account is None:
+        logger.info("login_manager.user_loader: no such account".format(account_id))
         return
 
-    return account_loader(account_id)
+    circles = account_management.get_circles_for_account(account.id)
+
+    return AuthenticatedAccount(account, circles)

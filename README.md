@@ -71,23 +71,29 @@ p2k16 can read active memberships from p2k12 until the stripe code is moved.
 
 ## Motivation
 
- * Enforce users have neccesary course for dangerous machines
- * Make holding courses more atractive
- * Easier to find who knows what
+ * Enforce users have necessary course for dangerous machines
+ * Make holding courses more attractive
+ * Easier to find who knows what. Show a list/word cloud of the competence of the people who has recently checked in at
+   Bitraf. On the front page, perhaps show a list of *all* active people's competence.
  * Encourage people to be active members at Bitraf
 
 ## Examples
 
- * Competence
-  - lasercutter
-  - CNC-operator
-  - lathe
+Badge categories:
 
- * Interrest areas
-  - woodworking
-  - metalworking
-  - soldering
-  - Kicad, Eagle
-  - SMT
-  - PCB-etching
-  - oscilloscope
+ * Competence levels
+
+   - laser cutter
+   - CNC-operator
+   - lathe
+
+ * Interest areas:
+
+   - laser cutting
+   - woodworking
+   - metalworking
+   - soldering
+   - KiCAD, Eagle
+   - SMT
+   - PCB-etching
+   - oscilloscope

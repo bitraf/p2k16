@@ -35,3 +35,31 @@ div.error-container {
     padding-top: 11px;
     padding-bottom: 0px;
 }
+
+
+/* Public profile */
+.user-detail-header {
+    margin-bottom: 50px;
+}
+
+.user-detail-header img {
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.user-detail-header div {
+    display: inline-block;
+    vertical-align: middle
+}
+
+.user-detail-header h2 {
+    margin-top: 0;
+}
+
+.user-detail-contact-info {
+    margin-bottom: 40px;
+}
+
+.user-detail-contact-info .form-group {
+    margin-bottom: 0;
+}

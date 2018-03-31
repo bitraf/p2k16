@@ -22,3 +22,16 @@ div.error-container {
 .row.door-buttons {
     margin-bottom: 15px;
 }
+
+
+/* Avatar on navbar */
+.header-avatar {
+    webkit-border-radius: 50%;
+    border-radius: 50%;
+    padding-right: 2px;
+}
+
+.navbar-collapse > ul > li > a.dropdown-toggle {
+    padding-top: 11px;
+    padding-bottom: 0px;
+}

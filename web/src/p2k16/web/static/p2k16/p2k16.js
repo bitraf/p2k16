@@ -77,6 +77,20 @@
             resolve: {
                 companies: CoreDataServiceResolvers.data_company_list
             }
+        }).when("/admin/circle", {
+            controller: AdminCircleListController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_circle_list_html,
+            resolve: {
+                circles: CoreDataServiceResolvers.data_circle_list
+            }
+        }).when("/admin/circle/:circle_id", {
+            controller: AdminCircleDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_circle_detail_html,
+            resolve: {
+                circle: CoreDataServiceResolvers.data_circle
+            }
         }).when("/admin/company/new", {
             controller: AdminCompanyDetailController,
             controllerAs: 'ctrl',
@@ -135,7 +149,7 @@
         var eventName = "Listeners-" + key;
 
         function add($scope, listener) {
-            var destructor = $rootScope.$on(eventName, function (event) {
+            var destructor = $rootScope.$on(eventName, function () {
                 console.log("listener args", self.args);
                 listener.apply(null, self.args);
             });
@@ -229,10 +243,17 @@
 
         }
 
+        function canAdminCircle(circleId) {
+            return !!_.find(self.circlesWithAdminAccess, {id: circleId});
+        }
+
         if (window.p2k16.account) {
             setLoggedIn(window.p2k16.account);
-            delete window["p2k16"];
         }
+
+        self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
+
+        window.p2k16 = undefined;
 
         /**
          * @lends P2k16.prototype
@@ -247,7 +268,9 @@
             hasRole: hasRole,
             addErrors: addErrors,
             addInfos: addInfos,
-            messages: self.messages
+            messages: self.messages,
+
+            canAdminCircle: canAdminCircle,
         }
     }
 
@@ -511,13 +534,9 @@
      */
 
     /**
-     * @param $http
-     * @param $location
-     * @param {CoreDataService} CoreDataService
      * @constructor
      */
-    function AdminController($http, $location, CoreDataService) {
-        var self = this;
+    function AdminController() {
     }
 
     /**
@@ -549,22 +568,86 @@
         };
 
         self.membership = function (circle, create) {
-            var f = (create ? CoreDataService.create_membership : CoreDataService.remove_membership);
-            f(self.account.id, {circle_id: circle.id}).then(function (account) {
+            var form = {
+                account_id: self.account.id,
+                circle_id: circle.id
+            };
+
+            var f = create ? CoreDataService.add_account_to_circle : CoreDataService.remove_account_from_circle;
+            f(form).then(function (account) {
                 self.account = account.data;
             });
         }
     }
 
     /**
-     * @param {CoreDataService} CoreDataService
      * @param companies
      * @constructor
      */
-    function AdminCompanyListController(CoreDataService, companies) {
+    function AdminCompanyListController(companies) {
         var self = this;
 
         self.companies = companies;
+    }
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param circles
+     * @constructor
+     */
+    function AdminCircleListController(CoreDataService, circles) {
+        var self = this;
+
+        self.circles = circles;
+    }
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param circle
+     * @constructor
+     */
+    function AdminCircleDetailController(CoreDataService, circle) {
+        var self = this;
+
+        self.addMemberForm = {};
+
+        function update(data) {
+            self.circle = data;
+
+            if (!self.members) {
+                self.members = [];
+            }
+
+            if (data._embedded) {
+                var embedded = data._embedded;
+                delete data._embedded;
+                self.members.length = 0;
+                Array.prototype.unshift.apply(self.members, embedded.members);
+                self.adminCircle = embedded.adminCircle;
+            }
+        }
+
+        update(circle);
+
+        self.removeMember = function (accountId) {
+            var form = {
+                accountId: accountId,
+                circleId: self.circle.id
+            };
+            CoreDataService.remove_account_from_circle(form).then(function (res) {
+                update(res.data);
+            });
+        };
+        self.addMember = function () {
+            var form = {
+                accountUsername: self.addMemberForm.username,
+                circleId: self.circle.id
+            };
+            self.addMemberForm = {};
+            CoreDataService.add_account_to_circle(form).then(function (res) {
+                update(res.data);
+            });
+        };
     }
 
     /**
@@ -640,7 +723,7 @@
         };
 
         self.registerAccount = function () {
-            CoreDataService.register_account(self.signupForm).then(function (res) {
+            CoreDataService.register_account(self.signupForm).then(function () {
                 self.signupForm = {};
                 P2k16.addInfos("Account created, please log in.");
             });

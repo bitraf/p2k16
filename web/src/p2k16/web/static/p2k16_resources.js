@@ -1,6 +1,8 @@
 var p2k16_resources = {};
 p2k16_resources.admin_account_detail_html = "/static/admin-account-detail.html";
 p2k16_resources.admin_account_list_html = "/static/admin-account-list.html";
+p2k16_resources.admin_circle_detail_html = "/static/admin-circle-detail.html";
+p2k16_resources.admin_circle_list_html = "/static/admin-circle-list.html";
 p2k16_resources.admin_company_detail_html = "/static/admin-company-detail.html";
 p2k16_resources.admin_company_list_html = "/static/admin-company-list.html";
 p2k16_resources.admin_html = "/static/admin.html";

@@ -1,8 +1,10 @@
 import crypt
+import enum
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from itertools import chain
-from typing import Optional
+from typing import Optional, List
 
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -10,7 +12,9 @@ from p2k16.core import P2k16TechnicalException
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, joinedload
+
+logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()
 
@@ -216,8 +220,16 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
         return Account.query.filter(Account.id == _id).one_or_none()
 
     @staticmethod
+    def get_by_id(_id) -> "Account":
+        return Account.query.filter(Account.id == _id).one()
+
+    @staticmethod
     def find_account_by_username(username) -> Optional['Account']:
         return Account.query.filter(Account.username == username).one_or_none()
+
+    @staticmethod
+    def get_by_username(username) -> "Account":
+        return Account.query.filter(Account.username == username).one()
 
     @staticmethod
     def find_account_by_email(email) -> Optional['Account']:
@@ -228,25 +240,43 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
         return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
 
+class CircleManagementStyle(enum.Enum):
+    ADMIN_CIRCLE = enum.auto()
+    SELF_ADMIN = enum.auto()
+
+
 class Circle(DefaultMixin, db.Model):
     __tablename__ = 'circle'
     __versioned__ = {}
 
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(50), unique=True, nullable=False)
-    members = relationship("CircleMember", back_populates="circle")
+    _management_style = Column('management_style', String(50), nullable=False)
+    admin_circle_id = Column("admin_circle", Integer, ForeignKey("circle.id"))
+    admin_circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
-    def __init__(self, name, description):
+    members = relationship("CircleMember", back_populates="circle")  # type: List[CircleMember]
+
+    def __init__(self, name: str, description: str, management_style: CircleManagementStyle):
         super().__init__()
         self.name = name
         self.description = description
+        self._management_style = management_style.name
+
+    @hybrid_property
+    def management_style(self) -> CircleManagementStyle:
+        return CircleManagementStyle[self._management_style]
 
     def __repr__(self):
-        return '<Circle:%s>' % self.id
+        return '<Circle:%s, name=%s>' % (self.id, self.name)
 
     @staticmethod
     def find_by_id(id) -> Optional["Circle"]:
         return Circle.query.filter(Circle.id == id).one_or_none()
+
+    @staticmethod
+    def get_by_id(id, load_admin_circle=False) -> "Circle":
+        return Circle.query.options(joinedload(Circle.admin_circle)).filter(Circle.id == id).one()
 
     @staticmethod
     def find_by_name(name) -> Optional["Circle"]:

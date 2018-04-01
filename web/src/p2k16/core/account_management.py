@@ -3,9 +3,9 @@ import string
 from typing import Optional, List
 
 import flask
-
-from p2k16.core import P2k16UserException, mail
-from p2k16.core.models import db, Account, Circle, CircleMember
+from p2k16.core import P2k16UserException, mail, P2k16TechnicalException
+from p2k16.core.models import db, Account, Circle, CircleMember, CircleManagementStyle
+from sqlalchemy.orm import aliased
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,61 @@ def get_circles_for_account(account_id: int) -> List[Circle]:
         all()
 
 
+def get_circles_with_admin_access(account_id: int) -> List[Circle]:
+    """
+    SELECT
+      management_style,
+      c_name
+    FROM (
+           SELECT
+             'SELF_ADMIN'       AS management_style,
+             c.management_style AS c_management_style,
+             c.admin_circle     AS c_admin_circle,
+             c.created_by       AS c_created_by,
+             c.updated_by       AS c_updated_by,
+             c.id               AS c_id,
+             c.created_at       AS c_created_at,
+             c.updated_at       AS c_updated_at,
+             c.name             AS c_name,
+             c.description      AS c_description
+           FROM circle AS c
+             JOIN circle_member ON c.id = circle_member.circle
+           WHERE C.management_style = 'SELF_ADMIN' AND circle_member.account = 5
+           UNION
+           SELECT
+             'ADMIN_CIRCLE'      AS management_style,
+             c.management_style AS c_management_style,
+             c.admin_circle     AS c_admin_circle,
+             c.created_by       AS c_created_by,
+             c.updated_by       AS c_updated_by,
+             c.id               AS c_id,
+             c.created_at       AS c_created_at,
+             c.updated_at       AS c_updated_at,
+             c.name             AS c_name,
+             c.description      AS c_description
+           FROM circle AS ac
+             JOIN circle AS C ON C.admin_circle = ac.id
+             JOIN circle_member ON C.id = circle_member.circle
+           WHERE C.management_style = 'ADMIN_CIRCLE' AND circle_member.account = 5
+         ) AS anon_1
+    """
+    ac = aliased(Circle, name="ac")
+    c = aliased(Circle, name="c")
+
+    self_admin = db.session.query(c). \
+        join(c.members). \
+        filter(CircleMember.account_id == account_id). \
+        filter(c._management_style == CircleManagementStyle.SELF_ADMIN.name)
+
+    admin_circle = db.session.query(c). \
+        join(ac, c.admin_circle_id == ac.id). \
+        join(c.members). \
+        filter(c._management_style == CircleManagementStyle.ADMIN_CIRCLE.name). \
+        filter(CircleMember.account_id == account_id)
+
+    return self_admin.union(admin_circle).all()
+
+
 def _load_circle_admin(account_id, circle_id, admin_id):
     account = Account.find_account_by_id(account_id)
     admin = Account.find_account_by_id(admin_id)
@@ -43,32 +98,43 @@ def _load_circle_admin(account_id, circle_id, admin_id):
     return account, admin, circle
 
 
-def _check_is_circle_admin(circle: Circle, admin: Account):
-    admin_circle = Circle.find_by_name(circle.name + '-admin')
+def can_admin_circle(account: Account, circle: Circle):
+    if circle.management_style == CircleManagementStyle.ADMIN_CIRCLE:
+        admin_circle = circle.admin_circle
 
-    if admin_circle is None:
-        raise P2k16UserException('There is no admin circle (%s-admin") for circle "%s"'.format(circle.name, circle.name))
+        if admin_circle is None:
+            raise P2k16TechnicalException("There is no admin circle for circle {} configured".format(circle.name))
 
-    if not is_account_in_circle(admin, admin_circle):
-        raise P2k16UserException('Account %s is not an administrator of %s' % (admin.username, circle.description))
+        return is_account_in_circle(account, admin_circle)
+    elif circle.management_style == CircleManagementStyle.SELF_ADMIN:
+        return is_account_in_circle(account, circle)
+    else:
+        raise P2k16TechnicalException("Unknown circle management style: {}".format(circle.management_style.name))
 
 
-def add_account_to_circle(account_id, circle_id, admin_id):
-    (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
+def _assert_can_admin_circle(admin: Account, circle: Circle):
+    if can_admin_circle(admin, circle):
+        return
 
-    logger.info("Adding %s to circle %s, issuer=%s" % (account.username, circle.name, admin.username))
+    if circle.management_style == CircleManagementStyle.ADMIN_CIRCLE:
+        raise P2k16UserException("{} is not in the admin circle ({}) for circle {}".
+                                 format(admin.username, circle.admin_circle.name, circle.name))
+    elif circle.management_style == CircleManagementStyle.SELF_ADMIN:
+        raise P2k16UserException("%s is not an admin of %s".format(admin.username, circle.name))
 
-    _check_is_circle_admin(circle, admin)
+
+def add_account_to_circle(account: Account, circle: Circle, admin: Account):
+    logger.info("Adding %s to circle %s, admin=%s" % (account.username, circle.name, admin.username))
+
+    _assert_can_admin_circle(admin, circle)
 
     db.session.add(CircleMember(circle, account))
 
 
-def remove_account_from_circle(account_id, circle_id, admin_id):
-    (account, admin, circle) = _load_circle_admin(account_id, circle_id, admin_id)
+def remove_account_from_circle(account: Account, circle: Circle, admin: Account):
+    logger.info("Removing %s from circle %s, admin=%s" % (account.username, circle.name, admin.username))
 
-    logger.info("Removing %s from circle %s, issuer=%s" % (account.username, circle.name, admin.username))
-
-    _check_is_circle_admin(circle, admin)
+    _assert_can_admin_circle(admin, circle)
 
     cm = CircleMember.query.filter_by(account_id=account.id, circle_id=circle.id).one_or_none()
 

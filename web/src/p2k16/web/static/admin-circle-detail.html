@@ -1,0 +1,75 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>Circle
+    <small>{{ ctrl.circle.name }}</small>
+  </h1>
+
+  <table class="table">
+    <tbody>
+    <tr>
+      <th class="col-sm-4">Created</th>
+      <td class="col-sm-8">{{ ctrl.circle.createdAt | date:'medium' }}</td>
+    </tr>
+    <tr>
+      <th>Updated</th>
+      <td>{{ ctrl.circle.updatedAt | date:'medium' }}</td>
+    </tr>
+    <tr>
+      <th>Management style</th>
+      <td>{{ ctrl.circle.managementStyle }}</td>
+    </tr>
+    <tr ng-show="ctrl.circle.managementStyle == 'ADMIN_CIRCLE'">
+      <th>Admin circle</th>
+      <td><a ng-href="#!admin/circle/{{ ctrl.adminCircle.id }}">{{ ctrl.adminCircle.name }}</a></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <section ng-if="p2k16.canAdminCircle(ctrl.circle.id)">
+    <h2>Add member</h2>
+
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="login-username" class="col-sm-2">Username</label>
+        <div class="col-sm-4">
+          <input class="form-control" type="text" name="email" id="login-username" placeholder="username"
+                 autocomplete="username"
+                 ng-model="ctrl.addMemberForm.username"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-4 col-sm-offset-2">
+          <button class="btn btn-default" ng-click="ctrl.addMember()">Add</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <h2>Members
+    <small>{{ ctrl.members.length }}</small>
+  </h2>
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-sm-2">User</th>
+      <th class="col-sm-3">Created</th>
+      <th class="col-sm-3">Updated</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="m in ctrl.members | orderBy:'account_username'">
+      <td><a href="#/user/{{ m.account_id }}">{{ m.account_username }}</a></td>
+      <td>{{ m.createdAt | date:'medium' }}</td>
+      <td>{{ m.updatedAt | date:'medium' }}</td>
+      <td>
+        <a ng-click="ctrl.removeMember(m.account_id)">remove</a>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+
+</div>

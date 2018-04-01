@@ -52,22 +52,18 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.remove_membership = function (account_id, payload) {
+    this.remove_account_from_circle = function (payload) {
         var req = {};
         req.method = 'POST';
-        req.url = '/data/account';
-        req.url += '/' + account_id;
-        req.url += '/cmd/remove-membership';
+        req.url = '/data/account/remove-membership';
         req.data = payload;
         return $http(req);
     };
 
-    this.create_membership = function (account_id, payload) {
+    this.add_account_to_circle = function (payload) {
         var req = {};
         req.method = 'POST';
-        req.url = '/data/account';
-        req.url += '/' + account_id;
-        req.url += '/cmd/create-membership';
+        req.url = '/service/circle/create-membership';
         req.data = payload;
         return $http(req);
     };
@@ -99,6 +95,14 @@ function CoreDataService($http) {
         var req = {};
         req.method = 'GET';
         req.url = '/data/circle';
+        return $http(req);
+    };
+
+    this.data_circle = function (circle_id) {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/circle';
+        req.url += '/' + circle_id;
         return $http(req);
     };
 
@@ -179,6 +183,10 @@ CoreDataServiceResolvers.membership_details = function (CoreDataService) {
 };
 CoreDataServiceResolvers.data_circle_list = function (CoreDataService) {
   return CoreDataService.data_circle_list().then(function (res) { return res.data; });
+};
+CoreDataServiceResolvers.data_circle = function (CoreDataService, $route) {
+  var circle_id = $route.current.params.circle_id;
+  return CoreDataService.data_circle(circle_id).then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_company_list = function (CoreDataService) {
   return CoreDataService.data_company_list().then(function (res) { return res.data; });

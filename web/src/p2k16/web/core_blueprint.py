@@ -8,7 +8,7 @@ import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
-from p2k16.core.models import Account, Circle, Company, CompanyEmployee
+from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
@@ -47,12 +47,24 @@ login_form = {
     "required": ["username", "password"]
 }
 
-single_circle_form = {
+modify_circle_form = {
     "type": "object",
     "properties": {
-        "circle_id": id_type,
+        "circleId": id_type,
+        "accountId": id_type,
+        "accountUsername": nonempty_string,
     },
-    "required": ["circle_id"]
+    "oneOf": [{
+        "required": [
+            "circleId",
+            "accountId",
+        ],
+    }, {
+        "required": [
+            "circleId",
+            "accountUsername",
+        ],
+    }, ],
 }
 
 single_company_form = {
@@ -87,9 +99,24 @@ def model_to_json(obj) -> dict:
     return d
 
 
-def circle_to_json(circle: Circle):
+def circle_member_to_json(cm: CircleMember):
+    return {**model_to_json(cm), **{
+        "account_id": cm.account.id,
+        "account_username": cm.account.username,
+        "circle_id": cm.circle.id,
+        "circle_name": cm.circle.name,
+    }}
+
+
+def circle_to_json(circle: Circle, include_members=False):
     return {**model_to_json(circle), **{
-        "name": circle.name
+        "name": circle.name,
+        "description": circle.description,
+        "managementStyle": circle.management_style.name,
+        "_embedded": {
+            "members": [circle_member_to_json(cm) for cm in circle.members] if include_members else None,
+            "adminCircle": circle_to_json(circle.admin_circle) if circle.admin_circle else None,
+        }
     }}
 
 
@@ -227,41 +254,41 @@ def data_account_summary(account_id):
     return jsonify(summary)
 
 
-@registry.route('/data/account/<int:account_id>/cmd/remove-membership', methods=["POST"])
-@validate_schema(single_circle_form)
-def remove_membership(account_id):
-    return _manage_membership(account_id, False)
+@registry.route('/data/account/remove-membership', methods=["POST"])
+@validate_schema(modify_circle_form)
+def remove_account_from_circle():
+    return _manage_circle_membership(False)
 
 
-@registry.route('/data/account/<int:account_id>/cmd/create-membership', methods=["POST"])
-@validate_schema(single_circle_form)
-def create_membership(account_id):
-    return _manage_membership(account_id, True)
+@registry.route('/service/circle/create-membership', methods=["POST"])
+@validate_schema(modify_circle_form)
+def add_account_to_circle():
+    return _manage_circle_membership(True)
+
+
+def _manage_circle_membership(create: bool):
+    username = request.json.get("accountUsername", None)
+
+    if username is not None:
+        account = Account.get_by_username(username)
+    else:
+        account = Account.get_by_id(request.json["accountId"])
+
+    circle = Circle.get_by_id(request.json["circleId"])
+
+    admin = flask_login.current_user.account
+
+    if create:
+        account_management.add_account_to_circle(account, circle, admin)
+    else:
+        account_management.remove_account_from_circle(account, circle, admin)
+
+    db.session.commit()
+    return jsonify(circle_to_json(circle, include_members=True))
 
 
 ###############################################################################
 # Membership
-
-
-def _manage_membership(account_id: int, create: bool):
-    account = Account.find_account_by_id(account_id)
-
-    if account is None:
-        abort(404)
-
-    circle_id = request.json["circle_id"]
-    a = flask_login.current_user.account
-
-    if create:
-        account_management.add_account_to_circle(account.id, circle_id, a.id)
-    else:
-        account_management.remove_account_from_circle(account.id, circle_id, a.id)
-
-    circles = account_management.get_circles_for_account(account.id)
-    badges = badge_management.badges_for_account(account.id)
-
-    db.session.commit()
-    return jsonify(account_to_json(account, circles, badges))
 
 
 @registry.route('/membership/set-stripe-token', methods=["POST"])
@@ -287,10 +314,20 @@ def membership_set_membership():
     return jsonify(member_set_membership(account, membership_plan, membership_price))
 
 
+###############################################################################
+# Circle
+
+
 @registry.route('/data/circle')
 def data_circle_list():
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
+
+
+@registry.route('/data/circle/<int:circle_id>')
+def data_circle(circle_id):
+    circle = Circle.get_by_id(circle_id, load_admin_circle=True)
+    return jsonify(circle_to_json(circle, include_members=True))
 
 
 ###############################################################################
@@ -402,15 +439,21 @@ def _data_company_save():
 
 @core.route('/')
 def index():
+    kwargs = {}
+
     if flask_login.current_user.is_authenticated:
-        account = flask_login.current_user.account
+        account = flask_login.current_user.account  # type: Account
         circles = account_management.get_circles_for_account(account.id)
         badges = badge_management.badges_for_account(account.id)
-        account = account_to_json(account, circles, badges)
-    else:
-        account = None
+        circles_with_admin_access = account_management.get_circles_with_admin_access(account.id)
 
-    return render_template("index.html", account=account)
+        account_json = account_to_json(account, circles, badges)
+        circles_with_admin_access_json = [circle_to_json(c) for c in circles_with_admin_access]
+
+        kwargs["account"] = account_json
+        kwargs["circles_with_admin_access"] = circles_with_admin_access_json
+
+    return render_template("index.html", **kwargs)
 
 
 @core.route('/logout', methods=['GET'])
@@ -424,7 +467,7 @@ def login():
     if flask.request.method == 'GET':
         show_message = flask.request.args.get('show_message') or ''
         username = flask.request.args.get('username') or ''
-        return render_template('login.html', show_message=show_message, username=username)
+        return render_template("login.html", show_message=show_message, username=username)
 
     username = flask.request.form['username']
     account = Account.find_account_by_username(username)
@@ -458,7 +501,7 @@ def reset_password_form():
     account = Account.find_account_by_reset_token(reset_token)
 
     if account and account.is_valid_reset_token(reset_token):
-        return render_template('reset-password.html', reset_token=reset_token, account=account_to_json(account, [], []))
+        return render_template("reset-password.html", reset_token=reset_token, account=account_to_json(account, [], []))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 

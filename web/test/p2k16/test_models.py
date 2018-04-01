@@ -1,131 +1,108 @@
-from flask_testing import TestCase
-from p2k16.core import make_app, account_management, membership_management, P2k16UserException
-from p2k16.core.membership_management import get_membership
+import logging
+from unittest import TestCase
+
+from p2k16.core import make_app, account_management, P2k16UserException
 from p2k16.core.models import *
+
+logger = logging.getLogger(__name__)
+
+
+class P2k16TestCase(TestCase):
+
+    def setUp(self):
+        logger.info("setUp")
+        self.app = make_app()
+        self.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
+
+        self._ctx = self.app.test_request_context()
+        self._ctx.push()
+
+        db.init_app(self.app)
+        db.create_all()
+
+        logger.info("setUp done")
+
+    def tearDown(self):
+        self._ctx.pop()
+        logger.info("tearDown")
 
 
 # noinspection PyMethodMayBeStatic
-from sqlalchemy.orm.exc import NoResultFound
-
-
-class AccountTest(TestCase):
-    SQLALCHEMY_DATABASE_URI = "sqlite://"
-    TESTING = True
-
-    # engine = p2k16.database.create_engine("sqlite:///:memory:")
-    # Session = sessionmaker(bind=engine)
-
-    # def create_app(self):
-    #     app = Flask(__name__)
-    #     app.config['TESTING'] = True
-    #     return app
-
-    def create_app(self):
-        app = make_app()
-        db.init_app(app)
-        return app
-
-    def setUp(self):
-        # Base.metadata.create_all(self.engine)
-        # self.session = self.Session()
-        # self.session.add(Panel(1, 'ion torrent', 'start'))
-        # self.session.commit()
-        db.create_all()
-        pass
-
-    def tearDown(self):
-        # Base.metadata.drop_all(self.engine)
-        pass
-
-    def test_basic(self):
-        accounts = Account.query.all()
-        print("accounts: " + str(accounts))
-
-    def test_authentication_test(self):
-        session = db.session
-        account = Account('foo', 'foo@example.org', password='123')
-        session.add(account)
-        session.flush()
-
-        with model_support.run_as(account):
-            membership = Membership(500)
-            session.add(membership)
-            session.flush()
-            session.commit()
+class AccountTest(P2k16TestCase):
 
     def test_circles(self):
         session = db.session
+
         admin = Account('admin1', 'admin1@example.org', password='123')
         a1 = Account('account1', 'account1@example.org', password='123')
         a2 = Account('account2', 'account2@example.org', password='123')
-        c = Circle('circle-1', 'Circle 1')
+        c_admin = Circle('c-admin', 'Circle 1 Admins', CircleManagementStyle.SELF_ADMIN)
+        c = Circle('c', 'Circle 1', CircleManagementStyle.ADMIN_CIRCLE)
+        c.admin_circle = c_admin
 
-        with model_support.run_as(admin):
-            c_admin = Circle('circle-1-admin', 'Circle 1 Admins')
-            session.add_all([admin, a1, a2, c, c_admin])
+        with session.begin(subtransactions=True):
+            with model_support.run_as(admin):
+                session.add_all([admin, a1, a2, c_admin, c])
+                session.flush()
+                session.add(CircleMember(c_admin, admin))
+                logger.info("Setup done")
 
-        with model_support.run_as(admin):
-            session.add(CircleMember(c_admin, admin))
+        with session.begin(subtransactions=True):
+            logger.info("Reloading objects")
+            admin = Account.get_by_id(admin.id)
+            a1 = Account.get_by_id(a1.id)
+            a2 = Account.get_by_id(a2.id)
+            c_admin = Circle.get_by_id(c_admin.id)
+            c = Circle.get_by_id(c.id)
 
-        # non-admin account trying to add
-        try:
-            account_management.add_account_to_circle(a1.id, c.id, a2.id)
-            session.flush()
-            self.fail("expected exception")
-        except P2k16UserException:
-            pass
+            logger.info("admin.id={}".format(admin.id))
+            logger.info("a1.id={}".format(a1.id))
+            logger.info("a2.id={}".format(a2.id))
+            logger.info("c_admin={}".format(c_admin))
+            logger.info("c={}".format(c))
 
-        with model_support.run_as(admin):
-            account_management.add_account_to_circle(a1.id, c.id, admin.id)
+        logger.info("c.admin_circle.id={}".format(c.admin_circle.id))
+        logger.info("c.admin_circle={}".format(c.admin_circle))
 
-        session.commit()
+        # session.refresh(c)
+        assert len(c.members) == 0
+        # session.refresh(c_admin)
+        assert len(c_admin.members) == 1
+
+        assert c.admin_circle is not None
+        assert c.admin_circle.id == c_admin.id
+
+        # a2 trying to add a1 to c. C is managed by an admin circle (c_admin), a2 is not in c_admin.
+        with session.begin(subtransactions=True):
+            try:
+                account_management.add_account_to_circle(a1, c, a2)
+                session.flush()
+                self.fail("expected exception")
+            except P2k16UserException as e:
+                self.assertEqual(e.msg, "account2 is not in the admin circle (c-admin) for circle c")
+
         session.refresh(c)
-        print('c.members=%s' % c.members)
-        assert len(c.members) > 0
+        assert len(c.members) == 0
 
-    def test_membership(self):
-        session = db.session
-        a3 = Account('account3', 'account3@example.org', password='123')
-        a4 = Account('account4', 'account4@example.org', password='123')
-        a5 = Account('account5', 'account5@example.org', password='123')
-        session.add_all([a3, a4, a5])
-        session.flush()
+        # admin trying to add a1 to c. C is managed by an admin circle (c_admin), admin is in c_admin.
+        with session.begin(subtransactions=True):
+            with model_support.run_as(admin):
+                account_management.add_account_to_circle(a1, c, admin)
 
-        with model_support.run_as(a3):
-            # Add account3 with active membership
-            m3 = Membership(500)
+        session.refresh(c)
+        assert len(c.members) == 1
 
-            payment1 = MembershipPayment('tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                         datetime(2017, 1, 1))
-            payment2 = MembershipPayment('tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
-                                         datetime(2017, 2, 1))
-            payment3 = MembershipPayment('tok_stripe_xx1338', datetime(2017, 3, 1),
-                                         datetime.now() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
-            session.add_all([m3, payment1, payment2, payment3])
+        # admin trying to add a1 to c_admin. C is managed by the circle's members, admin is in c_admin.
+        with session.begin(subtransactions=True):
+            with model_support.run_as(admin):
+                account_management.add_account_to_circle(a1, c_admin, admin)
 
-        with model_support.run_as(a4):
-            # Account 4 with expired membership
-            payment4 = MembershipPayment('tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                         datetime(2017, 1, 1))
-            session.add_all([payment4])
+        with session.begin(subtransactions=True):
+            adminable_circles = account_management.get_circles_with_admin_access(admin.id)
+            self.assertSetEqual({c.name for c in adminable_circles}, {"c-admin"})
 
-        # Account 5 has no payments
-        session.flush()
-
-        # Verify only one paid account
-        assert len(membership_management.paid_members()) == 1
-
-        # Check membership payments
-        assert membership_management.active_member(a3) is True
-        assert membership_management.active_member(a4) is False
-        assert membership_management.active_member(a5) is False
-
-        # Check membership
-        membership = get_membership(a3)
-        assert membership.fee is 500
-
-        membership = get_membership(a5)
-        assert membership is None
+        session.refresh(c_admin)
+        assert len(c_admin.members) == 2
 
 
 if __name__ == '__main__':

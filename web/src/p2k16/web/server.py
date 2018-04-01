@@ -11,6 +11,8 @@ from p2k16.core import P2k16UserException, P2k16TechnicalException
 from p2k16.core import make_app, auth, door, mail
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,23 @@ def _handle_p2k16_exception(msg, is_user):
     return response
 
 
+@app.errorhandler(SQLAlchemyError)
+def handle_sqlalchemy_error(e):
+    if isinstance(e, NoResultFound):
+        # This happens when Foo.query...one() is called and the object is not found.
+        msg = "Object not found"
+        status_code = 404
+    else:
+        # Handle any other SQLAlchemy error as 500 errors
+        msg = "Internal error"
+        status_code = 500
+
+    response = flask.jsonify({"message": msg})
+    response.status_code = status_code
+    response.content_type = 'application/vnd.error+json'
+    return response
+
+
 @app.before_request
 def modified_by_mixing_before_request():
     cu = flask_login.current_user
@@ -187,4 +206,4 @@ if _env == "local":
 
 flask_bower.Bower(app)
 
-mail.get_templates() # Preload templates
+mail.get_templates()  # Preload templates

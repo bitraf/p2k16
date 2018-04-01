@@ -1,0 +1,29 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>Circles</h1>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-sm-2">Name</th>
+      <th class="col-sm-4">Description</th>
+      <th class="col-sm-1">Can admin?</th>
+      <th class="col-sm-1">Members</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="c in ctrl.circles">
+      <td>{{ c.name }}</td>
+      <td>{{ c.description }}</td>
+      <td>{{ p2k16.canAdminCircle(c.id) }}</td>
+      <td>
+        <a href="#!/admin/circle/{{ c.id }}">list</a>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+
+</div>

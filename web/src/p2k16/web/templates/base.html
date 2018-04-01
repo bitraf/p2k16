@@ -21,6 +21,9 @@
     {% if account and current_user.is_authenticated %}
       p2k16.account = {{ account | tojson | safe }};
     {% endif %}
+    {% if circles_with_admin_access  %}
+      p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
+    {% endif %}
   </script>
 
 </head>

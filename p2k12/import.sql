@@ -143,23 +143,33 @@ DECLARE
   trygvis_id       BIGINT := (SELECT id
                               FROM account
                               WHERE username = 'trygvis');
-  admin_id         BIGINT;
+  despot_id        BIGINT;
   door_id          BIGINT;
+  door_admin_id    BIGINT;
   p2k12_company_id BIGINT;
 BEGIN
 
-  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now(), system_id, now(), system_id, 'admin', 'Admin')
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description, management_style) VALUES
+    (now(), system_id, now(), system_id, 'despot', 'Despot', 'SELF_ADMIN')
   RETURNING id
-    INTO admin_id;
-
-  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
-    (now(), system_id, now(), system_id, 'door', 'Door access')
-  RETURNING id
-    INTO door_id;
+    INTO despot_id;
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
-    (now(), system_id, now(), system_id, trygvis_id, admin_id);
+    (now(), system_id, now(), system_id, trygvis_id, despot_id);
+
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description, management_style) VALUES
+    (now(), system_id, now(), system_id, 'door-admin', 'Door access admins', 'SELF_ADMIN')
+  RETURNING id
+    INTO door_admin_id;
+
+  INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle) VALUES
+    (now(), system_id, now(), system_id, trygvis_id, door_admin_id);
+
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description, management_style, admin_circle)
+  VALUES
+    (now(), system_id, now(), system_id, 'door', 'Door access', 'ADMIN_CIRCLE', door_admin_id)
+  RETURNING id
+    INTO door_id;
 
   INSERT INTO circle_member (created_at, created_by, updated_at, updated_by, account, circle)
     WITH paying AS (

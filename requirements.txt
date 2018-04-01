@@ -1,2 +1,6 @@
 # Stuff for development, put the application's dependencies in setup.py
 pytest
+
+# These are here just to satisfy PyCharm
+flask
+ldif3

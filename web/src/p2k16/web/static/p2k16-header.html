@@ -15,7 +15,7 @@
     </ul>
 
     <ul class="nav navbar-nav navbar-right">
-      <li ng-class="{'admin': 'active'}[active]" ng-if="$root.p2k16.hasRole('admin')"><a href="#!admin">Admin</a></li>
+      <li ng-class="{'admin': 'active'}[active]"></li>
 
       <li uib-dropdown ng-show="header.currentAccount()">
         <a href uib-dropdown-toggle>
@@ -26,6 +26,10 @@
           <li><a href="#!my-profile">My profile</a></li>
           <li><a href="#!user/{{ header.currentAccount().id }}">My public page</a></li>
           <li><a href="#!membership">Membership</a></li>
+          <li role="separator" class="divider"></li>
+          <li class="dropdown-header">Admin tools</li>
+          <li><a href="#!admin">Admin</a></li>
+          <li><a href="#!admin/circle">Circles</a></li>
           <li role="separator" class="divider"></li>
           <li><a href ng-click="header.logout($event)">Log out</a></li>
         </ul>

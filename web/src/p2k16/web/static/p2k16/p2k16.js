@@ -209,7 +209,7 @@
             return refreshAccount(res.data);
         }
 
-        function hasRole(circleName) {
+        function isInCircle(circleName) {
             return self.account && _.some(self.account.circles, {"name": circleName});
         }
 
@@ -265,7 +265,7 @@
             refreshAccountFromResponse: refreshAccountFromResponse,
             accountListeners: self.accountListeners,
             setLoggedIn: setLoggedIn,
-            hasRole: hasRole,
+            hasRole: isInCircle,
             addErrors: addErrors,
             addInfos: addInfos,
             messages: self.messages,

@@ -4,3 +4,4 @@ pytest
 # These are here just to satisfy PyCharm
 flask
 ldif3
+werkzeug

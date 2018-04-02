@@ -11,7 +11,7 @@ from p2k16.core.membership_management import member_set_credit_card, member_get_
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
-from p2k16.web.utils import validate_schema, DataServiceTool, ResourcesTool
+from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ def account_to_json(account: Account, circles: List[Circle], badges: Optional[Li
     }}
 
 
-def company_to_json(c: Company, employees: List[CompanyEmployee]):
+def company_to_json(c: Company, include_employees=False):
     def ce(e: CompanyEmployee):
         return {**model_to_json(e), **{
             "account_id": e.account_id,
@@ -144,19 +144,15 @@ def company_to_json(c: Company, employees: List[CompanyEmployee]):
             "company_id": e.company_id
         }}
 
-    return {**model_to_json(c), **{
+    ret = {**model_to_json(c), **{
         "name": c.name,
         "contact": c.contact,
         "active": c.active,
-        "employees": [ce(e) for e in employees]
     }}
 
-
-def check_is_in_circle(circle_name: str):
-    """
-    TODO: implement
-    """
-    pass
+    if include_employees:
+        ret["employees"] = [ce(e) for e in c.employees]
+    return ret
 
 
 core = Blueprint('core', __name__, template_folder='templates')
@@ -228,14 +224,6 @@ def data_account_list():
 
     circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
                           cms_by_account}  # type: Mapping[int, Set[Circle]]
-
-    logger.info("Badges: #{}".format(len(badges_by_account)))
-    for _id, abs in badges_by_account.items():
-        logger.info("{}: {}".format(_id, [ab.id for ab in abs]))
-
-    logger.info("Circles: #{}".format(len(circles_by_account)))
-    for _id, circles in circles_by_account.items():
-        logger.info("{}: {}".format(_id, [c.name for c in circles]))
 
     accounts = [account_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
                 accounts.items()]
@@ -359,7 +347,7 @@ def data_circle(circle_id):
 @registry.route('/data/company')
 def data_company_list():
     companies = Company.query.all()
-    return jsonify([company_to_json(c, []) for c in companies])
+    return jsonify([company_to_json(c, include_employees=False) for c in companies])
 
 
 @registry.route('/data/company/<int:company_id>')
@@ -369,9 +357,7 @@ def data_company(company_id: int):
     if company is None:
         abort(404)
 
-    employees = CompanyEmployee.list_by_company(company_id)
-
-    return jsonify(company_to_json(company, employees))
+    return jsonify(company_to_json(company, include_employees=True))
 
 
 @registry.route('/data/company/<int:company_id>/cmd/add-employee', methods=["POST"])
@@ -384,15 +370,11 @@ def data_company_remove_employee(company_id):
     return _data_company_change_employee(company_id, False)
 
 
+@require_circle_membership("despot")
 def _data_company_change_employee(company_id, add: bool):
-    check_is_in_circle("admin")
+    company = Company.get_by_id(company_id)
 
-    company = Company.find_by_id(company_id)
-
-    if company is None:
-        abort(404)
-
-    account_id = request.json["account_id"]
+    account_id = request.json["accountId"]
     account = Account.find_account_by_id(account_id)
     if account is None:
         abort(404)
@@ -405,10 +387,9 @@ def _data_company_change_employee(company_id, add: bool):
             abort(404)
         db.session.delete(ce)
 
-    employees = CompanyEmployee.list_by_company(company_id)
     db.session.commit()
 
-    return jsonify(company_to_json(company, employees))
+    return jsonify(company_to_json(company, include_employees=True))
 
 
 @registry.route('/data/company', methods=["POST"])
@@ -423,9 +404,8 @@ def data_company_update():
     return _data_company_save()
 
 
+@require_circle_membership("despot")
 def _data_company_save():
-    check_is_in_circle("admin")
-
     contact_id = request.json["contact"]
     contact = Account.find_account_by_id(contact_id)
     if not contact:
@@ -450,9 +430,9 @@ def _data_company_save():
         company = Company(name, contact, active)
 
     db.session.add(company)
-    employees = CompanyEmployee.list_by_company(company.id)
     db.session.commit()
-    return jsonify(company_to_json(company, employees))
+
+    return jsonify(company_to_json(company, include_employees=True))
 
 
 ###############################################################################

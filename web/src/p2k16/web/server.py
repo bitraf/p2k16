@@ -6,6 +6,7 @@ from datetime import date
 import flask
 import flask_bower
 import flask_login
+import werkzeug.exceptions
 from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException
 from p2k16.core import make_app, auth, door, mail
@@ -118,6 +119,23 @@ def handle_sqlalchemy_error(e):
     response.status_code = status_code
     response.content_type = 'application/vnd.error+json'
     return response
+
+
+# @app.errorhandler(werkzeug.exceptions.HTTPException)
+def handle_generic_http_code(e: werkzeug.exceptions.HTTPException):
+    msg = "{}: {}".format(e.name, e.description)
+
+    response = flask.jsonify({"message": msg})
+    response.status_code = e.code
+    response.content_type = 'application/vnd.error+json'
+    return response
+
+
+for e in [werkzeug.exceptions.Forbidden,
+          werkzeug.exceptions.InternalServerError,
+          werkzeug.exceptions.NotFound,
+          werkzeug.exceptions.Unauthorized]:
+    app.register_error_handler(e, handle_generic_http_code)
 
 
 @app.before_request

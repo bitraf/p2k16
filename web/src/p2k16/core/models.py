@@ -4,7 +4,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from itertools import chain
-from typing import Optional, List
+from typing import Optional, List, Iterable
 
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -415,6 +415,8 @@ class Company(DefaultMixin, db.Model):
     contact_id = Column("contact", Integer, ForeignKey('account.id'), nullable=False)
     contact = relationship("Account", foreign_keys=[contact_id])
 
+    employees = relationship("CompanyEmployee")  # type: Iterable[CompanyEmployee]
+
     def __init__(self, name, contact: Account, active: bool):
         self.name = name
         self.contact_id = contact.id
@@ -426,6 +428,10 @@ class Company(DefaultMixin, db.Model):
     @staticmethod
     def find_by_id(_id) -> Optional['Company']:
         return Company.query.filter(Company.id == _id).one_or_none()
+
+    @staticmethod
+    def get_by_id(_id) -> "Company":
+        return Company.query.filter(Company.id == _id).one()
 
 
 class CompanyEmployee(DefaultMixin, db.Model):
@@ -443,10 +449,6 @@ class CompanyEmployee(DefaultMixin, db.Model):
 
     def __repr__(self):
         return '<CompanyEmployee:%r, company=%r, account=%r>' % (self.id, self.company_id, self.account_id)
-
-    @staticmethod
-    def list_by_company(company_id: int) -> Optional['Company']:
-        return CompanyEmployee.query.filter(Company.id == company_id).all()
 
     @staticmethod
     def find_by_company_and_account(company_id: int, account_id: int) -> Optional['Company']:

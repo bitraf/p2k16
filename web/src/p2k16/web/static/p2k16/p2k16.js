@@ -688,18 +688,18 @@
             return _.findIndex(self.company.employees, {account: {username: account.username}}) === -1
         };
 
-        self.removeEmployee = function ($event, a) {
+        self.removeEmployee = function ($event, employee) {
             $event.preventDefault();
-            CoreDataService.data_company_remove_employee(company.id, {account_id: a.id})
+            CoreDataService.data_company_remove_employee(company.id, {accountId: employee.account_id})
                 .then(function (res) {
                     setCompany(res.data);
                 });
         };
 
-        self.addEmployee = function ($event, a) {
+        self.addEmployee = function ($event, account) {
             $event.preventDefault();
             self.query = '';
-            CoreDataService.data_company_add_employee(company.id, {account_id: a.id})
+            CoreDataService.data_company_add_employee(company.id, {accountId: account.id})
                 .then(function (res) {
                     setCompany(res.data);
                 });

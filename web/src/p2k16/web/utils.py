@@ -1,11 +1,35 @@
+import logging
 import os
 import re
 from functools import wraps
 from symtable import Function
 
 import flask
+import flask_login
 import jsonschema as js
+from flask import abort
 from p2k16.core import P2k16UserException
+
+logger = logging.getLogger(__name__)
+
+
+def require_circle_membership(circle_name):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            user = flask_login.current_user
+
+            if not user.is_authenticated:
+                abort(401)
+
+            if not user.is_in_circle(circle_name):
+                abort(403)
+
+            return f(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def validate_schema(schema):

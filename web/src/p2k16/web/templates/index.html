@@ -7,9 +7,11 @@
   {% raw %}
   <div ng-if="p2k16.messages.length" class="error-container">
     <div class="row" ng-repeat="m in p2k16.messages track by $index">
-      <div class="alert alert-dismissible col-sm-offset-8 col-sm-4 {{ m.cssClass }}">
-        <button type="button" class="close" ng-click="p2k16.messages.dismiss($index)">&times;</button>
-        {{ m.text }}
+      <div class="col-sm-12">
+        <div class="alert alert-dismissible {{ m.cssClass }}">
+          <button type="button" class="close" ng-click="p2k16.messages.dismiss($index)">&times;</button>
+          {{ m.text }}
+        </div>
       </div>
     </div>
   </div>

@@ -241,8 +241,8 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
 
 
 class CircleManagementStyle(enum.Enum):
-    ADMIN_CIRCLE = enum.auto()
-    SELF_ADMIN = enum.auto()
+    ADMIN_CIRCLE = 1
+    SELF_ADMIN = 2
 
 
 class Circle(DefaultMixin, db.Model):

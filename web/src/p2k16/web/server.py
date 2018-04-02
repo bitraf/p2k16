@@ -105,13 +105,14 @@ def _handle_p2k16_exception(msg, is_user):
 
 
 @app.errorhandler(SQLAlchemyError)
-def handle_sqlalchemy_error(e):
+def handle_sqlalchemy_error(e: SQLAlchemyError):
     if isinstance(e, NoResultFound):
         # This happens when Foo.query...one() is called and the object is not found.
         msg = "Object not found"
         status_code = 404
     else:
         # Handle any other SQLAlchemy error as 500 errors
+        logger.warning("Got exception", exc_info=e)
         msg = "Internal error"
         status_code = 500
 

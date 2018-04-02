@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -e
-set -x
+set -ex pipefail
 
 basedir=$(cd $(dirname $0); pwd)
 

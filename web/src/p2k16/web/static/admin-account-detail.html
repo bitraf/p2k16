@@ -34,13 +34,8 @@
         <a href="#!admin/circle/{{ c.id }}">{{ c.name }}</a>
       </td>
       <td class="col-xs-8">
-        <a ng-if="ctrl.in_circle(c)" ng-click="ctrl.membership(c, false)">
-          remove membership
-        </a>
-        <a ng-if="!ctrl.in_circle(c)" ng-click="ctrl.membership(c, true)">
-          create membership
-        </a>
-
+        <a ng-if="ctrl.in_circle(c)" ng-click="ctrl.membership(c, false)">remove membership</a>
+        <a ng-if="!ctrl.in_circle(c)" ng-click="ctrl.membership(c, true)">create membership</a>
       </td>
     </tr>
     </tbody>

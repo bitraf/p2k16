@@ -60,7 +60,7 @@
     </thead>
     <tbody>
     <tr ng-repeat="m in ctrl.members | orderBy:'account_username'">
-      <td><a href="#!/user/{{ m.account_id }}">{{ m.account_username }}</a></td>
+      <td><a href="#!/admin/account/{{ m.account_id }}">{{ m.account_username }}</a></td>
       <td>{{ m.createdAt | date:'medium' }}</td>
       <td>{{ m.updatedAt | date:'medium' }}</td>
       <td>

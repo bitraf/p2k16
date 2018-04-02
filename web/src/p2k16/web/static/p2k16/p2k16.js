@@ -569,8 +569,8 @@
 
         self.membership = function (circle, create) {
             var form = {
-                account_id: self.account.id,
-                circle_id: circle.id
+                accountId: self.account.id,
+                circleId: circle.id
             };
 
             var f = create ? CoreDataService.add_account_to_circle : CoreDataService.remove_account_from_circle;

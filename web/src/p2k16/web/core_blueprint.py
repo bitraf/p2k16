@@ -1,7 +1,7 @@
 import io
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Mapping, Iterable, Set
 
 import flask
 import flask_login
@@ -210,14 +210,36 @@ def register_account():
     return jsonify({})
 
 
-# This is not very optimal at all
+# This shouldn't return that much data, it should only return circle ids and badge descriptor ids.
 @registry.route('/data/account')
 def data_account_list():
-    accounts_plus_plus = [(account,
-                           account_management.get_circles_for_account(account.id),
-                           badge_management.badges_for_account(account.id))
-                          for account in Account.query.all()]
-    accounts = [account_to_json(account, circles, badges) for (account, circles, badges) in accounts_plus_plus]
+    accounts = {a.id: a for a in Account.query.all()}  # type:Mapping[int, Account]
+    account_ids = [a for a in accounts]
+    from itertools import groupby
+
+    account_badges = AccountBadge.query.filter(AccountBadge.account_id.in_(account_ids))
+    account_badges = sorted(account_badges, key=lambda ab: ab.account_id)
+    badges_by_account = {_id: list(abs) for _id, abs in
+                         groupby(account_badges, lambda ab: ab.account_id)}  # type: Mapping[int, List[AccountBadge]]
+
+    cms = CircleMember.query.filter(CircleMember.account_id.in_(account_ids))
+    cms = sorted(cms, key=lambda cm: cm.account_id)
+    cms_by_account = groupby(cms, lambda cm: cm.account_id)  # type: Iterable[(int, List[CircleMember])]
+
+    circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
+                          cms_by_account}  # type: Mapping[int, Set[Circle]]
+
+    logger.info("Badges: #{}".format(len(badges_by_account)))
+    for _id, abs in badges_by_account.items():
+        logger.info("{}: {}".format(_id, [ab.id for ab in abs]))
+
+    logger.info("Circles: #{}".format(len(circles_by_account)))
+    for _id, circles in circles_by_account.items():
+        logger.info("{}: {}".format(_id, [c.name for c in circles]))
+
+    accounts = [account_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
+                accounts.items()]
+
     return jsonify(accounts)
 
 

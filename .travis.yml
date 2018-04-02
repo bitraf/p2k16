@@ -1,7 +1,7 @@
 language: python
 before_install: npm install -g bower
 python:
-  - 3.4
+  - 3.5
 before_script:
   - psql -U postgres -f database-setup.sql
 script: "./run-p2k16-test"

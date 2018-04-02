@@ -30,7 +30,9 @@
   <table class="table">
     <tbody>
     <tr ng-repeat="c in ctrl.circles">
-      <td class="col-xs-4">{{ c.name }}</td>
+      <td class="col-xs-4">
+        <a href="#!admin/circle/{{ c.id }}">{{ c.name }}</a>
+      </td>
       <td class="col-xs-8">
         <a ng-if="ctrl.in_circle(c)" ng-click="ctrl.membership(c, false)">
           remove membership

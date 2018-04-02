@@ -9,7 +9,7 @@ from typing import Optional, List, Iterable
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from p2k16.core import P2k16TechnicalException
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, joinedload
@@ -83,7 +83,8 @@ model_support = ModelSupport()
 
 
 class P2k16Mixin(object):
-    id = Column(Integer, primary_key=True)
+    id_seq = Sequence('id_seq', metadata=db.Model.metadata)
+    id = Column(Integer, id_seq, primary_key=True)
 
 
 class CreatedAtMixin(object):

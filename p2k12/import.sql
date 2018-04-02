@@ -111,7 +111,8 @@ TRUNCATE public.account_version;
 TRUNCATE public.account CASCADE;
 
 -- TODO: reset all sequences to 1?
-SELECT setval('account_id_seq', 1);
+SELECT setval('id_seq', 100000);
+SELECT setval('transaction_id_seq', 100000);
 
 INSERT INTO public.account (created_at, updated_at, username, email, system)
 VALUES (current_timestamp, current_timestamp, 'system', 'root@bitraf.no', TRUE);

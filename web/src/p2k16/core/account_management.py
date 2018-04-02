@@ -120,7 +120,7 @@ def _assert_can_admin_circle(admin: Account, circle: Circle):
         raise P2k16UserException("{} is not in the admin circle ({}) for circle {}".
                                  format(admin.username, circle.admin_circle.name, circle.name))
     elif circle.management_style == CircleManagementStyle.SELF_ADMIN:
-        raise P2k16UserException("%s is not an admin of %s".format(admin.username, circle.name))
+        raise P2k16UserException("{} is not an admin of {}".format(admin.username, circle.name))
 
 
 def add_account_to_circle(account: Account, circle: Circle, admin: Account):

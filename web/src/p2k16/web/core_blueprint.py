@@ -8,7 +8,7 @@ import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
-from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember
+from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -441,7 +441,11 @@ def _data_company_save():
 
 @core.route('/')
 def index():
-    kwargs = {}
+    from .badge_blueprint import badge_description_to_json
+    kwargs = {
+        "circles": [circle_to_json(c) for c in Circle.query.all()],
+        "badge_descriptions": [badge_description_to_json(bd) for bd in BadgeDescription.query.all()]
+    }
 
     if flask_login.current_user.is_authenticated:
         account = flask_login.current_user.account  # type: Account

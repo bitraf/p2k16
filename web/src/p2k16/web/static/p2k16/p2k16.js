@@ -67,8 +67,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_account_detail_html,
             resolve: {
-                account: CoreDataServiceResolvers.data_account,
-                circles: CoreDataServiceResolvers.data_circle_list
+                account: CoreDataServiceResolvers.data_account
             }
         }).when("/admin/company", {
             controller: AdminCompanyListController,
@@ -80,10 +79,7 @@
         }).when("/admin/circle", {
             controller: AdminCircleListController,
             controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.admin_circle_list_html,
-            resolve: {
-                circles: CoreDataServiceResolvers.data_circle_list
-            }
+            templateUrl: p2k16_resources.admin_circle_list_html
         }).when("/admin/circle/:circle_id", {
             controller: AdminCircleDetailController,
             controllerAs: 'ctrl',
@@ -142,6 +138,99 @@
     /**
      * @constructor
      */
+    function Log(name) {
+        function info() {
+            console.info.apply(console, [name].concat(Array.prototype.slice.call(arguments)));
+        }
+
+        function debug() {
+            console.debug.apply(console, [name].concat(Array.prototype.slice.call(arguments)));
+        }
+
+        /**
+         * @lends Log.prototype
+         */
+        return {
+            d: debug,
+            i: info
+        }
+    }
+
+    /**
+     * A not so very smart cache of items.
+     *
+     * Exposes two read-only (not enforced) data structures:
+     *  - "by_key": a key-index map
+     *  - "values": an array of all values
+     *
+     * Values retrieved from the cache are always valid and only their contents will be replaced if they are
+     * refreshed with new data.
+     *
+     * @constructor
+     */
+    function SmartCache(name) {
+        /**
+         * @constructor
+         */
+        function Item(key, value, index) {
+            this.key = key;
+            this.value = value;
+            this.index = index;
+        }
+
+        var l = new Log("SmartCache:" + name);
+        var items = {};
+        var itemCount = 0;
+        // Values indexed by their key
+        var by_key = {};
+        // Unsorted array with all values
+        var values = [];
+
+        function put(key, value) {
+            var item = items[key];
+
+            var obj;
+            if (item) {
+                l.d("Replacing existing item", key);
+                obj = item.value;
+                for (var prop in obj) {
+                    if (obj.hasOwnProperty(prop)) {
+                        delete obj[prop];
+                    }
+                }
+            } else {
+                l.d("Creating new item", key);
+                obj = {};
+                var item = new Item(key, obj, itemCount++);
+                items[key] = item;
+
+                by_key[key] = obj;
+                values[item.index] = obj;
+            }
+
+            _.assign(obj, value);
+        }
+
+        function init(data) {
+            _.forEach(data, function (d) {
+                put(d.id, d);
+            });
+        }
+
+        /**
+         * @lends SmartCache.prototype
+         */
+        return {
+            init: init,
+            put: put,
+            values: values,
+            by_key: by_key
+        };
+    }
+
+    /**
+     * @constructor
+     */
     function Listeners($rootScope, key) {
         var self = this;
         self.args = [];
@@ -174,9 +263,12 @@
     }
 
     /**
+     * @param $rootScope
+     * @param {SmartCache} Circles
+     * @param {SmartCache} BadgeDescriptions
      * @constructor
      */
-    function P2k16($rootScope) {
+    function P2k16($rootScope, Circles, BadgeDescriptions) {
         var self = this;
         self.$rootScope = $rootScope;
         self.messages = [];
@@ -252,6 +344,8 @@
         }
 
         self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
+        Circles.init(window.p2k16.circles || []);
+        BadgeDescriptions.init(window.p2k16.badgeDescriptions || []);
 
         window.p2k16 = undefined;
 
@@ -554,14 +648,14 @@
      * @param $http
      * @param {CoreDataService} CoreDataService
      * @param account
-     * @param circles
+     * @param {SmartCache} Circles
      * @constructor
      */
-    function AdminAccountDetailController($http, CoreDataService, account, circles) {
+    function AdminAccountDetailController($http, CoreDataService, account, Circles) {
         var self = this;
 
         self.account = account;
-        self.circles = circles;
+        self.circles = Circles.values;
 
         self.in_circle = function (circle) {
             return !!_.find(self.account.circles, {id: circle.id})
@@ -592,13 +686,13 @@
 
     /**
      * @param {CoreDataService} CoreDataService
-     * @param circles
+     * @param {SmartCache} Circles
      * @constructor
      */
-    function AdminCircleListController(CoreDataService, circles) {
+    function AdminCircleListController(CoreDataService, Circles) {
         var self = this;
 
-        self.circles = circles;
+        self.circles = Circles.values;
     }
 
     /**
@@ -766,8 +860,18 @@
         }
     }
 
+    function configSmartCaches($provide) {
+        $provide.factory("Circles", function () {
+            return new SmartCache("Circle");
+        });
+        $provide.factory("BadgeDescriptions", function () {
+            return new SmartCache("BadgeDescription");
+        });
+    }
+
     angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])
         .config(config)
+        .config(configSmartCaches)
         .run(run)
         .service("P2k16", P2k16)
         .service("BadgeDataService", BadgeDataService)

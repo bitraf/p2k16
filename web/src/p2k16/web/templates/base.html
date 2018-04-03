@@ -18,10 +18,13 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
   <script>
     var p2k16 = {};
+    p2k16.badgeDescriptions = {{ badge_descriptions | tojson | safe }};
+    p2k16.circles = {{ circles | tojson | safe }};
+
     {% if account and current_user.is_authenticated %}
       p2k16.account = {{ account | tojson | safe }};
     {% endif %}
-    {% if circles_with_admin_access  %}
+    {% if circles_with_admin_access %}
       p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
     {% endif %}
   </script>

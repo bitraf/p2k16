@@ -9,6 +9,7 @@ import werkzeug.exceptions
 from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException
 from p2k16.core import make_app, auth, door, mail
+from p2k16.core.log import P2k16LoggingFilter
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
 from sqlalchemy.exc import SQLAlchemyError
@@ -121,7 +122,10 @@ def modified_by_mixing_before_request():
         return
 
     account = cu.account
-    logger.info("before: request: account={}, {} {}".format(account.username, flask.request.method, flask.request.url))
+
+    P2k16LoggingFilter.set(username = account.username, method = flask.request.method, path = flask.request.path)
+
+    logger.info("before: request: account={}".format(account.username))
     model_support.push(account)
     flask.g.model_pushed = True
 
@@ -137,6 +141,8 @@ def modified_by_mixing_after_request(response):
 
 
 def _after_request(response, failed: bool):
+    P2k16LoggingFilter.clear()
+
     if hasattr(flask.g, "model_pushed"):
         del flask.g.model_pushed
         # logger.info("after: failed={}, request: {}".format(failed, type(response)))

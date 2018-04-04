@@ -29,7 +29,7 @@ loggers:
 
 formatters:
   p2k16:
-    format: "[%(asctime)s] [%(threadName)-15s] [%(name)-30s]%(p2k16ReqId)s%(p2k16ReqIp)s%(p2k16ReqUser)s [%(levelname)-8s] %(message)s"
+    format: "[%(asctime)s] [%(threadName)-15s] [%(name)-30s] [%(levelname)-8s]%(p2k16ReqId)s%(p2k16Username)s%(p2k16HttpReq)s %(message)s"
     datefmt: "%Y-%m-%d %H:%M:%S %z"
 
 filters:

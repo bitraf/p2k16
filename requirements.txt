@@ -1,3 +1,4 @@
+PyYAML
 # Stuff for development, put the application's dependencies in setup.py
 pytest
 

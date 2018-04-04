@@ -26,9 +26,6 @@ class P2k16TechnicalException(Exception):
 
 
 def make_app():
-    import flask.logging
-    # The debug log format is insane
-    flask.logging.DEBUG_LOG_FORMAT = flask.logging.PROD_LOG_FORMAT
     app = Flask("p2k16", static_folder="web/static")
 
     app.config.BOWER_KEEP_DEPRECATED = False

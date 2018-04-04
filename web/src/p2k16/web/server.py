@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from datetime import date
 
 import flask
@@ -17,32 +16,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
 
-
-def configure_logging():
-    log_format = '[%(asctime)s] [%(name)-30s] [%(levelname)-8s] %(message)s'
-    formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S %z')
-    handler = logging.StreamHandler(stream=sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(formatter)
-
-    l = logging.getLogger("p2k16")
-    [l.removeHandler(h) for h in l.handlers]
-    l.addHandler(handler)
-    l.setLevel(logging.DEBUG)
-
-    l = logging.getLogger("sqlalchemy.engine.base.Engine")
-    [l.removeHandler(h) for h in l.handlers]
-    l.addHandler(handler)
-
-    l = logging.getLogger("paho.mqtt")
-    l.setLevel(logging.DEBUG)
-    [l.removeHandler(h) for h in l.handlers]
-    l.addHandler(handler)
-
-
 app = make_app()
-
-configure_logging()
 
 
 @app.url_defaults
@@ -147,7 +121,7 @@ def modified_by_mixing_before_request():
         return
 
     account = cu.account
-    logger.info("before: request: account={}, {}".format(account, flask.request))
+    logger.info("before: request: account={}, {} {}".format(account.username, flask.request.method, flask.request.url))
     model_support.push(account)
     flask.g.model_pushed = True
 
@@ -165,7 +139,7 @@ def modified_by_mixing_after_request(response):
 def _after_request(response, failed: bool):
     if hasattr(flask.g, "model_pushed"):
         del flask.g.model_pushed
-        logger.info("after: failed={}, request: {}".format(failed, type(response)))
+        # logger.info("after: failed={}, request: {}".format(failed, type(response)))
         model_support.pop()
         if not model_support.is_empty():
             raise P2k16TechnicalException("The model_support stack is not empty.")

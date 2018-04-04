@@ -20,10 +20,13 @@ cd ..
 
 export FLASK_DEBUG=1
 export P2K16_CONFIG=$basedir/infrastructure/config-local.cfg
+export P2K16_LOGGING=$basedir/infrastructure/logging.yaml
 
 # Use the Stripe non-prod API
 export WEBHOOK_SECRET='test'
 export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
 export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 
-exec env/bin/gunicorn -b 127.0.0.1:5000 p2k16.web.server:app
+exec env/bin/gunicorn \
+    --config $basedir/infrastructure/gunicorn-config.py \
+    p2k16.web.server:app

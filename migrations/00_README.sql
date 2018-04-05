@@ -17,7 +17,7 @@ CREATE TABLE foo (
 );
 GRANT ALL ON foo TO "p2k16-web";
 
-CREATE TABLE account_badge_version
+CREATE TABLE foo_version
 (
   transaction_id     BIGINT                   NOT NULL REFERENCES transaction,
   end_transaction_id BIGINT REFERENCES transaction,

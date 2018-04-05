@@ -155,7 +155,7 @@ def account_to_json(account: Account, circles: List[Circle], badges: Optional[Li
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
-        "avatar": create_avatar_url(account.email),
+        "avatar": create_avatar_url(account.email or account.username),
         "email": account.email,
         "name": account.name,
         "phone": account.phone,

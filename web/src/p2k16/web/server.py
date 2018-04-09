@@ -88,7 +88,7 @@ def handle_sqlalchemy_error(e: SQLAlchemyError):
     else:
         # Handle any other SQLAlchemy error as 500 errors
         logger.warning("Got exception", exc_info=e)
-        msg = "Internal error"
+        msg = "Got unexpected error from database. Probably some constraint was broken."
         status_code = 500
 
     response = flask.jsonify({"message": msg})

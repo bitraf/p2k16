@@ -1,3 +1,11 @@
+UPDATE circle
+SET admin_circle = (SELECT id
+                    FROM circle
+                    WHERE name = 'admin')
+WHERE
+  management_style = 'ADMIN_CIRCLE' AND
+  admin_circle IS NULL;
+
 ALTER TABLE circle
   DROP CONSTRAINT IF EXISTS circle_management_style;
 

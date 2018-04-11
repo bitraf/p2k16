@@ -108,6 +108,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_circle_detail_html,
             resolve: {
+                circles: circles,
                 circle: _.constant({})
             }
         }).when("/admin/circle/:circle_id", {
@@ -115,7 +116,9 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_circle_detail_html,
             resolve: {
-                // circle: circle // CoreDataServiceResolvers.data_circle
+                circles: circles,
+                // TODO: use the circle from the cache, look up members
+                // circle: circle
                 circle: CoreDataServiceResolvers.data_circle
             }
         }).when("/admin/company/new", {
@@ -430,7 +433,7 @@
             addInfos: addInfos,
             messages: self.messages,
 
-            canAdminCircle: canAdminCircle,
+            canAdminCircle: canAdminCircle
         }
     }
 
@@ -805,10 +808,11 @@
     /**
      * @param $location
      * @param {CoreDataService} CoreDataService
+     * @param {SmartCache} circles
      * @param circle
      * @constructor
      */
-    function AdminCircleDetailController($location, CoreDataService, circle) {
+    function AdminCircleDetailController($location, CoreDataService, circles, circle) {
         var self = this;
 
         self.isNew = !circle.id;
@@ -837,7 +841,10 @@
                 delete data._embedded;
                 self.members.length = 0;
                 Array.prototype.unshift.apply(self.members, embedded.members);
-                self.adminCircle = embedded.adminCircle;
+            }
+
+            if (self.circle.adminCircle) {
+                self.adminCircle = circles.by_key[self.circle.adminCircle];
             }
         }
 

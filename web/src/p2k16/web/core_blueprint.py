@@ -128,15 +128,22 @@ def circle_member_to_json(cm: CircleMember):
 
 
 def circle_to_json(circle: Circle, include_members=False):
-    return {**model_to_json(circle), **{
+    d = {**model_to_json(circle), **{
         "name": circle.name,
         "description": circle.description,
         "managementStyle": circle.management_style.name,
-        "_embedded": {
-            "members": [circle_member_to_json(cm) for cm in circle.members] if include_members else None,
-            "adminCircle": circle_to_json(circle.admin_circle) if circle.admin_circle else None,
-        }
+        "adminCircle": circle.admin_circle_id,
+        "memberIds": [m.id for m in circle.members]
     }}
+
+    embedded = {}
+    if include_members:
+        embedded["members"] = [circle_member_to_json(cm) for cm in circle.members]
+
+    if len(embedded):
+        d["_embedded"] = embedded
+
+    return d
 
 
 def account_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]]):
@@ -390,14 +397,13 @@ def membership_set_membership():
 
 @registry.route('/data/circle')
 def data_circle_list():
-
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
 
 
 @registry.route('/data/circle/<int:circle_id>')
 def data_circle(circle_id):
-    circle = Circle.get_by_id(circle_id, load_admin_circle=True)
+    circle = Circle.get_by_id(circle_id)
     return jsonify(circle_to_json(circle, include_members=True))
 
 
@@ -414,9 +420,9 @@ def create_circle():
                                          username=username)
     db.session.commit()
 
-    circles = [circle_to_json(c, include_members=False) for c in db.session.query(Circle).all()]
+    circles = [circle_to_json(c) for c in db.session.query(Circle).all()]
 
-    return jsonify({**circle_to_json(c, include_members=False), **P2k16Response().
+    return jsonify({**circle_to_json(c), **P2k16Response().
                    add_control(ReplaceCollectionControl("circles", circles)).to_dict()})
 
 

@@ -160,8 +160,6 @@ class P2k16JSONEncoder(JSONEncoder):
         try:
             if isinstance(obj, date):
                 return obj.isoformat()
-            if isinstance(obj, P2k16Mixin):
-                return obj.id
             iterable = iter(obj)
         except TypeError:
             pass

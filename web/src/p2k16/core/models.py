@@ -256,7 +256,7 @@ class Circle(DefaultMixin, db.Model):
     admin_circle_id = Column("admin_circle", Integer, ForeignKey("circle.id"))
     admin_circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
-    members = relationship("CircleMember", back_populates="circle")  # type: List[CircleMember]
+    members = relationship("CircleMember", back_populates="circle", cascade="all, delete-orphan")  # type: List[CircleMember]
 
     def __init__(self, name: str, description: str, management_style: CircleManagementStyle):
         super().__init__()
@@ -290,8 +290,8 @@ class Circle(DefaultMixin, db.Model):
         return Circle.query.filter(Circle.id == id).one_or_none()
 
     @staticmethod
-    def get_by_id(id, load_admin_circle=False) -> "Circle":
-        return Circle.query.options(joinedload(Circle.admin_circle)).filter(Circle.id == id).one()
+    def get_by_id(id) -> "Circle":
+        return Circle.query.filter(Circle.id == id).one()
 
     @staticmethod
     def find_by_name(name) -> Optional["Circle"]:

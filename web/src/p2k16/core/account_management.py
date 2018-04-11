@@ -136,12 +136,7 @@ def remove_account_from_circle(account: Account, circle: Circle, admin: Account)
 
     _assert_can_admin_circle(admin, circle)
 
-    cm = CircleMember.query.filter_by(account_id=account.id, circle_id=circle.id).one_or_none()
-
-    logger.info("cm={}".format(cm))
-
-    if cm:
-        db.session.delete(cm)
+    circle.remove_member(account)
 
 
 def start_reset_password(username: string) -> Optional[Account]:
@@ -178,3 +173,30 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     account = Account(username, email, name, phone, password)
     db.session.add(account)
     return account
+
+
+def create_circle(name: str, description: str, management_style: CircleManagementStyle, admin_circle_name: str = None,
+                  username: str = None) -> Circle:
+    c = Circle(name, description, management_style)
+
+    if management_style == CircleManagementStyle.ADMIN_CIRCLE:
+        if admin_circle_name is None:
+            raise P2k16UserException("An admin circle is required when management style is set to ADMIN_CIRCLE")
+
+        c.admin_circle = Circle.find_by_name(admin_circle_name)
+
+    elif management_style == CircleManagementStyle.SELF_ADMIN:
+        if username is None:
+            raise P2k16UserException("An initial member's username is required when management style is set to "
+                                     "SELF_ADMIN")
+
+        account = Account.find_account_by_username(username)
+
+        if account is None:
+            raise P2k16UserException("No such account: {}".format(username))
+
+        c.add_member(account)
+
+    db.session.add(c)
+
+    return c

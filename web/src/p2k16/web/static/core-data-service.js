@@ -106,6 +106,14 @@ function CoreDataService($http) {
         return $http(req);
     };
 
+    this.create_circle = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/data/circle';
+        req.data = payload;
+        return $http(req);
+    };
+
     this.data_company_list = function () {
         var req = {};
         req.method = 'GET';

@@ -1,6 +1,26 @@
 (function () {
 
     function config($routeProvider, $httpProvider) {
+
+        /**
+         *
+         * @param {SmartCache} Circles
+         */
+        function circles(Circles) {
+            // console.log("circles()");
+            return Circles.promise();
+        }
+
+        function circle($route, Circles) {
+            var circle_id = $route.current.params.circle_id;
+            // console.log("circle(" + circle_id + ")");
+
+            return Circles.promise().then(function (circles) {
+                // console.log("return: circles", circles.by_key[circle_id]);
+                return circles.by_key[circle_id];
+            });
+        }
+
         $routeProvider.when("/public/unauthenticated", {
             controller: UnauthenticatedController,
             controllerAs: 'ctrl',
@@ -79,12 +99,23 @@
         }).when("/admin/circle", {
             controller: AdminCircleListController,
             controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.admin_circle_list_html
+            templateUrl: p2k16_resources.admin_circle_list_html,
+            resolve: {
+                circles: circles
+            }
+        }).when("/admin/circle/new", {
+            controller: AdminCircleDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_circle_detail_html,
+            resolve: {
+                circle: _.constant({})
+            }
         }).when("/admin/circle/:circle_id", {
             controller: AdminCircleDetailController,
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_circle_detail_html,
             resolve: {
+                // circle: circle // CoreDataServiceResolvers.data_circle
                 circle: CoreDataServiceResolvers.data_circle
             }
         }).when("/admin/company/new", {
@@ -168,7 +199,12 @@
      *
      * @constructor
      */
-    function SmartCache(name) {
+    function SmartCache($q, name, params) {
+
+        function defaultMapper(o) {
+            return {key: o.id, value: o};
+        }
+
         /**
          * @constructor
          */
@@ -178,6 +214,8 @@
             this.index = index;
         }
 
+        var mapper = params.mapper || defaultMapper;
+
         var l = new Log("SmartCache:" + name);
         var items = {};
         var itemCount = 0;
@@ -186,7 +224,11 @@
         // Unsorted array with all values
         var values = [];
 
-        function put(key, value) {
+        function put(value) {
+            var mapped = mapper(value);
+            var key = mapped.key;
+            value = mapped.value;
+
             var item = items[key];
 
             var obj;
@@ -211,21 +253,45 @@
             _.assign(obj, value);
         }
 
-        function init(data) {
-            _.forEach(data, function (d) {
-                put(d.id, d);
-            });
+        var currentPromise = null;
+
+        function promise() {
+            // l.i("promise()");
+            var deferred = $q.defer();
+
+            deferred.resolve(instance);
+
+            return deferred.promise;
+        }
+
+        function executeControl(control) {
+            l.d("Executing control", control);
+            if (control.type === "replace-collection") {
+                l.d("Replacing collection");
+                _.forEach(control.data, function (updated) {
+                    put(updated);
+                });
+            // } else if (control.type === "invalidate-collection") {
+            } else {
+                l.i("Unsupported control type", control.type)
+            }
         }
 
         /**
          * @lends SmartCache.prototype
          */
-        return {
-            init: init,
+        var instance = {
+            promise: promise,
+            executeControl: executeControl,
             put: put,
             values: values,
-            by_key: by_key
+            by_key: by_key,
+            getName: function () {
+                return name;
+            }
         };
+
+        return instance;
     }
 
     /**
@@ -344,8 +410,8 @@
         }
 
         self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
-        Circles.init(window.p2k16.circles || []);
-        BadgeDescriptions.init(window.p2k16.badgeDescriptions || []);
+        Circles.executeControl({type: "replace-collection", data: window.p2k16.circles || []});
+        BadgeDescriptions.executeControl({type: "replace-collection", data: window.p2k16.badgeDescriptions || []});
 
         window.p2k16 = undefined;
 
@@ -425,8 +491,49 @@
         }
     }
 
-    function P2k16HttpInterceptor($rootScope, $q, P2k16) {
+    function p2k16EntityInfo() {
+        function ctrl() {
+            this.show = function (entity) {
+                if (!entity || !entity.createdAt || !entity.updatedAt) {
+                    return false;
+                }
+                return entity.createdAt.substring(0, 19) !== entity.updatedAt.substring(0, 19);
+            }
+        }
+
         return {
+            restrict: 'E',
+            scope: {
+                entity: '='
+            },
+            controller: ctrl,
+            controllerAs: "ctrl",
+            template: '<p ng-if="entity.id" class="text-muted entity-info">Created by {{ entity.createdBy }} at {{ entity.createdAt|date:\'medium\' }}<span\n' +
+            'ng-if="ctrl.show(entity)">, last updated by {{ entity.updatedBy }} at\n{{ entity.updatedAt|date:\'medium\' }}</span>.</p>\n'
+        }
+    }
+
+    function P2k16HttpInterceptor($rootScope, $q, P2k16, Circles, BadgeDescriptions) {
+
+        function findCollection(name) {
+            if (name === "circles") {
+                return Circles;
+            } else if (name === "badge-descriptions") {
+                return BadgeDescriptions;
+            }
+        }
+
+        return {
+            response: function (res) {
+                if (res && res.data && res.data._controls) {
+                    // console.log("controls", res.data._controls);
+                    _.forEach(res.data._controls, function (c) {
+                        var collection = findCollection(c.collection);
+                        collection.executeControl(c);
+                    });
+                }
+                return res;
+            },
             responseError: function (rejection) {
                 // console.log("responseError", "rejection", rejection);
 
@@ -648,14 +755,14 @@
      * @param $http
      * @param {CoreDataService} CoreDataService
      * @param account
-     * @param {SmartCache} Circles
+     * @param {SmartCache} circles
      * @constructor
      */
-    function AdminAccountDetailController($http, CoreDataService, account, Circles) {
+    function AdminAccountDetailController($http, CoreDataService, account, circles) {
         var self = this;
 
         self.account = account;
-        self.circles = Circles.values;
+        self.circles = circles.values;
 
         self.in_circle = function (circle) {
             return !!_.find(self.account.circles, {id: circle.id})
@@ -686,23 +793,36 @@
 
     /**
      * @param {CoreDataService} CoreDataService
-     * @param {SmartCache} Circles
+     * @param {SmartCache} circles
      * @constructor
      */
-    function AdminCircleListController(CoreDataService, Circles) {
+    function AdminCircleListController(CoreDataService, circles) {
         var self = this;
 
-        self.circles = Circles.values;
+        self.circles = circles.values;
     }
 
     /**
+     * @param $location
      * @param {CoreDataService} CoreDataService
      * @param circle
      * @constructor
      */
-    function AdminCircleDetailController(CoreDataService, circle) {
+    function AdminCircleDetailController($location, CoreDataService, circle) {
         var self = this;
 
+        self.isNew = !circle.id;
+
+        self.circleName = circle.id ? circle.name : "New circle";
+
+        self.addCircleForm = {};
+        // self.addCircleForm = {
+        //     name: "foo-" + Date.now(),
+        //     description: "d",
+        //     adminCircle: "door",
+        //     username: "trygvis",
+        //     managementStyle: "ADMIN_CIRCLE"
+        // };
         self.addMemberForm = {};
 
         function update(data) {
@@ -723,6 +843,11 @@
 
         update(circle);
 
+        self.createCircle = function () {
+            CoreDataService.create_circle(self.addCircleForm).then(function (res) {
+                $location.url("/admin/circle/" + res.data.id);
+            });
+        };
         self.removeMember = function (accountId) {
             var form = {
                 accountId: accountId,
@@ -861,17 +986,22 @@
     }
 
     function configSmartCaches($provide) {
-        $provide.factory("Circles", function () {
-            return new SmartCache("Circle");
+        function valueMapper(circle) {
+            circle._embedded = undefined;
+            return {key: circle.id, value: circle};
+        }
+
+        $provide.factory("Circles", function ($q) {
+            return new SmartCache($q, "Circle", valueMapper);
         });
-        $provide.factory("BadgeDescriptions", function () {
-            return new SmartCache("BadgeDescription");
+        $provide.factory("BadgeDescriptions", function ($q) {
+            return new SmartCache($q, "BadgeDescription", valueMapper);
         });
     }
 
     angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])
-        .config(config)
         .config(configSmartCaches)
+        .config(config)
         .run(run)
         .service("P2k16", P2k16)
         .service("BadgeDataService", BadgeDataService)
@@ -879,5 +1009,6 @@
         .service("DoorDataService", DoorDataService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
-        .directive("p2k16Header", p2k16HeaderDirective);
+        .directive("p2k16Header", p2k16HeaderDirective)
+        .directive("p2k16EntityInfo", p2k16EntityInfo);
 })();

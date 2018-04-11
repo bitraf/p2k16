@@ -5,6 +5,11 @@ div.error-container {
     width: 25em;
 }
 
+.entity-info {
+    font-style: italic;
+    font-size: smaller;
+}
+
 /* ui.bootstrap */
 .nav, .pagination, .carousel, .panel-title a {
     cursor: pointer;

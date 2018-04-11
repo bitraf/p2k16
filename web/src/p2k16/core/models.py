@@ -8,8 +8,8 @@ from typing import Optional, List, Iterable
 
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from p2k16.core import P2k16TechnicalException
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence
+from p2k16.core import P2k16TechnicalException, P2k16UserException
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, joinedload
@@ -271,6 +271,20 @@ class Circle(DefaultMixin, db.Model):
     def __repr__(self):
         return '<Circle:%s, name=%s>' % (self.id, self.name)
 
+    def add_member(self, account: Account):
+        self.members.append(CircleMember(self, account))
+
+    def remove_member(self, account: Account):
+        [self.members.remove(m) for m in self.members if m.account == account]
+
+    def on_before_insert(self):
+        if self.management_style == CircleManagementStyle.SELF_ADMIN and len(self.members) == 0:
+            raise P2k16UserException("A new circle which is self-administrated must have at least one member")
+
+    def on_before_update(self):
+        if self.management_style == CircleManagementStyle.SELF_ADMIN and len(self.members) == 0:
+           raise P2k16UserException("A circle which is self-administrated must have at least one member")
+
     @staticmethod
     def find_by_id(id) -> Optional["Circle"]:
         return Circle.query.filter(Circle.id == id).one_or_none()
@@ -286,6 +300,18 @@ class Circle(DefaultMixin, db.Model):
     @staticmethod
     def get_by_name(name) -> "Circle":
         return Circle.query.filter(Circle.name == name).one()
+
+
+# noinspection PyUnusedLocal
+@event.listens_for(Circle, 'before_insert')
+def on_circle_before_insert(mapper, connection, target: Circle):
+    target.on_before_insert()
+
+
+# noinspection PyUnusedLocal
+@event.listens_for(Circle, 'before_update')
+def on_circle_before_update(mapper, connection, target: Circle):
+    target.on_before_update()
 
 
 class CircleMember(DefaultMixin, db.Model):

@@ -1,14 +1,16 @@
+import abc
 import io
 import logging
 import os
-from typing import List, Optional, Mapping, Iterable, Set
+from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
 
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
-from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription
+from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
+    CircleManagementStyle
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -17,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
+string_type = {"type": "string"}
+management_style_type = {"enum": ["ADMIN_CIRCLE", "SELF_ADMIN"]}
 
 register_account_form = {
     "type": "object",
@@ -65,6 +69,21 @@ modify_circle_form = {
             "accountUsername",
         ],
     }, ],
+}
+
+add_circle_form = {
+    "type": "object",
+    "properties": {
+        "name": nonempty_string,
+        "description": string_type,
+        "managementStyle": management_style_type,
+        "adminCircle": nonempty_string,
+        "username": nonempty_string,
+    },
+    "required": [
+        "name",
+        "managementStyle",
+    ]
 }
 
 single_company_form = {
@@ -153,6 +172,47 @@ def company_to_json(c: Company, include_employees=False):
     if include_employees:
         ret["employees"] = [ce(e) for e in c.employees]
     return ret
+
+
+class P2k16Control(object):
+    @abc.abstractmethod
+    def to_dict(self) -> Dict[str, Any]:
+        pass
+
+
+class InvalidateCollectionControl(P2k16Control):
+    def __init__(self, collection: str):
+        self.collection = collection
+
+    def to_dict(self):
+        return {"type": "invalidate-collection", "collection": self.collection}
+
+
+class ReplaceCollectionControl(P2k16Control):
+    def __init__(self, collection: str, data: List[Any]):
+        self.collection = collection
+        self.data = data
+
+    def to_dict(self):
+        return {"type": "replace-collection", "collection": self.collection, "data": self.data}
+
+
+class P2k16Response(object):
+    def __init__(self):
+        self.controls = []  # type: List[P2k16Control]
+        pass
+
+    def add_control(self, ctrl: P2k16Control):
+        self.controls.append(ctrl)
+        return self
+
+    def to_dict(self) -> Dict[str, Any]:
+        d = {}
+
+        if len(self.controls):
+            d["_controls"] = [c.to_dict() for c in self.controls]
+
+        return d
 
 
 core = Blueprint('core', __name__, template_folder='templates')
@@ -330,6 +390,7 @@ def membership_set_membership():
 
 @registry.route('/data/circle')
 def data_circle_list():
+
     circles = Circle.query.all()
     return jsonify([circle_to_json(c) for c in circles])
 
@@ -338,6 +399,25 @@ def data_circle_list():
 def data_circle(circle_id):
     circle = Circle.get_by_id(circle_id, load_admin_circle=True)
     return jsonify(circle_to_json(circle, include_members=True))
+
+
+@registry.route('/data/circle', methods=["POST"])
+@validate_schema(add_circle_form)
+def create_circle():
+    name = request.json["name"]
+    description = request.json.get("description", "")
+    management_style = CircleManagementStyle[request.json["managementStyle"]]
+    admin_circle = request.json.get("adminCircle", None)
+    username = request.json.get("username", None)
+
+    c = account_management.create_circle(name, description, management_style, admin_circle_name=admin_circle,
+                                         username=username)
+    db.session.commit()
+
+    circles = [circle_to_json(c, include_members=False) for c in db.session.query(Circle).all()]
+
+    return jsonify({**circle_to_json(c, include_members=False), **P2k16Response().
+                   add_control(ReplaceCollectionControl("circles", circles)).to_dict()})
 
 
 ###############################################################################

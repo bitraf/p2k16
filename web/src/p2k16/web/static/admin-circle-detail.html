@@ -1,23 +1,71 @@
 <p2k16-header active="admin"></p2k16-header>
 
 <div class="container">
-  <h1>Circle
-    <small>{{ ctrl.circle.name }}</small>
+  <h1>{{ ctrl.circleName }}
+    <small><a href="#!/admin/circle">all circles</a></small>
   </h1>
+  <p2k16-entity-info entity="ctrl.circle"></p2k16-entity-info>
 
-  <table class="table">
+  <form class="form-horizontal" ng-if="!ctrl.circle.id">
+    <div class="form-group">
+      <label for="name" class="col-sm-2">Name</label>
+      <div class="col-sm-4">
+        <input class="form-control" type="text" name="name" id="name" placeholder="name"
+               ng-model="ctrl.addCircleForm.name"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-2">Description</label>
+      <div class="col-sm-4">
+        <textarea class="form-control" rows="3" ng-model="ctrl.addCircleForm.description"></textarea>
+      </div>
+    </div>
+
+
+    <h3>Management style</h3>
+
+    <div class="radio">
+      <label>
+        <input type="radio" name="management-style" id="ADMIN_CIRCLE" value="ADMIN_CIRCLE"
+               ng-model="ctrl.addCircleForm.managementStyle">
+        Admin circle
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-2">Admin circle</label>
+      <div class="col-sm-4">
+        <input class="form-control" type="text" name="admin-circle" id="admin-circle" placeholder="Admin circle"
+               ng-model="ctrl.addCircleForm.adminCircle"
+               ng-disabled="ctrl.addCircleForm.managementStyle != 'ADMIN_CIRCLE'"/>
+      </div>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="management-style" id="SELF_ADMIN" value="SELF_ADMIN"
+               ng-model="ctrl.addCircleForm.managementStyle">
+        Self admin
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-2">Initial member</label>
+      <div class="col-sm-4">
+        <input class="form-control" type="text" name="username" id="username" placeholder="Username"
+               ng-model="ctrl.addCircleForm.username" ng-disabled="ctrl.addCircleForm.managementStyle != 'SELF_ADMIN'"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-4 col-sm-offset-2">
+        <button class="btn btn-default" ng-click="ctrl.createCircle()">Create</button>
+      </div>
+    </div>
+    <pre>{{ ctrl.addCircleForm|json }}</pre>
+  </form>
+
+  <table class="table" ng-if="ctrl.circle.id">
     <tbody>
     <tr>
-      <th class="col-sm-4">Created</th>
-      <td class="col-sm-8">{{ ctrl.circle.createdAt | date:'medium' }}</td>
-    </tr>
-    <tr>
-      <th>Updated</th>
-      <td>{{ ctrl.circle.updatedAt | date:'medium' }}</td>
-    </tr>
-    <tr>
-      <th>Management style</th>
-      <td>{{ ctrl.circle.managementStyle }}</td>
+      <th class="col-sm-4">Management style</th>
+      <td class="col-sm-8">{{ ctrl.circle.managementStyle }}</td>
     </tr>
     <tr ng-show="ctrl.circle.managementStyle == 'ADMIN_CIRCLE'">
       <th>Admin circle</th>
@@ -46,30 +94,32 @@
     </form>
   </section>
 
-  <h2>Members
-    <small>{{ ctrl.members.length }}</small>
-  </h2>
-  <table class="table">
-    <thead>
-    <tr>
-      <th class="col-sm-2">User</th>
-      <th class="col-sm-3">Created</th>
-      <th class="col-sm-3">Updated</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr ng-repeat="m in ctrl.members | orderBy:'account_username'">
-      <td><a href="#!/admin/account/{{ m.account_id }}">{{ m.account_username }}</a></td>
-      <td>{{ m.createdAt | date:'medium' }}</td>
-      <td>{{ m.updatedAt | date:'medium' }}</td>
-      <td>
-        <a ng-click="ctrl.removeMember(m.account_id)">remove</a>
-      </td>
-    </tr>
-    </tbody>
-    <tfoot>
-    </tfoot>
-  </table>
+  <section ng-if="ctrl.circle.id">
+    <h2>Members
+      <small>{{ ctrl.members.length }}</small>
+    </h2>
+    <table class="table">
+      <thead>
+      <tr>
+        <th class="col-sm-2">User</th>
+        <th class="col-sm-3">Created</th>
+        <th class="col-sm-3">Updated</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr ng-repeat="m in ctrl.members | orderBy:'account_username'">
+        <td><a href="#!/admin/account/{{ m.account_id }}">{{ m.account_username }}</a></td>
+        <td>{{ m.createdAt | date:'medium' }}</td>
+        <td>{{ m.updatedAt | date:'medium' }}</td>
+        <td>
+          <a ng-click="ctrl.removeMember(m.account_id)">remove</a>
+        </td>
+      </tr>
+      </tbody>
+      <tfoot>
+      </tfoot>
+    </table>
+  </section>
 
 </div>

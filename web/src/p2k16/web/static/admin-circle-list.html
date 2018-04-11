@@ -3,6 +3,12 @@
 <div class="container">
   <h1>Circles</h1>
 
+  <div class="row">
+    <div class="col-sm-12 text-right">
+      <a class="btn btn-default" href="#!/admin/circle/new">Create circle</a>
+    </div>
+  </div>
+
   <table class="table">
     <thead>
     <tr>
@@ -13,7 +19,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="c in ctrl.circles">
+    <tr ng-repeat="c in ctrl.circles | orderBy:'name'">
       <td>{{ c.name }}</td>
       <td>{{ c.description }}</td>
       <td>{{ p2k16.canAdminCircle(c.id) }}</td>

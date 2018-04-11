@@ -49,8 +49,8 @@ def debug_signals(app):
     for s in signals:
         name = s.name
 
-        def dbg(*args, **kwargs):
-            logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
+        def dbg(name):
+            logger.info("Connecting to signal {}".format(name))
+            return lambda *args, **kwargs: logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
 
-        logger.info("Connecting to signal {}".format(name))
-        s.connect(dbg, weak=False)
+        s.connect(dbg(name), weak=False)

@@ -183,7 +183,12 @@ def create_circle(name: str, description: str, management_style: CircleManagemen
         if admin_circle_name is None:
             raise P2k16UserException("An admin circle is required when management style is set to ADMIN_CIRCLE")
 
-        c.admin_circle = Circle.find_by_name(admin_circle_name)
+        admin_circle = Circle.find_by_name(admin_circle_name)
+
+        if admin_circle is None:
+            raise P2k16UserException("No such circle: {}".format(admin_circle_name))
+
+        c.admin_circle = admin_circle
 
     elif management_style == CircleManagementStyle.SELF_ADMIN:
         if username is None:

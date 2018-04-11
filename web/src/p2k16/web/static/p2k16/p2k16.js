@@ -87,7 +87,8 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_account_detail_html,
             resolve: {
-                account: CoreDataServiceResolvers.data_account
+                account: CoreDataServiceResolvers.data_account,
+                circles: circles
             }
         }).when("/admin/company", {
             controller: AdminCompanyListController,
@@ -268,9 +269,9 @@
         }
 
         function executeControl(control) {
-            l.d("Executing control", control);
+            l.d("Executing control", control.type);
             if (control.type === "replace-collection") {
-                l.d("Replacing collection");
+                // l.d("Replacing collection");
                 _.forEach(control.data, function (updated) {
                     put(updated);
                 });

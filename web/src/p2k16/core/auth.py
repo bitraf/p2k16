@@ -2,6 +2,7 @@ import logging
 from typing import List
 
 import flask_login
+import flask_login.signals
 from p2k16.core import account_management
 from p2k16.core.models import Account, Circle
 
@@ -30,8 +31,26 @@ def account_loader(account_id):
         logger.info("login_manager.user_loader: no such account".format(account_id))
         return
 
-    logger.info("login_manager.user_loader: Loaded account.id={}, account.username={}".format(account.id, account.username))
+    logger.info("login_manager.user_loader: Loaded account.id={}, account.username={}".
+                format(account.id, account.username))
 
     circles = account_management.get_circles_for_account(account.id)
 
     return AuthenticatedAccount(account, circles)
+
+
+
+def debug_signals(app):
+    signals = [flask_login.signals.user_logged_in, flask_login.signals.user_logged_out,
+               flask_login.signals.user_loaded_from_cookie, flask_login.signals.user_loaded_from_header,
+               flask_login.signals.user_loaded_from_request, flask_login.signals.user_login_confirmed,
+               flask_login.signals.user_unauthorized, flask_login.signals.user_needs_refresh,
+               flask_login.signals.user_accessed, flask_login.signals.session_protected]
+    for s in signals:
+        name = s.name
+
+        def dbg(*args, **kwargs):
+            logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
+
+        logger.info("Connecting to signal {}".format(name))
+        s.connect(dbg, weak=False)

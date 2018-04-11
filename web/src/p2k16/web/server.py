@@ -99,7 +99,11 @@ def handle_sqlalchemy_error(e: SQLAlchemyError):
 
 # @app.errorhandler(werkzeug.exceptions.HTTPException)
 def handle_generic_http_code(e: werkzeug.exceptions.HTTPException):
-    msg = "{}: {}".format(e.name, e.description)
+
+    if hasattr(e, "name") and hasattr(e, "description"):
+        msg = "{}: {}".format(e.name, e.description)
+    else:
+        msg = "Unknown exception: {}".format(type(e))
 
     response = flask.jsonify({"message": msg})
     response.status_code = e.code
@@ -171,6 +175,7 @@ class P2k16JSONEncoder(JSONEncoder):
 
 
 auth.login_manager.init_app(app)
+auth.debug_signals(app)
 db.init_app(app)
 
 app.json_encoder = P2k16JSONEncoder

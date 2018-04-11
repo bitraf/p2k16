@@ -9,6 +9,7 @@ setup(name='p2k16',
       entry_points={
       },
       install_requires=[
+          'blinker',
           'emails',
           'flask',
           'flask-bcrypt',

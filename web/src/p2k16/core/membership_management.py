@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 import os
 import stripe
-from p2k16.core.models import db, Account, MembershipPayment, model_support, Membership, StripeCustomer
+from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer
 from p2k16.core import P2k16UserException
 
 logger = logging.getLogger(__name__)
@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 def paid_members():
     return Account.query. \
-        join(MembershipPayment, MembershipPayment.created_by_id == Account.id). \
-        filter(MembershipPayment.end_date >= datetime.now()). \
+        join(StripePayment, StripePayment.created_by_id == Account.id). \
+        filter(StripePayment.end_date >= datetime.now()). \
         all()
 
 
@@ -19,9 +19,9 @@ def active_member(account: Account = None) -> bool:
     """
     Verify that user is an active member of Bitraf either by paying or some other mechanism
     """
-    return MembershipPayment.query. \
-               filter(MembershipPayment.created_by_id == account.id,
-                      MembershipPayment.end_date >= datetime.now()).scalar() is not None
+    return StripePayment.query. \
+               filter(StripePayment.created_by_id == account.id,
+                      StripePayment.end_date >= datetime.now()).scalar() is not None
 
 
 def get_membership(account: Account):
@@ -43,7 +43,7 @@ def get_stripe_customer(account: Account):
 
 
 def get_membetship_payments(account: Account):
-    return MembershipPayment.query.filter(MembershipPayment.created_by_id == account.id).all()
+    return StripePayment.query.filter(StripePayment.created_by_id == account.id).all()
 
 
 def find_account_from_stripe_customer(stripe_customer_id):
@@ -91,8 +91,8 @@ def handle_payment_success(event):
         timestamp = datetime.fromtimestamp(event.data.object.date)
         items = event.data.object.lines.data[0]
 
-        payment = MembershipPayment(invoice_id, datetime.fromtimestamp(items.period.start),
-                                    datetime.fromtimestamp(items.period.end), items.amount / 100, timestamp)
+        payment = StripePayment(invoice_id, datetime.fromtimestamp(items.period.start),
+                                datetime.fromtimestamp(items.period.end), items.amount / 100, timestamp)
 
         db.session.add(payment)
         db.session.commit()

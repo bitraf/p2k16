@@ -33,18 +33,18 @@ class AccountTest(TestCase):
             # Add account3 with active membership
             m3 = Membership(500)
 
-            payment1 = MembershipPayment('tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                         datetime(2017, 1, 1))
-            payment2 = MembershipPayment('tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
-                                         datetime(2017, 2, 1))
-            payment3 = MembershipPayment('tok_stripe_xx1338', datetime(2017, 3, 1),
-                                         datetime.now() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
+            payment1 = StripePayment('tok_stripe_xx1234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+                                     datetime(2017, 1, 1))
+            payment2 = StripePayment('tok_stripe_xx1337', datetime(2017, 2, 1), datetime(2017, 2, 28), '500.00',
+                                     datetime(2017, 2, 1))
+            payment3 = StripePayment('tok_stripe_xx1338', datetime(2017, 3, 1),
+                                     datetime.now() + timedelta(days=1), '500.00', datetime(2017, 2, 1))
             session.add_all([m3, payment1, payment2, payment3])
 
         with model_support.run_as(a4):
             # Account 4 with expired membership
-            payment4 = MembershipPayment('tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
-                                         datetime(2017, 1, 1))
+            payment4 = StripePayment('tok_stripe_xx3234', datetime(2017, 1, 1), datetime(2017, 1, 31), '500.00',
+                                     datetime(2017, 1, 1))
             session.add_all([payment4])
 
         # Account 5 has no payments

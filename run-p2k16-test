@@ -19,7 +19,7 @@ export FLASK_DEBUG=1
 export P2K16_CONFIG=$basedir/infrastructure/config-it.cfg
 
 # Use the Stripe non-prod API
-export WEBHOOK_SECRET='test'
+export STRIPE_WEBHOOK_SECRET='whsec_Rr4aEG6kaZWIljjybZxqibta4Yjkakna'
 export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
 export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 

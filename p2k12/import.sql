@@ -33,10 +33,26 @@ CREATE TABLE p2k12.checkins (
   type    TEXT        NOT NULL
 );
 
-\copy p2k12.accounts from 'p2k12/p2k12_accounts.csv' with csv header
-\copy p2k12.auth from 'p2k12/p2k12_auth.csv' with csv header
-\copy p2k12.members from 'p2k12/p2k12_members.csv' with csv header
-\copy p2k12.checkins from 'p2k12/p2k12_checkins.csv' with csv header
+CREATE TABLE p2k12.stripe_payment (
+  invoice_id TEXT          NOT NULL,
+  account    INTEGER       NOT NULL,
+  start_date DATE          NOT NULL,
+  end_date   DATE          NOT NULL,
+  price      NUMERIC(8, 2) NOT NULL,
+  paid_date  DATE
+);
+
+CREATE TABLE p2k12.stripe_customer (
+  account INTEGER NOT NULL,
+  id      TEXT
+);
+
+\COPY p2k12.accounts FROM 'p2k12/p2k12_accounts.csv' WITH CSV HEADER
+\COPY p2k12.auth FROM 'p2k12/p2k12_auth.csv' WITH CSV HEADER
+\COPY p2k12.members FROM 'p2k12/p2k12_members.csv' WITH CSV HEADER
+\COPY p2k12.checkins FROM 'p2k12/p2k12_checkins.csv' WITH CSV HEADER
+\COPY p2k12.stripe_customer FROM 'p2k12/p2k12_stripe_customer.csv' WITH CSV HEADER
+\COPY p2k12.stripe_payment FROM 'p2k12/p2k12_stripe_payment.csv' WITH CSV HEADER
 
 ALTER TABLE p2k12.accounts
   ADD CONSTRAINT accounts__id_uq UNIQUE (id);
@@ -98,6 +114,10 @@ CREATE VIEW p2k12.export AS
                             FROM p2k12.duplicate_emails)
   ORDER BY account_id ASC;
 
+SELECT *
+FROM p2k12.members
+WHERE email = 'anders@andersand.net';
+
 DELETE FROM public.company_employee_version;
 DELETE FROM public.company_employee;
 DELETE FROM public.company_version;
@@ -129,6 +149,18 @@ INSERT INTO public.account (membership_number, created_at, updated_at, username,
     name
   FROM p2k12.export
   ORDER BY account_id;
+
+DELETE FROM stripe_customer;
+INSERT INTO stripe_customer (created_at, created_by, updated_at, updated_by, stripe_id)
+  SELECT
+    current_timestamp AS created_at,
+    a.id              AS created_by,
+    current_timestamp AS created_at,
+    a.id              AS updated_by,
+    sc.id             AS stripe_id
+  FROM p2k12.stripe_customer sc
+    LEFT OUTER JOIN public.account a ON a.membership_number = sc.account
+  ORDER BY a.id;
 
 -- Update passwords
 UPDATE public.account a

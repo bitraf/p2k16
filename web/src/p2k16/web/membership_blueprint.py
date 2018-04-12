@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from p2k16.core.membership_management import parse_stripe_event
 
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-webhook_secret = os.environ.get('WEBHOOK_SECRET')
+webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
 membership = Blueprint('membership', __name__, template_folder='templates')
 

@@ -13,7 +13,7 @@ stripe_pubkey = ''
 
 def setup_stripe(cfg: Mapping[str, str]) -> None:
     global stripe_pubkey
-    stripe.pubkey = cfg.get('STRIPE_PUBLIC_KEY')
+    stripe_pubkey = cfg.get('STRIPE_PUBLIC_KEY')
 
 
 def paid_members():
@@ -117,7 +117,7 @@ def member_get_details(account):
 
     details = {}
 
-    details['stripe_pubkey'] = os.environ.get('STRIPE_PUBLIC_KEY')
+    details['stripe_pubkey'] = stripe_pubkey
 
     try:
         # Get payment details

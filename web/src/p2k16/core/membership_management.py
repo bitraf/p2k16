@@ -4,8 +4,16 @@ import os
 import stripe
 from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer
 from p2k16.core import P2k16UserException
+from typing import Mapping
 
 logger = logging.getLogger(__name__)
+
+stripe_pubkey = ''
+
+
+def setup_stripe(cfg: Mapping[str, str]) -> None:
+    global stripe_pubkey
+    stripe.pubkey = cfg.get('STRIPE_PUBLIC_KEY')
 
 
 def paid_members():

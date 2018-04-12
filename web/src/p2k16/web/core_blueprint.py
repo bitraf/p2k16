@@ -3,6 +3,7 @@ import io
 import logging
 import os
 from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
+import hashlib
 
 import flask
 import flask_login
@@ -154,12 +155,18 @@ def account_to_json(account: Account, circles: List[Circle], badges: Optional[Li
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
+        "avatar": create_avatar_url(account.email or account.username),
         "email": account.email,
         "name": account.name,
         "phone": account.phone,
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
         "badges": {b.id: badge_to_json(b) for b in badges} if badges else None
     }}
+
+
+def create_avatar_url( email ):
+    hash = hashlib.md5(email.encode('utf-8')).hexdigest()
+    return 'https://www.gravatar.com/avatar/' + hash
 
 
 def company_to_json(c: Company, include_employees=False):

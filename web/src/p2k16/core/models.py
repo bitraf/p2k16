@@ -396,8 +396,8 @@ class Membership(DefaultMixin, db.Model):
         return '<Membership:%r, fee=%r>' % (self.id, self.fee)
 
 
-class MembershipPayment(DefaultMixin, db.Model):
-    __tablename__ = 'membership_payment'
+class StripePayment(DefaultMixin, db.Model):
+    __tablename__ = 'stripe_payment'
     __versioned__ = {}
 
     stripe_id = Column("stripe_id", String(50), unique=True, nullable=False)

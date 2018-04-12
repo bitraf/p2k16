@@ -42,9 +42,11 @@ class AccountTest(P2k16TestCase):
 
         with session.begin(subtransactions=True):
             with model_support.run_as(admin):
-                session.add_all([admin, a1, a2, c_admin, c])
+                session.add_all([admin, a1, a2])
                 session.flush()
-                session.add(CircleMember(c_admin, admin))
+                c_admin.add_member(admin, "")
+                session.add_all([c, c_admin])
+                session.flush()
                 logger.info("Setup done")
 
         with session.begin(subtransactions=True):
@@ -75,7 +77,7 @@ class AccountTest(P2k16TestCase):
         # a2 trying to add a1 to c. C is managed by an admin circle (c_admin), a2 is not in c_admin.
         with session.begin(subtransactions=True):
             try:
-                account_management.add_account_to_circle(a1, c, a2)
+                account_management.add_account_to_circle(a1, c, a2, "")
                 session.flush()
                 self.fail("expected exception")
             except P2k16UserException as e:
@@ -87,7 +89,7 @@ class AccountTest(P2k16TestCase):
         # admin trying to add a1 to c. C is managed by an admin circle (c_admin), admin is in c_admin.
         with session.begin(subtransactions=True):
             with model_support.run_as(admin):
-                account_management.add_account_to_circle(a1, c, admin)
+                account_management.add_account_to_circle(a1, c, admin, "")
 
         session.refresh(c)
         assert len(c.members) == 1
@@ -95,7 +97,7 @@ class AccountTest(P2k16TestCase):
         # admin trying to add a1 to c_admin. C is managed by the circle's members, admin is in c_admin.
         with session.begin(subtransactions=True):
             with model_support.run_as(admin):
-                account_management.add_account_to_circle(a1, c_admin, admin)
+                account_management.add_account_to_circle(a1, c_admin, admin, "")
 
         with session.begin(subtransactions=True):
             adminable_circles = account_management.get_circles_with_admin_access(admin.id)

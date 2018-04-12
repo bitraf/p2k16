@@ -22,20 +22,12 @@
       <th>Phone number</th>
       <td><a href="tlf:{{ ctrl.account.phone }}">{{ ctrl.account.phone }}</a></td>
     </tr>
-    </tbody>
-  </table>
-
-  <h2>Circles</h2>
-
-  <table class="table">
-    <tbody>
-    <tr ng-repeat="c in ctrl.circles">
-      <td class="col-xs-4">
-        <a href="#!admin/circle/{{ c.id }}">{{ c.name }}</a>
-      </td>
-      <td class="col-xs-8">
-        <a ng-if="ctrl.in_circle(c)" ng-click="ctrl.membership(c, false)">remove membership</a>
-        <a ng-if="!ctrl.in_circle(c)" ng-click="ctrl.membership(c, true)">create membership</a>
+    <tr>
+      <th>Circles</th>
+      <td>
+        <p ng-repeat="c in ctrl.circles|orderBy:'name'">
+          <a href="#!admin/circle/{{ c.id }}">{{ c.name }}</a>
+        </p>
       </td>
     </tr>
     </tbody>

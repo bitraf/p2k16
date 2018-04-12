@@ -271,8 +271,8 @@ class Circle(DefaultMixin, db.Model):
     def __repr__(self):
         return '<Circle:%s, name=%s>' % (self.id, self.name)
 
-    def add_member(self, account: Account):
-        self.members.append(CircleMember(self, account))
+    def add_member(self, account: Account, comment: str):
+        self.members.append(CircleMember(self, account, comment))
 
     def remove_member(self, account: Account):
         [self.members.remove(m) for m in self.members if m.account == account]
@@ -320,16 +320,18 @@ class CircleMember(DefaultMixin, db.Model):
 
     circle_id = Column("circle", Integer, ForeignKey('circle.id'), nullable=False)
     account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
+    comment = Column("comment", String(200))
 
     db.UniqueConstraint(circle_id, account_id)
 
     circle = relationship("Circle")
     account = relationship("Account", foreign_keys=[account_id])
 
-    def __init__(self, circle: Circle, account: Account):
+    def __init__(self, circle: Circle, account: Account, comment: str):
         super().__init__()
         self.circle_id = circle.id
         self.account_id = account.id
+        self.comment = comment
 
     def __repr__(self):
         return '<CircleMember:%s, circle=%s, account=%s>' % (self.id, self.circle_id, self.account_id)

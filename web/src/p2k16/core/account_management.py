@@ -123,12 +123,12 @@ def _assert_can_admin_circle(admin: Account, circle: Circle):
         raise P2k16UserException("{} is not an admin of {}".format(admin.username, circle.name))
 
 
-def add_account_to_circle(account: Account, circle: Circle, admin: Account):
+def add_account_to_circle(account: Account, circle: Circle, admin: Account, comment: str):
     logger.info("Adding %s to circle %s, admin=%s" % (account.username, circle.name, admin.username))
 
     _assert_can_admin_circle(admin, circle)
 
-    db.session.add(CircleMember(circle, account))
+    circle.add_member(account, comment)
 
 
 def remove_account_from_circle(account: Account, circle: Circle, admin: Account):

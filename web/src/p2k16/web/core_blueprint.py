@@ -57,6 +57,7 @@ modify_circle_form = {
         "circleId": id_type,
         "accountId": id_type,
         "accountUsername": nonempty_string,
+        "comment": nonempty_string
     },
     "oneOf": [{
         "required": [
@@ -124,6 +125,7 @@ def circle_member_to_json(cm: CircleMember):
         "account_username": cm.account.username,
         "circle_id": cm.circle.id,
         "circle_name": cm.circle.name,
+        "comment": cm.comment
     }}
 
 
@@ -356,7 +358,8 @@ def _manage_circle_membership(create: bool):
     admin = flask_login.current_user.account
 
     if create:
-        account_management.add_account_to_circle(account, circle, admin)
+        comment = request.json.get("comment", "")
+        account_management.add_account_to_circle(account, circle, admin, comment)
     else:
         account_management.remove_account_from_circle(account, circle, admin)
 

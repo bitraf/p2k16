@@ -275,7 +275,7 @@
                 _.forEach(control.data, function (updated) {
                     put(updated);
                 });
-            // } else if (control.type === "invalidate-collection") {
+                // } else if (control.type === "invalidate-collection") {
             } else {
                 l.i("Unsupported control type", control.type)
             }
@@ -766,23 +766,10 @@
         var self = this;
 
         self.account = account;
-        self.circles = circles.values;
-
-        self.in_circle = function (circle) {
-            return !!_.find(self.account.circles, {id: circle.id})
-        };
-
-        self.membership = function (circle, create) {
-            var form = {
-                accountId: self.account.id,
-                circleId: circle.id
-            };
-
-            var f = create ? CoreDataService.add_account_to_circle : CoreDataService.remove_account_from_circle;
-            f(form).then(function (account) {
-                self.account = account.data;
-            });
-        }
+        self.circles = _.filter(circles.values, function (c) {
+            return !!_.find(self.account.circles, {id: c.id})
+        });
+        self.comment = "";
     }
 
     /**
@@ -821,14 +808,7 @@
         self.circleName = circle.id ? circle.name : "New circle";
 
         self.addCircleForm = {};
-        // self.addCircleForm = {
-        //     name: "foo-" + Date.now(),
-        //     description: "d",
-        //     adminCircle: "door",
-        //     username: "trygvis",
-        //     managementStyle: "ADMIN_CIRCLE"
-        // };
-        self.addMemberForm = {};
+        self.addMemberForm = {username: "", comment: ""};
 
         function update(data) {
             self.circle = data;
@@ -868,9 +848,10 @@
         self.addMember = function () {
             var form = {
                 accountUsername: self.addMemberForm.username,
-                circleId: self.circle.id
+                circleId: self.circle.id,
+                comment: self.addMemberForm.comment
             };
-            self.addMemberForm = {};
+            self.addMemberForm.username = ""; // Keep the comment to make it easier to do bulk adds
             CoreDataService.add_account_to_circle(form).then(function (res) {
                 update(res.data);
             });

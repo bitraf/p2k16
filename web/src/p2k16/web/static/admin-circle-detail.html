@@ -82,11 +82,18 @@
 
     <form class="form-horizontal">
       <div class="form-group">
-        <label for="login-username" class="col-sm-2">Username</label>
+        <label for="username" class="col-sm-2">Username</label>
         <div class="col-sm-4">
-          <input class="form-control" type="text" name="email" id="login-username" placeholder="username"
+          <input class="form-control" type="text" name="email" id="username" placeholder="username"
                  autocomplete="username"
                  ng-model="ctrl.addMemberForm.username"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="comment" class="col-sm-2">Comment</label>
+        <div class="col-sm-4">
+          <textarea class="form-control" rows="3" name="comment" id="comment" placeholder="comment"
+                 ng-model="ctrl.addMemberForm.comment"></textarea>
         </div>
       </div>
       <div class="form-group">
@@ -111,13 +118,17 @@
       </tr>
       </thead>
       <tbody>
-      <tr ng-repeat="m in ctrl.members | orderBy:'account_username'">
+      <tr ng-repeat-start="m in ctrl.members | orderBy:'account_username'">
         <td><a href="#!/admin/account/{{ m.account_id }}">{{ m.account_username }}</a></td>
         <td>{{ m.createdAt | date:'medium' }}</td>
         <td>{{ m.updatedAt | date:'medium' }}</td>
         <td>
           <a ng-click="ctrl.removeMember(m.account_id)">remove</a>
         </td>
+      </tr>
+      <tr ng-repeat-end ng-if="m.comment">
+        <td></td>
+        <td colspan="3">{{ m.comment }}</td>
       </tr>
       </tbody>
       <tfoot>

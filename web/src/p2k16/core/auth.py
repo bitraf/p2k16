@@ -50,7 +50,6 @@ def debug_signals(app):
         name = s.name
 
         def dbg(name):
-            logger.info("Connecting to signal {}".format(name))
             return lambda *args, **kwargs: logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
 
         s.connect(dbg(name), weak=False)

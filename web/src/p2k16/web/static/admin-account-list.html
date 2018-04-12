@@ -6,17 +6,17 @@
   <table class="table">
     <thead>
     <tr>
-      <th class="col-sm-3">Last updated</th>
       <th class="col-sm-3">username</th>
-      <th class="col-sm-8">email</th>
+      <th class="col-sm-4">email</th>
+      <th class="col-sm-4">name</th>
       <th class="col-sm-1"></th>
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="account in ctrl.accounts">
-      <td>{{ account.updatedAt | date }}</td>
+    <tr ng-repeat="account in ctrl.accounts|orderBy:'id'">
       <td>{{ account.username }}</td>
       <td>{{ account.email }}</td>
+      <td>{{ account.name }}</td>
       <td>
         <a href="#!/admin/account/{{ account.id }}">show</a>
       </td>

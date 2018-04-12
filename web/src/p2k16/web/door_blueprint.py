@@ -56,10 +56,10 @@ def door_service():
     content = door_service.content
 
     if not content:
-        content = flask.Response(registry.generate(), content_type='application/javascript')
+        content = registry.generate()
         door_service.content = content
 
-    return content
+    return content, 'application/javascript'
 
 
 door_service.content = None

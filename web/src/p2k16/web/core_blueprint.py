@@ -681,10 +681,10 @@ def core_service():
     content = core_service.content
 
     if not content:
-        content = flask.Response(registry.generate(), content_type='application/javascript')
+        content = registry.generate()
         core_service.content = content
 
-    return content
+    return content, 'application/javascript'
 
 
 core_service.content = None

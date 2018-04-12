@@ -105,10 +105,10 @@ def badge_service():
     content = badge_service.content
 
     if not content:
-        content = flask.Response(registry.generate(), content_type='application/javascript')
+        content = registry.generate()
         badge_service.content = content
 
-    return content
+    return content, 'application/javascript'
 
 
 badge_service.content = None

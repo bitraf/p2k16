@@ -19,7 +19,7 @@
 
       <li uib-dropdown ng-show="header.currentAccount()">
         <a href uib-dropdown-toggle>
-          <img src="{{ header.currentAccount().avatar }}?s=30" class="header-avatar">
+          <img ng-src="{{ header.currentAccount().avatar }}?s=30" class="header-avatar">
           {{ header.currentAccount().username }}
           <span class="caret"></span>
         </a>

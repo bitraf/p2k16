@@ -1,0 +1,61 @@
+Obtaining file:///home/mattis/projects/bitraf/p2k16/web
+Requirement already satisfied: blinker in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.4)
+Requirement already satisfied: emails in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.5.15)
+Requirement already satisfied: flask in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.12.2)
+Requirement already satisfied: flask-bcrypt in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.7.1)
+Requirement already satisfied: flask-bower in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.3.0)
+Requirement already satisfied: flask-env in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.0.1)
+Requirement already satisfied: flask_inputs>=0.2.0 in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.2.0)
+Requirement already satisfied: flask-login in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.4.1)
+Requirement already satisfied: flask-sqlalchemy in ./env/lib/python3.5/site-packages (from p2k16==1.0) (2.3.2)
+Requirement already satisfied: flask-testing in ./env/lib/python3.5/site-packages (from p2k16==1.0) (0.7.1)
+Requirement already satisfied: gunicorn in ./env/lib/python3.5/site-packages (from p2k16==1.0) (19.7.1)
+Requirement already satisfied: jsonschema in ./env/lib/python3.5/site-packages (from p2k16==1.0) (2.6.0)
+Requirement already satisfied: ldif3 in ./env/lib/python3.5/site-packages (from p2k16==1.0) (3.2.2)
+Requirement already satisfied: nose in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.3.7)
+Requirement already satisfied: paho-mqtt in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.3.1)
+Requirement already satisfied: psycopg2-binary in ./env/lib/python3.5/site-packages (from p2k16==1.0) (2.7.4)
+Requirement already satisfied: PyYAML in ./env/lib/python3.5/site-packages (from p2k16==1.0) (3.12)
+Requirement already satisfied: sqlalchemy in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.2.6)
+Requirement already satisfied: sqlalchemy-continuum in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.3.4)
+Requirement already satisfied: stripe in ./env/lib/python3.5/site-packages (from p2k16==1.0) (1.79.1)
+Requirement already satisfied: typing in ./env/lib/python3.5/site-packages (from p2k16==1.0) (3.6.4)
+Requirement already satisfied: premailer in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (3.1.1)
+Requirement already satisfied: cssutils in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (1.0.2)
+Requirement already satisfied: python-dateutil in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (2.7.2)
+Requirement already satisfied: lxml in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (4.2.1)
+Requirement already satisfied: requests in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (2.18.4)
+Requirement already satisfied: chardet in ./env/lib/python3.5/site-packages (from emails->p2k16==1.0) (3.0.4)
+Requirement already satisfied: click>=2.0 in ./env/lib/python3.5/site-packages (from flask->p2k16==1.0) (6.7)
+Requirement already satisfied: Werkzeug>=0.7 in ./env/lib/python3.5/site-packages (from flask->p2k16==1.0) (0.14.1)
+Requirement already satisfied: Jinja2>=2.4 in ./env/lib/python3.5/site-packages (from flask->p2k16==1.0) (2.10)
+Requirement already satisfied: itsdangerous>=0.21 in ./env/lib/python3.5/site-packages (from flask->p2k16==1.0) (0.24)
+Requirement already satisfied: bcrypt in ./env/lib/python3.5/site-packages (from flask-bcrypt->p2k16==1.0) (3.1.4)
+Requirement already satisfied: wtforms in ./env/lib/python3.5/site-packages (from flask_inputs>=0.2.0->p2k16==1.0) (2.1)
+Requirement already satisfied: SQLAlchemy-Utils>=0.30.12 in ./env/lib/python3.5/site-packages (from sqlalchemy-continuum->p2k16==1.0) (0.33.2)
+Requirement already satisfied: cssselect in ./env/lib/python3.5/site-packages (from premailer->emails->p2k16==1.0) (1.0.3)
+Requirement already satisfied: six>=1.5 in ./env/lib/python3.5/site-packages (from python-dateutil->emails->p2k16==1.0) (1.11.0)
+Requirement already satisfied: certifi>=2017.4.17 in ./env/lib/python3.5/site-packages (from requests->emails->p2k16==1.0) (2018.1.18)
+Requirement already satisfied: idna<2.7,>=2.5 in ./env/lib/python3.5/site-packages (from requests->emails->p2k16==1.0) (2.6)
+Requirement already satisfied: urllib3<1.23,>=1.21.1 in ./env/lib/python3.5/site-packages (from requests->emails->p2k16==1.0) (1.22)
+Requirement already satisfied: MarkupSafe>=0.23 in ./env/lib/python3.5/site-packages (from Jinja2>=2.4->flask->p2k16==1.0) (1.0)
+Requirement already satisfied: cffi>=1.1 in ./env/lib/python3.5/site-packages (from bcrypt->flask-bcrypt->p2k16==1.0) (1.11.5)
+Requirement already satisfied: pycparser in ./env/lib/python3.5/site-packages (from cffi>=1.1->bcrypt->flask-bcrypt->p2k16==1.0) (2.18)
+Installing collected packages: p2k16
+  Found existing installation: p2k16 1.0
+    Uninstalling p2k16-1.0:
+      Successfully uninstalled p2k16-1.0
+  Running setup.py develop for p2k16
+Successfully installed p2k16
+Flyway 4.2.0 by Boxfuse
+
+Database: jdbc:postgresql://localhost/p2k16 (PostgreSQL 9.5)
+Successfully validated 26 migrations (execution time 00:00.024s)
+Current version of schema "public": 001.026
+Schema "public" is up to date. No migration necessary.
+[2018-04-12 20:34:28 +0200] [MainThread     ] [p2k16.core                    ] [INFO    ] Loading defaults from /home/mattis/projects/bitraf/p2k16/infrastructure/config-default.cfg
+[2018-04-12 20:34:28 +0200] [MainThread     ] [p2k16.core                    ] [INFO    ] Loading config from /home/mattis/projects/bitraf/p2k16/infrastructure/config-local.cfg
+[2018-04-12 20:34:28 +0200] [MainThread     ] [p2k16.core.door               ] [INFO    ] Connecting to mqtt.bitraf.no:1883
+[2018-04-12 20:34:28 +0200] [MainThread     ] [p2k16.core.door               ] [INFO    ] config: username=None, prefix=public/p2k16-dev/
+[2018-04-12 20:34:28 +0200] [Thread-2       ] [paho.mqtt.client              ] [DEBUG   ] Sending CONNECT (u0, p0, wr0, wq0, wf0, c1, k60) client_id=b''
+[2018-04-12 20:34:28 +0200] [Thread-2       ] [paho.mqtt.client              ] [DEBUG   ] Received CONNACK (0, 0)

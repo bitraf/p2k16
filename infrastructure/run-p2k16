@@ -2,10 +2,13 @@
 
 set -euo pipefail
 
-basedir=/opt/p2k16/src
+basedir=/opt/p2k16
 
-export P2K16_LOGGING=$basedir/infrastructure/logging.yaml
+cd "$basedir"
+
+mkdir -p log
+export P2K16_LOGGING=src/infrastructure/logging-file.yaml
 
 exec env/bin/gunicorn \
-    --config $basedir/infrastructure/gunicorn-config.py \
+    --config src/infrastructure/gunicorn-config.py \
     p2k16.web.server:app

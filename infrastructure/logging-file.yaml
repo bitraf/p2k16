@@ -1,0 +1,46 @@
+version: 1
+handlers:
+  p2k16_stream:
+    (): logging.StreamHandler
+    level: DEBUG
+    formatter: p2k16
+    stream: ext://sys.stdout
+    filters: [p2k16]
+
+  p2k16_file:
+    (): logging.handlers.WatchedFileHandler
+    level: DEBUG
+    formatter: p2k16
+    filters: [p2k16]
+
+    filename: log/p2k16.log
+
+root:
+  level: DEBUG
+  handlers: [p2k16_stream, p2k16_file]
+
+loggers:
+  p2k16:
+    level: DEBUG
+    propagate: False
+    handlers: [p2k16_stream, p2k16_file]
+
+  sqlalchemy:
+    level: WARNING
+    propagate: False
+    handlers: [p2k16_stream, p2k16_file]
+
+  # This is required to prevent sqlalchemy to fiddle with its own loggers.
+  sqlalchemy.engine.base.Engine:
+    level: WARNING
+    propagate: False
+    handlers: [p2k16_stream, p2k16_file]
+
+formatters:
+  p2k16:
+    format: "[%(asctime)s] [%(threadName)-15s] [%(name)-30s] [%(levelname)-8s]%(p2k16ReqId)s%(p2k16Username)s%(p2k16HttpReq)s %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S %z"
+
+filters:
+  p2k16:
+    (): p2k16.core.log.P2k16LoggingFilter

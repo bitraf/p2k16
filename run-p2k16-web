@@ -20,7 +20,7 @@ cd ..
 
 export FLASK_DEBUG=1
 export P2K16_CONFIG=$basedir/infrastructure/config-local.cfg
-export P2K16_LOGGING=$basedir/infrastructure/logging.yaml
+export P2K16_LOGGING=$basedir/infrastructure/logging-stdout.yaml
 
 # Use the Stripe non-prod API
 export STRIPE_WEBHOOK_SECRET='whsec_Rr4aEG6kaZWIljjybZxqibta4Yjkakna'

@@ -99,7 +99,7 @@ def handle_sqlalchemy_error(e: SQLAlchemyError):
 
 # @app.errorhandler(werkzeug.exceptions.HTTPException)
 def handle_generic_http_code(e: werkzeug.exceptions.HTTPException):
-
+    # msg = "{}: {}".format(e.name, e.description)
     if hasattr(e, "name") and hasattr(e, "description"):
         msg = "{}: {}".format(e.name, e.description)
     else:
@@ -118,6 +118,16 @@ for e in [werkzeug.exceptions.Forbidden,
     app.register_error_handler(e, handle_generic_http_code)
 
 
+@app.errorhandler(Exception)
+def handle_all_other_exceptions(e: Exception):
+    logger.warning("Unknown exception type: {}".format(type(e)), exc_info=e)
+
+    response = flask.jsonify({"message": "Unknown internal error"})
+    response.status_code = 500
+    response.content_type = 'application/vnd.error+json'
+    return response
+
+
 @app.before_request
 def modified_by_mixing_before_request():
     cu = flask_login.current_user
@@ -127,7 +137,7 @@ def modified_by_mixing_before_request():
 
     account = cu.account
 
-    P2k16LoggingFilter.set(username = account.username, method = flask.request.method, path = flask.request.path)
+    P2k16LoggingFilter.set(username=account.username, method=flask.request.method, path=flask.request.path)
 
     logger.info("before: request: account={}".format(account.username))
     model_support.push(account)

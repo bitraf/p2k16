@@ -1,9 +1,9 @@
 import abc
+import hashlib
 import io
 import logging
 import os
 from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
-import hashlib
 
 import flask
 import flask_login
@@ -164,9 +164,9 @@ def account_to_json(account: Account, circles: List[Circle], badges: Optional[Li
     }}
 
 
-def create_avatar_url( email ):
-    hash = hashlib.md5(email.encode('utf-8')).hexdigest()
-    return 'https://www.gravatar.com/avatar/' + hash
+def create_avatar_url(email):
+    hash = hashlib.md5(email.encode("utf-8")).hexdigest()
+    return "https://www.gravatar.com/avatar/{}".format(hash)
 
 
 def company_to_json(c: Company, include_employees=False):
@@ -231,16 +231,16 @@ class P2k16Response(object):
         return d
 
 
-core = Blueprint('core', __name__, template_folder='templates')
+core = Blueprint("core", __name__, template_folder="templates")
 registry = DataServiceTool("CoreDataService", "core-data-service.js", core)
 
 
-@registry.route('/service/authz/log-in', methods=['POST'])
+@registry.route("/service/authz/log-in", methods=["POST"])
 @validate_schema(login_form)
 def service_authz_login():
     username = request.json["username"]
     account = Account.find_account_by_username(username)
-    password = request.json['password']
+    password = request.json["password"]
 
     if not account:
         logger.info("Login: Bad login attempt, no such user: {}".format(username))
@@ -307,7 +307,7 @@ def data_account_list():
     return jsonify(accounts)
 
 
-@registry.route('/data/account/<int:account_id>')
+@registry.route("/data/account/<int:account_id>")
 def data_account(account_id):
     account = Account.find_account_by_id(account_id)
 
@@ -319,7 +319,7 @@ def data_account(account_id):
     return jsonify(account_to_json(account, circles, None))
 
 
-@registry.route('/data/account-summary/<int:account_id>')
+@registry.route("/data/account-summary/<int:account_id>")
 def data_account_summary(account_id):
     account = Account.find_account_by_id(account_id)
 
@@ -676,7 +676,7 @@ def core_ldif():
     return s
 
 
-@core.route('/core-data-service.js')
+@core.route("/core-data-service.js")
 def core_service():
     content = core_service.content
 
@@ -684,7 +684,7 @@ def core_service():
         content = registry.generate()
         core_service.content = content
 
-    return content, 'application/javascript'
+    return content, "application/javascript"
 
 
 core_service.content = None
@@ -696,4 +696,4 @@ def p2k16_resources():
     buf = io.StringIO()
     ResourcesTool.run(static, buf)
 
-    return flask.Response(buf.getvalue(), content_type='application/javascript')
+    return buf.getvalue(), "application/javascript"

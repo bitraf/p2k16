@@ -13,3 +13,5 @@ if not os.path.isdir("log"):
 accesslog = "log/access.log"
 
 bind = "127.0.0.1:5000"
+
+pidfile = "p2k16.pid"

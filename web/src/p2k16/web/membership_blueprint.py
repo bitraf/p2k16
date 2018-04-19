@@ -8,13 +8,13 @@ from p2k16.core.membership_management import parse_stripe_event
 
 logger = logging.getLogger(__name__)
 
-webhook_secret = ''
+webhook_secret = None
 
 
 def setup_stripe(cfg: Mapping[str, str]) -> None:
     global webhook_secret
     stripe.api_key = cfg.get('STRIPE_SECRET_KEY')
-    webhook_secret = cfg.get('STRIPE_WEBHOOK_SECRET')
+    webhook_secret = cfg.get('STRIPE_WEBHOOK_SECRET', None)
 
 
 membership = Blueprint('membership', __name__, template_folder='templates')
@@ -27,6 +27,10 @@ def test():
 
 @membership.route('/membership/stripe/webhook', methods=['POST'])
 def webhook():
+
+    if webhook_secret is None:
+        return "Stripe not enabled", 400
+
     payload = request.data.decode('utf-8')
     received_sig = request.headers.get('Stripe-Signature', None)
 

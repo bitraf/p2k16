@@ -9,6 +9,7 @@ import flask_login
 import jsonschema as js
 from flask import abort
 from p2k16.core import P2k16UserException
+from p2k16.core.auth import AuthenticatedAccount
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def require_circle_membership(circle_name):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            user = flask_login.current_user
+            user = flask_login.current_user  # type: AuthenticatedAccount
 
             if not user.is_authenticated:
                 abort(401)

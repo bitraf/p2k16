@@ -1,9 +1,12 @@
 import json
-import os
+import logging
+from typing import Mapping
+
 import stripe
 from flask import Blueprint, jsonify, request
 from p2k16.core.membership_management import parse_stripe_event
-from typing import Mapping
+
+logger = logging.getLogger(__name__)
 
 webhook_secret = ''
 
@@ -23,7 +26,7 @@ def test():
 
 
 @membership.route('/membership/stripe/webhook', methods=['POST'])
-def webhooks():
+def webhook():
     payload = request.data.decode('utf-8')
     received_sig = request.headers.get('Stripe-Signature', None)
 
@@ -37,13 +40,13 @@ def webhooks():
             event = stripe.Event.construct_from(data, stripe.api_key)
 
     except ValueError:
-        print("Error while decoding event!")
+        logger.warning("Error while decoding event!")
         return 'Bad payload', 400
     except stripe.error.SignatureVerificationError:
-        print("Invalid signature!")
+        logger.warning("Invalid signature!")
         return 'Bad signature', 400
 
-    print(event)
+    logger.info("Stripe event: {}".format(event))
 
     parse_stripe_event(event)
 

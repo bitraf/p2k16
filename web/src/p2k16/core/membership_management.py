@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
-import os
+from typing import Mapping, Optional
+
 import stripe
-from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer
 from p2k16.core import P2k16UserException
-from typing import Mapping
+from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ def active_member(account: Account = None) -> bool:
     Verify that user is an active member of Bitraf either by paying or some other mechanism
     """
     return StripePayment.query. \
-               filter(StripePayment.created_by_id == account.id,
-                      StripePayment.end_date >= datetime.now()).scalar() is not None
+        filter(StripePayment.created_by_id == account.id,
+               StripePayment.end_date >= datetime.now()).scalar() is not None
 
 
 def get_membership(account: Account):
@@ -54,17 +54,15 @@ def get_membetship_payments(account: Account):
     return StripePayment.query.filter(StripePayment.created_by_id == account.id).all()
 
 
-def find_account_from_stripe_customer(stripe_customer_id):
+def find_account_from_stripe_customer(stripe_customer_id) -> Optional[Account]:
     """
     Get account from stripe customer
-    :param customer_id:
+    :param stripe_customer_id:
     :return: account
     """
-    id = StripeCustomer.query.filter(StripeCustomer.stripe_id == stripe_customer_id).one_or_none()
-    if id is None:
-        return None
+    sc = StripeCustomer.query.filter(StripeCustomer.stripe_id == stripe_customer_id).one_or_none()
 
-    return Account.find_account_by_id(id.created_by_id)
+    return Account.find_account_by_id(sc.created_by_id) if sc is not None else None
 
 
 def parse_stripe_event(event):
@@ -72,14 +70,14 @@ def parse_stripe_event(event):
 
     if event.type == 'invoice.created':
         handle_invoice_created(event)
-    if event.type == 'invoice.updated':
+    elif event.type == 'invoice.updated':
         handle_invoice_updated(event)
-    if event.type == 'invoice.payment_succeeded':
+    elif event.type == 'invoice.payment_succeeded':
         handle_payment_success(event)
-    if event.type == 'invoice.payment_failed':
+    elif event.type == 'invoice.payment_failed':
         handle_payment_failed(event)
-
-    pass
+    else:
+        logger.warning("Unhandled stripe event: {}".format(event.id))
 
 
 def handle_invoice_created(event):
@@ -105,7 +103,6 @@ def handle_payment_success(event):
         db.session.add(payment)
         db.session.commit()
 
-    return True
 
 def handle_payment_failed(event):
     pass
@@ -115,9 +112,7 @@ def member_get_details(account):
     # Get mapping from account to stripe_id
     stripe_customer_id = get_stripe_customer(account)
 
-    details = {}
-
-    details['stripe_pubkey'] = stripe_pubkey
+    details = {'stripe_pubkey': stripe_pubkey}
 
     try:
         # Get payment details
@@ -163,7 +158,7 @@ def member_get_details(account):
 
         details['payments'] = payments
 
-    except stripe.error.StripeError as e:
+    except stripe.error.StripeError:
         raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
 
     return details
@@ -190,7 +185,7 @@ def member_set_credit_card(account, stripe_token):
 
             if cu is None or (hasattr(cu, 'deleted') and cu.deleted):
                 logger.error("Stripe customer does not exist. This should not happen! account=%r, stripe_id=%r" %
-                                 (account.username, stripe_token))
+                             (account.username, stripe_token))
                 raise P2k16UserException("Set credit card invalid state. Contact kasserer@bitraf.no")
 
             # Create a new default card

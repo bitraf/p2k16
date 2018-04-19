@@ -649,7 +649,7 @@ def core_ldif():
             "changetype": ["add"],
         }
 
-        parts = a.name.split()
+        parts = a.name.split() if a.name is not None else []
 
         if len(parts) < 1:
             # bad name
@@ -666,7 +666,8 @@ def core_ldif():
         d["uidNumber"] = ["1000"]
         d["gidNumber"] = ["1000"]
         d["homeDirectory"] = ["/home/{}".format(a.username)]
-        d["userPassword"] = [a.password]
+        if a.password is not None:
+          d["userPassword"] = [a.password]
         d["gecos"] = [a.name]
 
         writer.unparse(dn, d)

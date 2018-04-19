@@ -162,6 +162,40 @@ INSERT INTO stripe_customer (created_at, created_by, updated_at, updated_by, str
     LEFT OUTER JOIN public.account a ON a.membership_number = sc.account
   ORDER BY a.id;
 
+DO $$
+DECLARE
+  p2k12_count INT;
+  p2k16_count INT;
+BEGIN
+  DELETE FROM stripe_payment;
+  INSERT INTO stripe_payment (created_at, created_by, updated_at, updated_by, stripe_id, start_date, end_date, amount, payment_date)
+    SELECT
+      coalesce(paid_date, (end_date + '1 day' :: INTERVAL) :: DATE) AS created_at,
+      account.id                                                    AS created_by,
+
+      coalesce(paid_date, (end_date + '1 day' :: INTERVAL) :: DATE) AS updated_at,
+      account.id                                                    AS updated_by,
+
+      invoice_id                                                    AS stripe_id,
+      start_date,
+      end_date,
+      price                                                         AS amount,
+      coalesce(paid_date, (end_date + '1 day' :: INTERVAL) :: DATE) AS payment_date
+    FROM p2k12.stripe_payment
+      LEFT OUTER JOIN account ON p2k12.stripe_payment.account = account.membership_number;
+
+  SELECT count(*) AS count
+  FROM p2k12.stripe_payment
+  INTO p2k12_count;
+  SELECT count(*) AS count
+  FROM public.stripe_payment
+  INTO p2k16_count;
+
+  IF p2k12_count != p2k16_count
+  THEN RAISE 'bad data'; END IF;
+END;
+$$;
+
 -- Update passwords
 UPDATE public.account a
 SET password = (SELECT data

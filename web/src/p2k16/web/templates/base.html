@@ -27,6 +27,9 @@
     {% if circles_with_admin_access %}
       p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
     {% endif %}
+    {% if stripe_pubkey %}
+      p2k16.stripe_pubkey = {{ stripe_pubkey | tojson | safe }};
+    {% endif %}
   </script>
 
 </head>

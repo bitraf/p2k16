@@ -22,6 +22,7 @@ id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
 string_type = {"type": "string"}
 management_style_type = {"enum": ["ADMIN_CIRCLE", "SELF_ADMIN"]}
+stripe_pubkey = None
 
 register_account_form = {
     "type": "object",
@@ -189,6 +190,10 @@ def company_to_json(c: Company, include_employees=False):
         ret["employees"] = [ce(e) for e in c.employees]
     return ret
 
+
+def setup_stripe(cfg: Mapping[str, str]) -> None:
+    global stripe_pubkey
+    stripe_pubkey = cfg.get('STRIPE_PUBLIC_KEY')
 
 class P2k16Control(object):
     @abc.abstractmethod
@@ -554,6 +559,7 @@ def index():
 
         kwargs["account"] = account_json
         kwargs["circles_with_admin_access"] = circles_with_admin_access_json
+        kwargs["stripe_pubkey"] = stripe_pubkey
 
     return render_template("index.html", **kwargs)
 

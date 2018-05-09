@@ -195,7 +195,7 @@ from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, membershi
 
 # Inject stripe config parameters
 membership_blueprint.setup_stripe(app.config)
-membership_management.setup_stripe(app.config)
+core_blueprint.setup_stripe(app.config)
 
 app.register_blueprint(badge_blueprint.badge)
 app.register_blueprint(core_blueprint.core)

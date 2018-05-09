@@ -8,13 +8,6 @@ from p2k16.core.models import db, Account, StripePayment, model_support, Members
 
 logger = logging.getLogger(__name__)
 
-stripe_pubkey = ''
-
-
-def setup_stripe(cfg: Mapping[str, str]) -> None:
-    global stripe_pubkey
-    stripe_pubkey = cfg.get('STRIPE_PUBLIC_KEY')
-
 
 def paid_members():
     return Account.query. \
@@ -112,7 +105,7 @@ def member_get_details(account):
     # Get mapping from account to stripe_id
     stripe_customer_id = get_stripe_customer(account)
 
-    details = {'stripe_pubkey': stripe_pubkey}
+    details = {}
 
     try:
         # Get payment details

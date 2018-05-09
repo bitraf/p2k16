@@ -142,6 +142,8 @@
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
 
+        console.log('stripe_key p2k16.js: ' + window.stripe_pubkey);
+
         StripeCheckoutProvider.defaults({
             key: window.stripe_pubkey
         });

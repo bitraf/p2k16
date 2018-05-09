@@ -29,6 +29,7 @@
     {% endif %}
     {% if stripe_pubkey %}
       stripe_pubkey = {{ stripe_pubkey | tojson | safe }};
+      console.log('base stripe_pubkey: ' + JSON.stringify(stripe_pubkey));
     {% endif %}
   </script>
 

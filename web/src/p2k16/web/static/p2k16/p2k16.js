@@ -416,6 +416,7 @@
         self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
         Circles.executeControl({type: "replace-collection", data: window.p2k16.circles || []});
         BadgeDescriptions.executeControl({type: "replace-collection", data: window.p2k16.badgeDescriptions || []});
+        self.stripe_pubkey = window.p2k16.stripe_pubkey || "";
 
         window.p2k16 = undefined;
 
@@ -432,6 +433,7 @@
             hasRole: isInCircle,
             addErrors: addErrors,
             addInfos: addInfos,
+            stripe_pubkey: self.stripe_pubkey,
             messages: self.messages,
 
             canAdminCircle: canAdminCircle

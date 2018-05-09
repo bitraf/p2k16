@@ -157,6 +157,23 @@ BEGIN
     WHERE am.office_user
     ORDER BY a.id;
 
+  INSERT INTO membership (created_at, created_by, updated_at, updated_by, first_membership, start_membership, fee)
+    SELECT
+      now()                                  AS created_at,
+      (SELECT id
+       FROM account
+       WHERE membership_number = am.account) AS created_by,
+      now()                                  AS updated_at,
+      (SELECT id
+       FROM account
+       WHERE membership_number = am.account) AS updated_by,
+      (SELECT min(date)
+       FROM p2k12.members
+       WHERE account = am.account)           AS first_membership,
+      '2000-01-01' :: DATE                   AS start_membership,
+      price                                  AS fee
+    FROM p2k12.active_members am;
+
   SELECT count(*)
   FROM p2k12.active_members
   WHERE office_user

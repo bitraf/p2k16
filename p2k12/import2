@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+if [ -r /etc/p2k16/flyway.conf ]
+then
+  pw=$(sed -n "s,^flyway.password=\(.*\),\1,p" /etc/p2k16/flyway.conf)
+else
+  pw=p2k16-flyway
+fi
+
+cd "$(dirname $0)"
+
+str="user=p2k16-flyway password=$pw dbname=p2k16 host=localhost"
+
+scripts=()
+scripts+=(import-stage-1.sql)
+scripts+=(import-stage-2.sql)
+scripts+=(import-stage-3.sql)
+scripts+=(import-stage-4.sql)
+
+cat "${scripts[@]}" | psql "$str" -1

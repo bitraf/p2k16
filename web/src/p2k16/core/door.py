@@ -5,7 +5,7 @@ from typing import Optional, Mapping, List
 import paho.mqtt.client as mqtt
 from p2k16.core import P2k16UserException, membership_management
 from p2k16.core import account_management, event_management, badge_management
-from p2k16.core.models import db, Account, Circle, Event
+from p2k16.core.models import db, Account, Circle, Event, Company
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +72,10 @@ class DoorClient(object):
         if not account_management.is_account_in_circle(account, door_circle):
             raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
 
-        if not membership_management.active_member(account):
-            raise P2k16UserException('{} does not have an active membership'.format(account.display_name()))
+        if not membership_management.active_member(account) and len(
+            Company.find_active_companies_with_account(account.id)) == 0:
+            raise P2k16UserException('{} does not have an active membership and is not employed in an active company'.
+                                     format(account.display_name()))
 
         publishes = []
 

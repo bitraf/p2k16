@@ -39,7 +39,6 @@ def account_loader(account_id):
     return AuthenticatedAccount(account, circles)
 
 
-
 def debug_signals(app):
     signals = [flask_login.signals.user_logged_in, flask_login.signals.user_logged_out,
                flask_login.signals.user_loaded_from_cookie, flask_login.signals.user_loaded_from_header,

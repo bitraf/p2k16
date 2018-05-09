@@ -12,7 +12,7 @@ from p2k16.core import P2k16TechnicalException, P2k16UserException
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, joinedload
+from sqlalchemy.orm import relationship
 
 logger = logging.getLogger(__name__)
 
@@ -256,7 +256,8 @@ class Circle(DefaultMixin, db.Model):
     admin_circle_id = Column("admin_circle", Integer, ForeignKey("circle.id"))
     admin_circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
-    members = relationship("CircleMember", back_populates="circle", cascade="all, delete-orphan")  # type: List[CircleMember]
+    members = relationship("CircleMember", back_populates="circle",
+                           cascade="all, delete-orphan")  # type: List[CircleMember]
 
     def __init__(self, name: str, description: str, management_style: CircleManagementStyle):
         super().__init__()
@@ -283,7 +284,7 @@ class Circle(DefaultMixin, db.Model):
 
     def on_before_update(self):
         if self.management_style == CircleManagementStyle.SELF_ADMIN and len(self.members) == 0:
-           raise P2k16UserException("A circle which is self-administrated must have at least one member")
+            raise P2k16UserException("A circle which is self-administrated must have at least one member")
 
     @staticmethod
     def find_by_id(id) -> Optional["Circle"]:
@@ -462,6 +463,14 @@ class Company(DefaultMixin, db.Model):
     def get_by_id(_id) -> "Company":
         return Company.query.filter(Company.id == _id).one()
 
+    @staticmethod
+    def find_active_companies_with_account(account_id: int) -> List['Company']:
+        return Company.query. \
+            join(Company.employees). \
+            filter(Company.active). \
+            filter(CompanyEmployee.account_id == account_id) \
+            .all()
+
 
 class CompanyEmployee(DefaultMixin, db.Model):
     __tablename__ = 'company_employee'
@@ -480,7 +489,7 @@ class CompanyEmployee(DefaultMixin, db.Model):
         return '<CompanyEmployee:%r, company=%r, account=%r>' % (self.id, self.company_id, self.account_id)
 
     @staticmethod
-    def find_by_company_and_account(company_id: int, account_id: int) -> Optional['Company']:
+    def find_by_company_and_account(company_id: int, account_id: int) -> Optional['CompanyEmployee']:
         return CompanyEmployee.query. \
             filter(CompanyEmployee.company_id == company_id,
                    CompanyEmployee.account_id == account_id) \

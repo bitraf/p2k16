@@ -59,7 +59,7 @@ modify_circle_form = {
         "circleId": id_type,
         "accountId": id_type,
         "accountUsername": nonempty_string,
-        "comment": nonempty_string
+        "comment": string_type
     },
     "oneOf": [{
         "required": [

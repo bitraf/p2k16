@@ -22,7 +22,7 @@ def active_member(account: Account = None) -> bool:
     """
     return StripePayment.query. \
         filter(StripePayment.created_by_id == account.id,
-               StripePayment.end_date >= datetime.now()).all() is not None
+               StripePayment.end_date >= datetime.now()).count() is not 0
 
 
 def get_membership(account: Account):

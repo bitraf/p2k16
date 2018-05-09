@@ -8,7 +8,7 @@ import flask_login
 import werkzeug.exceptions
 from flask.json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException, membership_management
-from p2k16.core import make_app, auth, door, mail
+from p2k16.core import make_app, auth, door, mail, tool
 from p2k16.core.log import P2k16LoggingFilter
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
@@ -195,8 +195,9 @@ db.init_app(app)
 
 app.json_encoder = P2k16JSONEncoder
 app.config.door_client = door.create_client(app.config)
+app.config.tool_client = tool.create_client(app.config)
 
-from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, membership_blueprint
+from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, tool_blueprint, membership_blueprint
 
 # Inject stripe config parameters
 membership_blueprint.setup_stripe(app.config)
@@ -205,6 +206,7 @@ core_blueprint.setup_stripe(app.config)
 app.register_blueprint(badge_blueprint.badge)
 app.register_blueprint(core_blueprint.core)
 app.register_blueprint(door_blueprint.door)
+app.register_blueprint(tool_blueprint.tool)
 app.register_blueprint(membership_blueprint.membership)
 
 _env = app.config.get("P2K16_ENV", None)

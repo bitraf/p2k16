@@ -536,7 +536,6 @@ class BadgeDescription(DefaultMixin, db.Model):
         self.color = None
         self.certification_circle = None
 
-
 class AccountBadge(DefaultMixin, db.Model):
     __tablename__ = 'account_badge'
     __versioned__ = {}
@@ -553,6 +552,20 @@ class AccountBadge(DefaultMixin, db.Model):
         self.account_id = account.id
         self.awarded_by = awarded_by
         self.description = description
+
+
+#
+# Tools
+#
+class ToolDescription(DefaultMixin, db.Model):
+    __tablename__ = 'tool_description'
+    __versioned__ = {}
+
+    name = Column(String(50), nullable=False)
+    description = Column(String(1000))
+
+    def __init__(self, name: str):
+        self.name = name
 
 
 from sqlalchemy import event

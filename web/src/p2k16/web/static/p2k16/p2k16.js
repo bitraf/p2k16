@@ -50,6 +50,12 @@
             resolve: {
                 badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions
             }
+        }).when("/tool", {
+            controller: ToolFrontPageController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.tool_front_page_html,
+            resolve: {
+            }
         });
 
         // Badge
@@ -713,6 +719,32 @@
         updateBadges(P2k16.currentAccount());
     }
 
+    /**
+     * @param $scope
+     * @param {P2k16} P2k16
+     * @param ToolDataService
+     * @constructor
+     */
+    function ToolFrontPageController(ToolDataService, $scope, P2k16) {
+        var self = this;
+
+        self.tools = [
+            { 'name': 'Pick and Place' }
+        ];
+
+        self.checkoutTool = function() {
+            ToolDataService.checkout_tool({'tool': 'smallsmt'}).then(function() {
+                console.log('checkout succeded');
+            })
+        };
+
+        self.checkinTool = function() {
+            ToolDataService.checkin_tool({'tool': 'smallsmt'}).then(function() {
+                console.log('checkin succeded');
+            })
+        };
+    }
+
     /*************************************************************************
      * Badges
      */
@@ -1023,6 +1055,7 @@
         .service("BadgeDataService", BadgeDataService)
         .service("CoreDataService", CoreDataService)
         .service("DoorDataService", DoorDataService)
+        .service("ToolDataService", ToolDataService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
         .filter("yesno", YesNoFilter)

@@ -559,7 +559,8 @@ def index():
 
         kwargs["account"] = account_json
         kwargs["circles_with_admin_access"] = circles_with_admin_access_json
-        kwargs["stripe_pubkey"] = stripe_pubkey
+
+    kwargs["stripe_pubkey"] = stripe_pubkey
 
     return render_template("index.html", **kwargs)
 

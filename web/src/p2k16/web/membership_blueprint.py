@@ -50,8 +50,6 @@ def webhook():
         logger.warning("Invalid signature!")
         return 'Bad signature', 400
 
-    logger.info("Stripe event: {}".format(event))
-
     parse_stripe_event(event)
 
     return 'OK\n', 200

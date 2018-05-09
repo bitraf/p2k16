@@ -70,7 +70,7 @@ def parse_stripe_event(event):
     elif event.type == 'invoice.payment_failed':
         handle_payment_failed(event)
     else:
-        logger.warning("Unhandled stripe event: {}".format(event.id))
+        pass # Not implemented on purpose
 
 
 def handle_invoice_created(event):

@@ -1,6 +1,6 @@
 (function () {
 
-    function config($routeProvider, $httpProvider) {
+    function config($routeProvider, $httpProvider, StripeCheckoutProvider) {
 
         /**
          *
@@ -141,6 +141,11 @@
         }).otherwise("/");
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
+
+        StripeCheckoutProvider.defaults({
+            key: window.stripe_pubkey
+        });
+
     }
 
     function run(P2k16, $location, $rootScope) {

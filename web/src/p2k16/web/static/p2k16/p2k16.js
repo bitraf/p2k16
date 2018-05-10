@@ -561,6 +561,12 @@
         }
     }
 
+    function YesNoFilter() {
+        return function(b) {
+            return b ? 'Yes' : 'No';
+        }
+    }
+
     /**
      * @param {DoorDataService} DoorDataService
      * @param {P2k16} P2k16
@@ -813,7 +819,7 @@
 
         self.circleName = circle.id ? circle.name : "New circle";
 
-        self.addCircleForm = {};
+        self.addCircleForm = {commentRequiredForMembership: false};
         self.addMemberForm = {username: "", comment: ""};
 
         function update(data) {
@@ -861,6 +867,11 @@
             CoreDataService.add_account_to_circle(form).then(function (res) {
                 update(res.data);
             });
+        };
+        self.selfAdminSelected = function () {
+            if (!self.addCircleForm.comment && self.addCircleForm.commentRequiredForMembership) {
+                self.addCircleForm.comment = 'Initial admin';
+            }
         };
     }
 
@@ -1004,6 +1015,7 @@
         .service("DoorDataService", DoorDataService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
+        .filter("yesno", YesNoFilter)
         .directive("p2k16Header", p2k16HeaderDirective)
         .directive("p2k16EntityInfo", p2k16EntityInfo);
 })();

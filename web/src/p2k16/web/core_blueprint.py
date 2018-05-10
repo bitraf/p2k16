@@ -11,7 +11,7 @@ from flask import current_app, abort, Blueprint, render_template, jsonify, reque
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
-    CircleManagementStyle
+    CircleManagementStyle, Membership
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 id_type = {"type": "number", "min": 1}
 nonempty_string = {"type": "string", "minLength": 1}
 string_type = {"type": "string"}
+bool_type = {"type": "boolean"}
 management_style_type = {"enum": ["ADMIN_CIRCLE", "SELF_ADMIN"]}
 stripe_pubkey = None
 
@@ -80,12 +81,15 @@ add_circle_form = {
         "name": nonempty_string,
         "description": string_type,
         "managementStyle": management_style_type,
+        "commentRequiredForMembership": bool_type,
         "adminCircle": nonempty_string,
         "username": nonempty_string,
+        "comment": nonempty_string,
     },
     "required": [
         "name",
         "managementStyle",
+        "commentRequiredForMembership",
     ]
 }
 
@@ -135,6 +139,7 @@ def circle_to_json(circle: Circle, include_members=False):
     d = {**model_to_json(circle), **{
         "name": circle.name,
         "description": circle.description,
+        "commentRequiredForMembership": circle.comment_required_for_membership,
         "managementStyle": circle.management_style.name,
         "adminCircle": circle.admin_circle_id,
         "memberIds": [m.id for m in circle.members]
@@ -428,12 +433,14 @@ def data_circle(circle_id):
 def create_circle():
     name = request.json["name"]
     description = request.json.get("description", "")
+    comment_required_for_membership = request.json["commentRequiredForMembership"]
     management_style = CircleManagementStyle[request.json["managementStyle"]]
     admin_circle = request.json.get("adminCircle", None)
     username = request.json.get("username", None)
+    comment = request.json.get("comment", None)
 
-    c = account_management.create_circle(name, description, management_style, admin_circle_name=admin_circle,
-                                         username=username)
+    c = account_management.create_circle(name, description, comment_required_for_membership, management_style,
+                                         admin_circle_name=admin_circle, username=username, comment=comment)
     db.session.commit()
 
     circles = [circle_to_json(c) for c in db.session.query(Circle).all()]

@@ -252,17 +252,21 @@ class Circle(DefaultMixin, db.Model):
 
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(50), unique=True, nullable=False)
+    comment_required_for_membership = Column(Boolean, nullable=False)
     _management_style = Column('management_style', String(50), nullable=False)
+
     admin_circle_id = Column("admin_circle", Integer, ForeignKey("circle.id"))
     admin_circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
     members = relationship("CircleMember", back_populates="circle",
                            cascade="all, delete-orphan")  # type: List[CircleMember]
 
-    def __init__(self, name: str, description: str, management_style: CircleManagementStyle):
+    def __init__(self, name: str, description: str, comment_required_for_membership: bool,
+                 management_style: CircleManagementStyle):
         super().__init__()
         self.name = name
         self.description = description
+        self.comment_required_for_membership = comment_required_for_membership
         self._management_style = management_style.name
 
     @hybrid_property
@@ -272,7 +276,13 @@ class Circle(DefaultMixin, db.Model):
     def __repr__(self):
         return '<Circle:%s, name=%s>' % (self.id, self.name)
 
-    def add_member(self, account: Account, comment: str):
+    def add_member(self, account: Account, comment: Optional[str]):
+        if comment:
+            comment = comment.strip()
+
+        if self.comment_required_for_membership and len(comment) == 0:
+            raise P2k16UserException("This circle requires memberships to have a comment")
+
         self.members.append(CircleMember(self, account, comment))
 
     def remove_member(self, account: Account):

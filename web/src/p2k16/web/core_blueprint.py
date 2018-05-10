@@ -195,6 +195,7 @@ def setup_stripe(cfg: Mapping[str, str]) -> None:
     global stripe_pubkey
     stripe_pubkey = cfg.get('STRIPE_PUBLIC_KEY')
 
+
 class P2k16Control(object):
     @abc.abstractmethod
     def to_dict(self) -> Dict[str, Any]:
@@ -674,7 +675,7 @@ def core_ldif():
         d["gidNumber"] = ["1000"]
         d["homeDirectory"] = ["/home/{}".format(a.username)]
         if a.password is not None:
-          d["userPassword"] = [a.password]
+            d["userPassword"] = [a.password]
         d["gecos"] = [a.name]
 
         writer.unparse(dn, d)

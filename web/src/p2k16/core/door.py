@@ -111,7 +111,8 @@ def create_client(cfg: Mapping[str, str]) -> DoorClient:
 _doors = [
     Door("frontdoor", "frontdoor/open", 10),
     Door("2floor", "2floor/open", 60),
-    Door("3floor", "3floor/open", 60),
+    Door("3office", "3office/open", 60),
+    Door("3workshop", "3workshop/open", 60),
     Door("4floor", "4floor/open", 60),
 ]
 

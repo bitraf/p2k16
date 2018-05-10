@@ -9,7 +9,7 @@ from typing import Optional, List, Iterable
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from p2k16.core import P2k16TechnicalException, P2k16UserException
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -226,15 +226,15 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
 
     @staticmethod
     def find_account_by_username(username) -> Optional['Account']:
-        return Account.query.filter(Account.username == username).one_or_none()
+        return Account.query.filter(func.lower(Account.username) == func.lower(username)).one_or_none()
 
     @staticmethod
     def get_by_username(username) -> "Account":
-        return Account.query.filter(Account.username == username).one()
+        return Account.query.filter(func.lower(Account.username) == func.lower(username)).one()
 
     @staticmethod
     def find_account_by_email(email) -> Optional['Account']:
-        return Account.query.filter(Account.email == email).one_or_none()
+        return Account.query.filter(func.lower(Account.email) == func.lower(email)).one_or_none()
 
     @staticmethod
     def find_account_by_reset_token(reset_token) -> Optional['Account']:

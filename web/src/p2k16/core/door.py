@@ -69,13 +69,22 @@ class DoorClient(object):
     def open_doors(self, account: Account, doors: List[Door]):
         door_circle = Circle.get_by_name('door')
 
-        if not account_management.is_account_in_circle(account, door_circle):
-            raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
+        can_open_door = False
 
-        if not membership_management.active_member(account) and len(
-            Company.find_active_companies_with_account(account.id)) == 0:
-            raise P2k16UserException('{} does not have an active membership and is not employed in an active company'.
-                                     format(account.display_name()))
+        if account_management.is_account_in_circle(account, door_circle) and membership_management.active_member(account):
+            can_open_door = True
+
+        if len(Company.find_active_companies_with_account(account.id)) > 0:
+            can_open_door = True
+
+        if not can_open_door:
+            # Only non-office users may fail here
+            if not membership_management.active_member(account):
+                raise P2k16UserException('{} does not have an active membership'.format(account.display_name()))
+
+            if not account_management.is_account_in_circle(account, door_circle):
+                raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
+
 
         publishes = []
 

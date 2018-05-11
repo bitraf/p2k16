@@ -4,7 +4,7 @@ from typing import List, MutableMapping, Tuple
 
 from p2k16.core import P2k16TechnicalException
 from p2k16.core.models import db, Account, Event
-from sqlalchemy import or_
+from sqlalchemy import or_, func, distinct
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,15 @@ def get_public_recent_events(start: datetime):
         all()  # type: List[Event]
 
     return _convert_all(events)
+
+
+def get_door_open_events_by_day(start: datetime):
+    return db.session.query(func.date(Event.created_at), func.count(distinct(Event.created_by_id))). \
+        filter((Event.domain == "door") & (Event.name == "open")). \
+        filter(Event.created_at > start). \
+        group_by(func.date(Event.created_at)). \
+        order_by(func.date(Event.created_at)). \
+        all()
 
 
 def has_opened_door(account: Account):

@@ -30,7 +30,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.front_page_html,
             resolve: {
-                recent_events: DoorDataServiceResolvers.recent_events
+                recent_events: CoreDataServiceResolvers.recent_events
             }
         }).when("/about", {
             controller: AboutController,

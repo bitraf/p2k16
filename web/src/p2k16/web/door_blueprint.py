@@ -4,7 +4,7 @@ import flask
 import flask_login
 import p2k16.core.door
 from flask import Blueprint, jsonify, request
-from p2k16.core import P2k16UserException, event_management
+from p2k16.core import P2k16UserException
 from p2k16.core.door import DoorClient
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, DataServiceTool
@@ -21,13 +21,6 @@ door_form = {
     },
     "required": ["doors"]
 }
-
-
-@registry.route('/service/door/recent-events', methods=['GET'])
-def recent_events():
-    from datetime import datetime, timedelta
-    start = datetime.now() - timedelta(hours=24)
-    return jsonify([e.to_dict() for e in event_management.get_public_recent_events(start)])
 
 
 @registry.route('/service/door/open', methods=['POST'])

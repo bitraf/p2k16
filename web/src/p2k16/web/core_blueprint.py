@@ -613,6 +613,13 @@ def service_start_reset_password():
     return jsonify(response)
 
 
+@registry.route('/service/recent-events', methods=['GET'])
+def recent_events():
+    from datetime import datetime, timedelta
+    start = datetime.now() - timedelta(hours=24)
+    return jsonify([e.to_dict() for e in event_management.get_public_recent_events(start)])
+
+
 @core.route('/reset-password-form', methods=['GET'])
 def reset_password_form():
     reset_token = flask.request.args['reset_token']
@@ -714,3 +721,12 @@ def p2k16_resources():
     ResourcesTool.run(static, buf)
 
     return buf.getvalue(), "application/javascript"
+
+
+@core.route("/frontpage-graph")
+def frontpage_graph():
+    from datetime import datetime, timedelta
+    start = datetime.now() - timedelta(days=7)
+    events = event_management.get_door_open_events_by_day(start)
+
+    return render_template("frontpage-graph.html", events=events)

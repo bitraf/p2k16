@@ -172,6 +172,13 @@ function CoreDataService($http) {
         req.data = payload;
         return $http(req);
     };
+
+    this.recent_events = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/service/recent-events';
+        return $http(req);
+    };
 }
 
 var CoreDataServiceResolvers = {};
@@ -202,4 +209,7 @@ CoreDataServiceResolvers.data_company_list = function (CoreDataService) {
 CoreDataServiceResolvers.data_company = function (CoreDataService, $route) {
   var company_id = $route.current.params.company_id;
   return CoreDataService.data_company(company_id).then(function (res) { return res.data; });
+};
+CoreDataServiceResolvers.recent_events = function (CoreDataService) {
+  return CoreDataService.recent_events().then(function (res) { return res.data; });
 };

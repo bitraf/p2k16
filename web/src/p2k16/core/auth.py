@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-import flask_login
 import flask_login.signals
 from p2k16.core import account_management
 from p2k16.core.models import Account, Circle
@@ -39,7 +38,10 @@ def account_loader(account_id):
     return AuthenticatedAccount(account, circles)
 
 
-# def debug_signals(app):
+def debug_signals(app):
+    # Ignored for now
+    pass
+
 #     signals = [flask_login.signals.user_logged_in, flask_login.signals.user_logged_out,
 #                flask_login.signals.user_loaded_from_cookie, flask_login.signals.user_loaded_from_header,
 #                flask_login.signals.user_loaded_from_request, flask_login.signals.user_login_confirmed,

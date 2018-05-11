@@ -25,36 +25,6 @@ After checking out the code and creating the database, run `./flyway migrate` to
 If you want to change the schema, create a new file under `migrations/` called `V001.NNN__clever_comment.sql`. If more
 than one person is creating a schema at the same time you will get a conflict when the code is merged.
 
-# Thoughts
-
-* Office users, support companies that give access to more than one user
-* Certifications, allow users to have certifications.
-* control and register access to items (for example doors, machines and equipment).
-  * Items have different requirements, the main door has active membership or being an office user
-  * A machine may require active membership *and* valid certification for the particular machine
-
-# Door access
-
-The door application is migrated to the p2k16 site. Existing users won't be able to log in, but can be redirected to
-the p2k12 site to migrate their user
-
-## p2k12 migration
-
-p2k12.bitraf.no authenticates people, on authentication it creates the user in p2k16 allowing them to set a new password.
-
-# TODOs before deploying in prod
-
-* Implement recover password feature so people can create passwords in p2k16. Parts:
-  * <s>Request new password</s>
-  * <s>Send by email</s>
-  * <s>Set new password</s>
-  * <s>Create some @annotations to do simple circle membership checks. To be used after @registry.</s>
-
-# TODOs before dropping p2k12
-
-* <s>Migrate data from p2k12 database</s>
-* <s>Actually open doors.</s>
-
 # TODOs post production / p2k12 migration
 
 * Fix bitraf.no graph
@@ -99,7 +69,7 @@ Badge categories:
    - CNC-operator
    - lathe
 
- * Interest areas: (for expressing hobbies and competence levels)
+ * Skill areas: (for expressing hobbies and competence levels)
 
    - laser cutting
    - woodworking

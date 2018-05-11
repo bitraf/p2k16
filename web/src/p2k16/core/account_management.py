@@ -65,9 +65,9 @@ def get_circles_with_admin_access(account_id: int) -> List[Circle]:
              c.name             AS c_name,
              c.description      AS c_description
            FROM circle AS ac
-             JOIN circle AS C ON C.admin_circle = ac.id
-             JOIN circle_member ON C.id = circle_member.circle
-           WHERE C.management_style = 'ADMIN_CIRCLE' AND circle_member.account = 5
+             JOIN circle AS C ON c.admin_circle = ac.id
+             JOIN circle_member ON ac.id = circle_member.circle
+           WHERE c.management_style = 'ADMIN_CIRCLE' AND circle_member.account = 5
          ) AS anon_1
     """
     ac = aliased(Circle, name="ac")
@@ -80,7 +80,7 @@ def get_circles_with_admin_access(account_id: int) -> List[Circle]:
 
     admin_circle = db.session.query(c). \
         join(ac, c.admin_circle_id == ac.id). \
-        join(c.members). \
+        join(ac.members). \
         filter(c._management_style == CircleManagementStyle.ADMIN_CIRCLE.name). \
         filter(CircleMember.account_id == account_id)
 

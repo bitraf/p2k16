@@ -22,7 +22,7 @@
     <tr ng-repeat="c in ctrl.circles | orderBy:'name'">
       <td>{{ c.name }}</td>
       <td>{{ c.description }}</td>
-      <td>{{ p2k16.canAdminCircle(c.id) }}</td>
+      <td>{{ p2k16.canAdminCircle(c.id) | yesno }}</td>
       <td>
         <a href="#!/admin/circle/{{ c.id }}">details</a>
       </td>

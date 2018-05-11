@@ -176,7 +176,8 @@ def register_account(username: str, email: str, name: str, password: str, phone:
 
 
 def create_circle(name: str, description: str, comment_required_for_membership, management_style: CircleManagementStyle,
-                  admin_circle_name: str = None, username: str = None, comment: str = None) -> Circle:
+                  admin_circle_name: Optional[str] = None, username: Optional[str] = None,
+                  comment: Optional[str] = None) -> Circle:
     c = Circle(name, description, comment_required_for_membership, management_style)
 
     if management_style == CircleManagementStyle.ADMIN_CIRCLE:
@@ -200,7 +201,7 @@ def create_circle(name: str, description: str, comment_required_for_membership, 
         if account is None:
             raise P2k16UserException("No such account: {}".format(username))
 
-        c.add_member(account, comment)
+        c.add_member(account, comment or "")
 
     db.session.add(c)
 

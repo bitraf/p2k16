@@ -16,7 +16,7 @@
   <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
-  <script>
+  <script id="p2k16-data">
     var p2k16 = {};
     p2k16.badgeDescriptions = {{ badge_descriptions | tojson | safe }};
     p2k16.circles = {{ circles | tojson | safe }};
@@ -27,9 +27,10 @@
     {% if circles_with_admin_access %}
       p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
     {% endif %}
-    {% if stripe_pubkey %}
-      stripe_pubkey = {{ stripe_pubkey | tojson | safe }};
-    {% endif %}
+  </script>
+  <script id="misc">
+    stripe_pubkey = {{ stripe_pubkey | tojson | safe }};
+    gitRevision = {{ gitRevision | tojson | safe }};
   </script>
 
 </head>

@@ -1,0 +1,20 @@
+<p2k16-header></p2k16-header>
+
+<div class="container">
+  <h1>About P2k16</h1>
+
+  <p>
+    P2k16 is <a href="https://bitraf.no">Bitraf's</a> self-serve system.
+  </p>
+
+  <p>
+    Currently running version's git hash:
+    <span ng-show="ctrl.gitRevision">
+      <code>{{ ctrl.gitRevision }}</code>.
+      <a href="https://github.com/bitraf/p2k16/commit/{{ ctrl.gitRevision }}">Open on Github</a>.
+    </span>
+    <span ng-hide="ctrl.gitRevision">
+      <em>not set</em>.
+    </span>
+  </p>
+</div>

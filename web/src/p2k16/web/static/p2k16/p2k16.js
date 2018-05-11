@@ -32,6 +32,10 @@
             resolve: {
                 recent_events: DoorDataServiceResolvers.recent_events
             }
+        }).when("/about", {
+            controller: AboutController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.about_html
         }).when("/membership", {
             controller: MembershipController,
             controllerAs: 'ctrl',
@@ -494,7 +498,7 @@
 
         return {
             restrict: 'E',
-            scope: {active: '@', woot: '='},
+            scope: {active: '@'},
             controller: p2k16HeaderController,
             controllerAs: 'header',
             templateUrl: p2k16_resources.p2k16_header_html
@@ -583,6 +587,12 @@
         };
 
         self.recent_events = recent_events;
+    }
+
+    function AboutController() {
+        var self = this;
+
+        self.gitRevision = window.gitRevision;
     }
 
     function getMembershipTypes() {

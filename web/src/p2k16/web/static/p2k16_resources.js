@@ -1,4 +1,5 @@
 var p2k16_resources = {};
+p2k16_resources.about_html = "/static/about.html";
 p2k16_resources.admin_account_detail_html = "/static/admin-account-detail.html";
 p2k16_resources.admin_account_list_html = "/static/admin-account-list.html";
 p2k16_resources.admin_circle_detail_html = "/static/admin-circle-detail.html";

@@ -569,6 +569,7 @@ def index():
         kwargs["circles_with_admin_access"] = circles_with_admin_access_json
 
     kwargs["stripe_pubkey"] = stripe_pubkey
+    kwargs["gitRevision"] = current_app.config.get("GIT_REVISION", None)
 
     return render_template("index.html", **kwargs)
 

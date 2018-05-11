@@ -130,7 +130,6 @@ def handle_all_other_exceptions(e: Exception):
 
 @app.before_request
 def session_management():
-    logger.info("session new={}".format(flask.session.new))
     flask.session.permanent = True
 
 

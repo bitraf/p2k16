@@ -39,16 +39,16 @@ def account_loader(account_id):
     return AuthenticatedAccount(account, circles)
 
 
-def debug_signals(app):
-    signals = [flask_login.signals.user_logged_in, flask_login.signals.user_logged_out,
-               flask_login.signals.user_loaded_from_cookie, flask_login.signals.user_loaded_from_header,
-               flask_login.signals.user_loaded_from_request, flask_login.signals.user_login_confirmed,
-               flask_login.signals.user_unauthorized, flask_login.signals.user_needs_refresh,
-               flask_login.signals.user_accessed, flask_login.signals.session_protected]
-    for s in signals:
-        name = s.name
-
-        def dbg(name):
-            return lambda *args, **kwargs: logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
-
-        s.connect(dbg(name), weak=False)
+# def debug_signals(app):
+#     signals = [flask_login.signals.user_logged_in, flask_login.signals.user_logged_out,
+#                flask_login.signals.user_loaded_from_cookie, flask_login.signals.user_loaded_from_header,
+#                flask_login.signals.user_loaded_from_request, flask_login.signals.user_login_confirmed,
+#                flask_login.signals.user_unauthorized, flask_login.signals.user_needs_refresh,
+#                flask_login.signals.user_accessed, flask_login.signals.session_protected]
+#     for s in signals:
+#         name = s.name
+#
+#         def dbg(name):
+#             return lambda *args, **kwargs: logger.info("name={}, args={}, kwargs={}".format(name, args, kwargs))
+#
+#         s.connect(dbg(name), weak=False)

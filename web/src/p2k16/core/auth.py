@@ -22,7 +22,7 @@ class AuthenticatedAccount(flask_login.UserMixin):
 
 @login_manager.user_loader
 def account_loader(account_id):
-    logger.info("login_manager.user_loader: Loading account_id={}".format(account_id))
+    # logger.info("login_manager.user_loader: Loading account_id={}".format(account_id))
 
     account = Account.find_account_by_id(account_id)
 
@@ -30,8 +30,8 @@ def account_loader(account_id):
         logger.info("login_manager.user_loader: no such account".format(account_id))
         return
 
-    logger.info("login_manager.user_loader: Loaded account.id={}, account.username={}".
-                format(account.id, account.username))
+    # logger.info("login_manager.user_loader: Loaded account.id={}, account.username={}".
+    #             format(account.id, account.username))
 
     circles = account_management.get_circles_for_account(account.id)
 

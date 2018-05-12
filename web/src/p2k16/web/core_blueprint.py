@@ -416,12 +416,6 @@ def membership_set_membership():
 # Circle
 
 
-@registry.route('/data/circle')
-def data_circle_list():
-    circles = Circle.query.all()
-    return jsonify([circle_to_json(c) for c in circles])
-
-
 @registry.route('/data/circle/<int:circle_id>')
 def data_circle(circle_id):
     circle = Circle.get_by_id(circle_id)
@@ -553,7 +547,9 @@ def index():
     from .badge_blueprint import badge_description_to_json
     kwargs = {
         "circles": [circle_to_json(c) for c in Circle.query.all()],
-        "badge_descriptions": [badge_description_to_json(bd) for bd in BadgeDescription.query.all()]
+        "badge_descriptions": [badge_description_to_json(bd) for bd in BadgeDescription.query.all()],
+        "stripe_pubkey": stripe_pubkey,
+        "gitRevision": current_app.config.get("GIT_REVISION", None)
     }
 
     if flask_login.current_user.is_authenticated:
@@ -566,10 +562,7 @@ def index():
         circles_with_admin_access_json = [circle_to_json(c) for c in circles_with_admin_access]
 
         kwargs["account"] = account_json
-        kwargs["circles_with_admin_access"] = circles_with_admin_access_json
-
-    kwargs["stripe_pubkey"] = stripe_pubkey
-    kwargs["gitRevision"] = current_app.config.get("GIT_REVISION", None)
+        kwargs["circles_with_admin_access"] = [c.id for c in circles_with_admin_access]
 
     return render_template("index.html", **kwargs)
 

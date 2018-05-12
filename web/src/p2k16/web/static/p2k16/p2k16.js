@@ -414,7 +414,7 @@
         }
 
         function canAdminCircle(circleId) {
-            return !!_.find(self.circlesWithAdminAccess, {id: circleId});
+            return _.indexOf(self.circlesWithAdminAccess, circleId) !== -1;
         }
 
         if (window.p2k16.account) {

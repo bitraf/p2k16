@@ -16,18 +16,23 @@
   <script src="{{ url_for('static', filename='p2k16/p2k16.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='p2k16/p2k16.css') }}"/>
-  <script id="p2k16-data">
-    var p2k16 = {};
+  <script id="p2k16">var p2k16 = {};</script>
+  <script id="p2k16-badgeDescriptions">
     p2k16.badgeDescriptions = {{ badge_descriptions | tojson | safe }};
-    p2k16.circles = {{ circles | tojson | safe }};
-
-    {% if account and current_user.is_authenticated %}
-      p2k16.account = {{ account | tojson | safe }};
-    {% endif %}
-    {% if circles_with_admin_access %}
-      p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
-    {% endif %}
   </script>
+  <script id="p2k16-circles">
+    p2k16.circles = {{ circles | tojson | safe }};
+  </script>
+  {% if account and current_user.is_authenticated %}
+    <script id="p2k16-account">
+      p2k16.account = {{ account | tojson | safe }};
+    </script>
+  {% endif %}
+  {% if circles_with_admin_access %}
+    <script id="p2k16-circles">
+      p2k16.circlesWithAdminAccess = {{ circles_with_admin_access | tojson | safe }};
+    </script>
+  {% endif %}
   <script id="misc">
     stripe_pubkey = {{ stripe_pubkey | tojson | safe }};
     gitRevision = {{ gitRevision | tojson | safe }};

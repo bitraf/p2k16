@@ -91,13 +91,6 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.data_circle_list = function () {
-        var req = {};
-        req.method = 'GET';
-        req.url = '/data/circle';
-        return $http(req);
-    };
-
     this.data_circle = function (circle_id) {
         var req = {};
         req.method = 'GET';
@@ -195,9 +188,6 @@ CoreDataServiceResolvers.data_account_summary = function (CoreDataService, $rout
 };
 CoreDataServiceResolvers.membership_details = function (CoreDataService) {
   return CoreDataService.membership_details().then(function (res) { return res.data; });
-};
-CoreDataServiceResolvers.data_circle_list = function (CoreDataService) {
-  return CoreDataService.data_circle_list().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_circle = function (CoreDataService, $route) {
   var circle_id = $route.current.params.circle_id;

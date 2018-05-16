@@ -6,3 +6,4 @@ pytest
 flask
 ldif3
 werkzeug
+sqlalchemy

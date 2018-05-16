@@ -296,7 +296,7 @@ def register_account():
 # This shouldn't return that much data, it should only return circle ids and badge descriptor ids.
 @registry.route('/data/account')
 def data_account_list():
-    accounts = {a.id: a for a in Account.query.all()}  # type:Mapping[int, Account]
+    accounts = {a.id: a for a in Account.all_user_accounts()}  # type:Mapping[int, Account]
     account_ids = [a for a in accounts]
     from itertools import groupby
 
@@ -646,6 +646,32 @@ def protected():
     return 'Logged in as: ' + str(a.id) + ", username=" + a.username
 
 
+# For p2k12 compatibility
+@core.route('/passwd.php')
+def passwd_php():
+    # IP check is done by the frontend webserver
+
+    # $res = pg_query(
+    #     "SELECT ac.id + 100000 AS id, ac.name, au.data, am.full_name FROM auth au INNER JOIN accounts ac ON ac.id = au.account INNER JOIN active_members am ON am.account = ac.id WHERE au.realm = 'login'");
+    #
+    # header('Content-Type: text/plain; charset=utf-8');
+    #
+    # while ($row = pg_fetch_assoc($res))
+    # {
+    #     echo
+    # "{$row['name']}:{$row['data']}:{$row['id']}:{$row['id']}:{$row['full_name']}:/bitraf/home/{$row['name']}:/bin/bash\n";
+
+    accounts = Account.all_user_accounts()
+
+    s = io.StringIO()
+    for a in accounts:
+        s.write("{}:{}:{}:{}:{}:/bitraf/home/{}:/bin/bash\n".format(a.username, a.password, a.id, a.id, a.name, a.username))
+
+    r = flask.make_response()  # type: flask.Response
+    r.content_type = 'text/plain;charset=utf-8'
+    r.data = s.getvalue()
+    return r
+
 @core.route('/core/ldap/users.ldif')
 def core_ldif():
     from ldif3 import LDIFWriter
@@ -653,7 +679,7 @@ def core_ldif():
     f = io.BytesIO()
     writer = LDIFWriter(f)
 
-    for a in Account.query.all():
+    for a in Account.all_user_accounts():
         dn = "uid={},ou=People,dc=bitraf,dc=no".format(a.username)
 
         writer.unparse(dn, {"changetype": ["delete"]})

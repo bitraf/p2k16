@@ -240,6 +240,10 @@ class Account(P2k16Mixin, CreatedAtMixin, UpdatedAtMixin, db.Model):
     def find_account_by_reset_token(reset_token) -> Optional['Account']:
         return Account.query.filter(Account.reset_token == reset_token).one_or_none()
 
+    @staticmethod
+    def all_user_accounts() -> List["Account"]:
+        return Account.query.filter(func.not_(Account.system)).all()
+
 
 class CircleManagementStyle(enum.Enum):
     ADMIN_CIRCLE = 1

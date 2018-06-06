@@ -13,7 +13,7 @@ CREATE TABLE tool_description (
   updated_by BIGINT                   NOT NULL REFERENCES account,
 
   name       VARCHAR(50) NOT NULL,
-  description VARCHAR(1000),
+  description VARCHAR(1000)
 );
 GRANT ALL ON tool_description TO "p2k16-web";
 
@@ -31,7 +31,7 @@ CREATE TABLE tool_description_version
   updated_by         BIGINT                   NOT NULL,
 
   name       VARCHAR(50) NOT NULL,
-  description VARCHAR(1000),
+  description VARCHAR(1000)
 );
 GRANT INSERT, UPDATE ON tool_description_version TO "p2k16-web";
 GRANT ALL ON tool_description_version TO "p2k16-web";

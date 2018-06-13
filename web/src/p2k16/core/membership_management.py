@@ -271,12 +271,18 @@ def member_set_membership(account, membership_plan, membership_price):
         if stripe_customer_id is None:
             raise P2k16UserException("You must set a credit card before changing plan.")
 
-        new_sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
+        # Check for active subscription
+        subscriptions = stripe.Subscription.list(customer=stripe_customer_id)
 
-        # Remove existing subscriptions
-        for sub in stripe.Subscription.list(customer=stripe_customer_id):
-            if new_sub.id != sub.id:
-                sub.delete(at_period_end=False)
+        if subscriptions is None or len(subscriptions) == 0:
+            sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
+        else:
+            sub = next(iter(subscriptions), None)
+            stripe.Subscription.modify(sub.id, cancel_at_period_end=False,
+                                       items=[{
+                                           'id': sub['items']['data'][0].id,
+                                           'plan': membership_plan
+                                       }])
 
         # Commit to db
         db.session.add(membership)

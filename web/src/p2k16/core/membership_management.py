@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import text, func
 from typing import Mapping, Optional
 
 import stripe
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 def paid_members():
     return Account.query. \
         join(StripePayment, StripePayment.created_by_id == Account.id). \
-        filter(StripePayment.end_date >= datetime.now()). \
+        filter(StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))). \
         all()
 
 
@@ -22,7 +23,7 @@ def active_member(account: Account = None) -> bool:
     """
     return StripePayment.query. \
         filter(StripePayment.created_by_id == account.id,
-               StripePayment.end_date >= datetime.now()).count() is not 0
+               StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() is not 0
 
 
 def get_membership(account: Account):

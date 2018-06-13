@@ -26,7 +26,8 @@ class AccountTest(TestCase):
         a3 = Account('account3', 'account3@example.org', password='123')
         a4 = Account('account4', 'account4@example.org', password='123')
         a5 = Account('account5', 'account5@example.org', password='123')
-        session.add_all([a3, a4, a5])
+        a6 = Account('account6', 'account6@example.org', password='123')
+        session.add_all([a3, a4, a5, a6])
         session.flush()
 
         with model_support.run_as(a3):
@@ -48,15 +49,24 @@ class AccountTest(TestCase):
             session.add_all([payment4])
 
         # Account 5 has no payments
+
+        with model_support.run_as(a6):
+            # Account 6 renews membership today, but expired some hours ago
+            # Verify grace period
+            payment5 = StripePayment('tok_stripe_xx1339', datetime(2017, 3, 1),
+                                     datetime.now() - timedelta(hours=2), '500.00', datetime(2017, 2, 1))
+            session.add_all([payment5])
+
         session.flush()
 
-        # Verify only one paid account
-        assert len(membership_management.paid_members()) == 1
+        # Verify two paid accounts
+        assert len(membership_management.paid_members()) == 2
 
         # Check membership payments
         assert membership_management.active_member(a3) is True
         assert membership_management.active_member(a4) is False
         assert membership_management.active_member(a5) is False
+        assert membership_management.active_member(a6) is True
 
         # Check membership
         membership = get_membership(a3)

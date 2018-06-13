@@ -44,7 +44,7 @@ def get_stripe_customer(account: Account):
     return StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
 
 
-def get_membetship_payments(account: Account):
+def get_membership_payments(account: Account):
     return StripePayment.query.filter(StripePayment.created_by_id == account.id).all()
 
 
@@ -141,7 +141,7 @@ def member_get_details(account):
 
         # Export payments
         payments = []
-        for pay in get_membetship_payments(account):
+        for pay in get_membership_payments(account):
             payments.append({
                 'id': pay.id,
                 'start_date': pay.start_date,

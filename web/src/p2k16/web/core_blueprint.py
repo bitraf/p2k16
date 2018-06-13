@@ -9,7 +9,8 @@ import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
-from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership
+from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership, \
+    get_membership, get_membership_payments
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
     CircleManagementStyle, Membership
 from p2k16.core.models import AccountBadge
@@ -327,8 +328,32 @@ def data_account(account_id):
 
     circles = account_management.get_circles_for_account(account.id)
 
-    return jsonify(account_to_json(account, circles, None))
+    # Get current membership
+    membership = get_membership(account)
+    membership_details = {}
+    if membership is not None:
+        membership_details['fee'] = membership.fee
+        membership_details['first_membership'] = membership.first_membership
+        membership_details['start_membership'] = membership.start_membership
+    else:
+        membership_details['fee'] = 0
 
+    # Export payments
+    payments = []
+    for pay in get_membership_payments(account):
+        payments.append({
+            'id': pay.id,
+            'start_date': pay.start_date,
+            'end_date': pay.end_date,
+            'amount': float(pay.amount),
+            'payment_date': pay.payment_date
+        })
+    membership_details['payments'] = payments
+
+    detail = account_to_json(account, circles, None)
+    detail['membership'] = membership_details
+
+    return jsonify(detail)
 
 @registry.route("/data/account-summary/<int:account_id>")
 def data_account_summary(account_id):
@@ -342,11 +367,12 @@ def data_account_summary(account_id):
 
     open_door_event = event_management.last_door_open(account)
 
+    # Add to response
     from .badge_blueprint import badge_to_json
     summary = {
         "account": account_to_json(account, circles, None),
         "badges": [badge_to_json(b) for b in badges],
-        "lastDoorOpen": open_door_event.to_dict() if open_door_event else None
+        "lastDoorOpen": open_door_event.to_dict() if open_door_event else None,
     }
     return jsonify(summary)
 

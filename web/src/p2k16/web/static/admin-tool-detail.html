@@ -1,0 +1,38 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>
+    {{ ctrl.title }}
+    <small>
+      <a href="#!admin/tool">All tools</a>
+    </small>
+  </h1>
+
+  <div class="form-horizontal" ng-form="ctrl.form">
+    <div class="form-group">
+      <label for="name" class="col-sm-2">
+        Name
+      </label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="name" id="name" placeholder="name"
+               ng-model="ctrl.tool.name"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-2">
+        Circle
+      </label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="circle" id="circle" placeholder="Circle name"
+               ng-model="ctrl.tool.circle"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-12 text-right">
+        <button class="btn btn-success" ng-click="ctrl.save()">
+          {{ (ctrl.tool.id ? 'Update' : 'Create') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

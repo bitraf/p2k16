@@ -148,6 +148,31 @@
                 accounts: CoreDataServiceResolvers.data_account_list,
                 company: CoreDataServiceResolvers.data_company
             }
+        }).when("/admin/tool", {
+            controller: AdminToolListController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_tool_list_html,
+            resolve: {
+                tools: ToolDataServiceResolvers.data_tool_list
+            }
+        }).when("/admin/tool/new", {
+            controller: AdminToolDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_tool_detail_html,
+            resolve: {
+                tools: ToolDataServiceResolvers.data_tool_list,
+                tool: _.constant({})
+            }
+        }).when("/admin/tool/:tool_id", {
+            controller: AdminToolDetailController,
+            controllerAs: 'ctrl',
+            templateUrl: p2k16_resources.admin_tool_detail_html,
+            resolve: {
+                tools: ToolDataServiceResolvers.data_tool_list,
+                // TODO: use the circle from the cache, look up members
+                // circle: circle
+                tool: ToolDataServiceResolvers.data_tool
+            }
         }).otherwise("/");
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
@@ -729,18 +754,19 @@
         var self = this;
 
         self.tools = [
-            { 'name': 'Pick and Place' }
+            { name: 'Pick and Place', id: 'smallsmt' },
+            { name: 'CNC', id: 'cnc' }
         ];
 
-        self.checkoutTool = function() {
-            ToolDataService.checkout_tool({'tool': 'smallsmt'}).then(function() {
-                console.log('checkout succeded');
+        self.checkoutTool = function(tool) {
+            ToolDataService.checkout_tool({'tool': tool.id}).then(function() {
+                console.log('checkout succeded', tool);
             })
         };
 
-        self.checkinTool = function() {
-            ToolDataService.checkin_tool({'tool': 'smallsmt'}).then(function() {
-                console.log('checkin succeded');
+        self.checkinTool = function(tool) {
+            ToolDataService.checkin_tool({'tool': tool.id}).then(function() {
+                console.log('checkin succeded', tool);
             })
         };
     }
@@ -970,6 +996,53 @@
                 .then(function (res) {
                     setCompany(res.data);
                 });
+        };
+    }
+
+    /**
+     * @param {CoreDataService} CoreDataService
+     * @param {SmartCache} tools
+     * @constructor
+     */
+    function AdminToolListController(ToolDataService, tools) {
+        var self = this;
+
+        self.tools = tools;
+    }
+
+    /**
+     * @param $location
+     * @param {CoreDataService} CoreDataService
+     * @param {SmartCache} circles
+     * @param circle
+     * @constructor
+     */
+    function AdminToolDetailController($location, ToolDataService, tools, tool) {
+        var self = this;
+
+        self.isNew = !tool.id;
+
+        function setTool(tool) {
+            self.tool = angular.copy(tool);
+            isNew = !self.tool.id;
+            self.title = isNew ? "New tool" : self.tool.name;
+        }
+
+        setTool(tool);
+
+        self.save = function () {
+            var q = self.tool.id
+                ? ToolDataService.data_tool_update(self.tool)
+                : ToolDataService.data_tool_add(self.tool);
+
+            q.then(function (res) {
+                if (isNew) {
+                    $location.url("/admin/tool/" + res.data.id);
+                } else {
+                    setTool(res.data);
+                    self.form.$setPristine();
+                }
+            });
         };
     }
 

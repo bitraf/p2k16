@@ -1,0 +1,37 @@
+<p2k16-header active="admin"></p2k16-header>
+
+<div class="container">
+  <h1>Tools</h1>
+
+  <div class="row">
+    <div class="col-sm-12 text-right">
+      <a class="btn btn-default" href="#!/admin/tool/new">Create tool</a>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-sm-2">Name</th>
+      <th class="col-sm-4">Description</th>
+      <th class="col-sm-3">Circle</th>
+      <th class="col-sm-1">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="c in ctrl.tools">
+      <td>{{ c.name }}</td>
+      <td>{{ c.description }}</td>
+      <td>{{ c.circle }}</td>
+      <td>
+        <a href="#!/admin/tool/{{ c.id }}">edit</a>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+
+</div>
+
+

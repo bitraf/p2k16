@@ -72,7 +72,7 @@ class ToolClient(object):
 #            logger.info("Sending message: {}: {}".format(topic, open_time))
 #            self._client.publish(topic, open_time)
 
-        topic = "{}/{}".format('/public/machine/pick_and_place', 'unlock')
+        topic = "{}/{}/{}".format('/public/machine/', tool, 'unlock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)

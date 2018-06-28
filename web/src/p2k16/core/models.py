@@ -563,10 +563,35 @@ class ToolDescription(DefaultMixin, db.Model):
 
     name = Column(String(50), nullable=False)
     description = Column(String(1000))
+    circle_id = Column("circle", Integer, ForeignKey("circle.id"))
+    circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, description: str, circle: Circle):
         self.name = name
+        self.description = description
+        self.circle_id = circle.id
 
+    @staticmethod
+    def find_by_id(_id) -> Optional['ToolDescription']:
+        return ToolDescription.query.filter(ToolDescription.id == _id).one_or_none()
+
+
+class ToolCheckout(DefaultMixin, db.Model):
+    __tablename__ = 'tool_checkout'
+    __versioned__ = {}
+
+    tool_description_id = Column("tool", Integer, ForeignKey('tool_description.id'), nullable=False)
+    tool_description = relationship("ToolDescription", foreign_keys=[tool_description_id])
+
+    account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
+    account = relationship("Account", foreign_keys=[account_id])
+
+    started = Column(DateTime, nullable=True)
+
+    def __init__(self, tool: ToolDescription, account: Account, started: DateTime):
+        self.tool = tool
+        self.account = account
+        self.started = started
 
 from sqlalchemy import event
 

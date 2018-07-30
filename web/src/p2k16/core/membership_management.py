@@ -198,7 +198,7 @@ def member_set_credit_card(account, stripe_token):
 
         # Check if there are any outstanding invoices on this account that needs billing
         for invoice in stripe.Invoice.list(customer=cu.stripe_id):
-            if invoice.paid is False:
+            if invoice.paid is False and invoice.closed is False and invoice.forgiven is False:
                 invoice.pay()
 
         logger.info("Successfully updated credit card for user=%r" % account.username)

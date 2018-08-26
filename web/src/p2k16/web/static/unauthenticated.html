@@ -28,6 +28,14 @@
   <h1>Sign up</h1>
   <form class="form-horizontal">
     <div class="form-group">
+      <label for="name" class="col-sm-2">Full Name</label>
+      <div class="col-sm-4">
+        <input class="form-control" type="text" name="name" id="name" placeholder="Full Name"
+               autocomplete="name"
+               ng-model="ctrl.signupForm.name"/>
+      </div>
+    </div>
+    <div class="form-group">
       <label for="email" class="col-sm-2">Email</label>
       <div class="col-sm-4">
         <input class="form-control" type="text" name="email" id="email" placeholder="Email"
@@ -47,6 +55,14 @@
       </div>
     </div>
     <div class="form-group">
+      <label for="phone" class="col-sm-2">Phone</label>
+      <div class="col-sm-4">
+        <input class="form-control" type="text" name="phone" id="phone" placeholder="Phone #"
+               autocomplete="phone"
+               ng-model="ctrl.signupForm.phone"/>
+      </div>
+    </div>
+    <div class="form-group">
       <label for="password" class="col-sm-2">Password</label>
       <div class="col-sm-4">
         <input class="form-control" type="password" name="password" id="password" placeholder="Password"
@@ -60,6 +76,9 @@
       </div>
     </div>
   </form>
+
+  <hr>
+  <p style="font-weight: bold; ">Signing up for an account does not automatically start a membership at Bitraf. You do this by logging in and setting a credit card and membership level on the membership page which can be changed at any time.</p>
 </div>
 
 <script type="text/ng-template" id="unauthenticated/reset-password-modal.html">

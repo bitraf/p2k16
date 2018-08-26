@@ -170,6 +170,9 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     if account:
         raise P2k16UserException("Email is already registered")
 
+    if name is None:
+        raise P2k16UserException("Name cannot be empty.")
+
     account = Account(username, email, name, phone, password)
     db.session.add(account)
     return account

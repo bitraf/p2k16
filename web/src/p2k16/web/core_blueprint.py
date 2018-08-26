@@ -286,7 +286,7 @@ def service_authz_logout():
 def register_account():
     u = account_management.register_account(request.json["username"],
                                             request.json["email"],
-                                            request.json.get("name", None),
+                                            request.json.get("name"),
                                             request.json["password"],
                                             request.json.get("phone", None))
     db.session.commit()

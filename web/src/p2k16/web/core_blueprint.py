@@ -10,7 +10,7 @@ import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership, \
-    get_membership, get_membership_payments
+    get_membership, get_membership_payments, active_member
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
     CircleManagementStyle, Membership
 from p2k16.core.models import AccountBadge
@@ -167,7 +167,8 @@ def account_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         "name": account.name,
         "phone": account.phone,
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
-        "badges": {b.id: badge_to_json(b) for b in badges} if badges else None
+        "badges": {b.id: badge_to_json(b) for b in badges} if badges else None,
+        "active_member": active_member(account)
     }}
 
 

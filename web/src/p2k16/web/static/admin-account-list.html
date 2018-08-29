@@ -2,6 +2,7 @@
 
 <div class="container">
   <h1>Accounts</h1>
+  <label>Show only active members <input type="checkbox" ng-model="accountFilter.active_member"></label><br>
 
   <table class="table">
     <thead>
@@ -9,14 +10,16 @@
       <th class="col-sm-3">username</th>
       <th class="col-sm-4">email</th>
       <th class="col-sm-4">name</th>
+      <th class="col-sm-4">active</th>
       <th class="col-sm-1"></th>
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="account in ctrl.accounts|orderBy:'id'">
+    <tr ng-repeat="account in ctrl.accounts | orderBy:'id'" ng-if="accountFilter.active_member ? account.active_member : true">
       <td>{{ account.username }}</td>
       <td>{{ account.email }}</td>
       <td>{{ account.name }}</td>
+      <td>{{ account.active_member}}</td>
       <td>
         <a href="#!/admin/account/{{ account.id }}">show</a>
       </td>

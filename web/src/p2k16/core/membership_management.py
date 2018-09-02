@@ -5,7 +5,7 @@ from typing import Mapping, Optional
 
 import stripe
 from p2k16.core import P2k16UserException
-from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer
+from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer, Company
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +19,20 @@ def paid_members():
 
 def active_member(account: Account = None) -> bool:
     """
-    Verify that user is an active member of Bitraf either by paying or some other mechanism
+    Verify that user is an active member of Bitraf either by paying or member of company
     """
-    return StripePayment.query. \
+
+    # Check paying membership
+    if StripePayment.query. \
         filter(StripePayment.created_by_id == account.id,
-               StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() is not 0
+               StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0:
+        return True
+
+    # Check company membership
+    if len(Company.find_active_companies_with_account(account.id)) > 0:
+        return True
+
+    return False
 
 
 def get_membership(account: Account):
@@ -33,6 +42,19 @@ def get_membership(account: Account):
     :return: Membership model
     """
     return Membership.query.filter(Membership.created_by_id == account.id).one_or_none()
+
+
+def get_membership_fee(account: Account):
+    """
+    Get membership fee for account
+    :param account:
+    :return: Fee or None
+    """
+    membership = get_membership(account)
+    if membership is None:
+        return None
+    else:
+        return membership.fee
 
 
 def get_stripe_customer(account: Account):

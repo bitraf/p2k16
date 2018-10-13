@@ -109,12 +109,12 @@ def handle_payment_success(event):
     account = find_account_from_stripe_customer(customer_id)
 
     with model_support.run_as(account):
-        invoice_id = event.data.object.id
-        timestamp = datetime.fromtimestamp(event.data.object.date)
-        items = event.data.object.lines.data[0]
+        obj = event.data.object
+        invoice_id = obj.id
+        timestamp = datetime.fromtimestamp(obj.date)
 
-        payment = StripePayment(invoice_id, datetime.fromtimestamp(items.period.start),
-                                datetime.fromtimestamp(items.period.end), items.amount / 100, timestamp)
+        payment = StripePayment(invoice_id, datetime.fromtimestamp(obj.period_start),
+                                datetime.fromtimestamp(obj.period_end), obj.amount_paid / 100, timestamp)
 
         db.session.add(payment)
         db.session.commit()

@@ -114,7 +114,7 @@ def handle_payment_success(event):
         timestamp = datetime.fromtimestamp(obj.date)
 
         payment = StripePayment(invoice_id, datetime.fromtimestamp(obj.period_start),
-                                datetime.fromtimestamp(obj.period_end), obj.total / 100, timestamp)
+                                datetime.fromtimestamp(obj.period_end), obj.subtotal / 100, timestamp)
 
         db.session.add(payment)
         db.session.commit()

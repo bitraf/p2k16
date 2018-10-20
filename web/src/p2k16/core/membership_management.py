@@ -304,7 +304,8 @@ def member_set_membership(account, membership_plan, membership_price):
                                        items=[{
                                            'id': sub['items']['data'][0].id,
                                            'plan': membership_plan
-                                       }])
+                                       }],
+                                       prorate=False)
 
         # Commit to db
         db.session.add(membership)

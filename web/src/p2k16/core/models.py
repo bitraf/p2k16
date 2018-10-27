@@ -580,7 +580,7 @@ class ToolCheckout(DefaultMixin, db.Model):
     __tablename__ = 'tool_checkout'
     __versioned__ = {}
 
-    tool_description_id = Column("tool", Integer, ForeignKey('tool_description.id'), nullable=False)
+    tool_description_id = Column("tool_description", Integer, ForeignKey('tool_description.id'), nullable=False)
     tool_description = relationship("ToolDescription", foreign_keys=[tool_description_id])
 
     account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
@@ -589,9 +589,13 @@ class ToolCheckout(DefaultMixin, db.Model):
     started = Column(DateTime, nullable=True)
 
     def __init__(self, tool: ToolDescription, account: Account, started: DateTime):
-        self.tool = tool
+        self.tool_description = tool
         self.account = account
         self.started = started
+
+    @staticmethod
+    def find_by_tool(_tool) -> Optional['ToolCheckout']:
+        return ToolCheckout.query.filter(ToolCheckout.tool_description_id == _tool.id).one_or_none()
 
 from sqlalchemy import event
 

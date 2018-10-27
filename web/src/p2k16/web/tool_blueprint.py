@@ -33,7 +33,7 @@ def checkout_tool():
     tool = ToolDescription.find_by_id(request.json["tool"])
     client.checkout_tool(account, tool)
     db.session.commit()
-    return jsonify(dict())
+    return data_tool_list()
 
 @registry.route('/service/tool/checkin', methods=['POST'])
 @validate_schema(tool_form)
@@ -44,13 +44,30 @@ def checkin_tool():
     tool = ToolDescription.find_by_id(request.json["tool"])
     client.checkin_tool(account, tool)
     db.session.commit()
-    return jsonify(dict())
+    return data_tool_list()
 
 def tool_to_json(tool: ToolDescription):
+    checkout = ToolCheckout.find_by_tool(tool)
+
+    checkout_model = {}
+    if checkout is not None:
+        checkout_model = {
+            "active": True,
+            "started": checkout.started,
+            "account": checkout.account,
+            "username": checkout.account.username,
+        }
+    else:
+        checkout_model = {
+            "active": False,
+        }
+
+
     return {**model_to_json(tool), **{
         "name": tool.name, 
         "description": tool.description,
-        "circle": tool.circle.name
+        "circle": tool.circle.name,
+        "checkout": checkout_model,
     }}
 
 @registry.route('/data/tool')

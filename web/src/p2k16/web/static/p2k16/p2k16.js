@@ -754,17 +754,26 @@
     function ToolFrontPageController(ToolDataService, $scope, P2k16, tools) {
         var self = this;
 
-        self.tools = tools;
+
+        self.my_account = P2k16.currentAccount().id;
+
+        function update(data) {
+            self.tools = data;
+        }
+
+        update(tools);
 
         self.checkoutTool = function(tool) {
-            ToolDataService.checkout_tool({'tool': tool.id}).then(function() {
+            ToolDataService.checkout_tool({'tool': tool.id}).then(function(res) {
                 console.log('checkout succeded', tool);
+                update(res.data);
             })
         };
 
         self.checkinTool = function(tool) {
-            ToolDataService.checkin_tool({'tool': tool.id}).then(function() {
+            ToolDataService.checkin_tool({'tool': tool.id}).then(function(res) {
                 console.log('checkin succeded', tool);
+                update(res.data);
             })
         };
     }

@@ -8,7 +8,7 @@
   <form class="form-horizontal">
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-4">
-        <button ng-repeat="tool in ctrl.tools" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.name}}</button>
+        <button ng-repeat="tool in ctrl.tools" ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.name}}</button>
       </div>
     </div>
   </form>
@@ -21,6 +21,7 @@
 
         <div ng-repeat="tool in ctrl.tools">
           <label for="{{tool.name}}">{{tool.circle}}</label>
+          <span ng-if="tool.checkout.active" style="color: red">In use by {{tool.checkout.username}} since {{tool.checkout.started}}</span>
           <button type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
         </div>
       </div>

@@ -36,32 +36,17 @@ class ToolClient(object):
 
         self._client = c
 
-    # TODO: check permissions
     def checkout_tool(self, account: Account, tool: ToolDescription):
-        #door_circle = Circle.get_by_name('door')
-
-        """
-        if not account_management.is_account_in_circle(account, door_circle):
-            raise P2k16UserException('{} is not in the door circle'.format(account.display_name()))
+        # Check that user has correct circle and is paying member
+        if not account_management.is_account_in_circle(account, tool.circle):
+            raise P2k16UserException('{} is not in the {} circle'.format(account.display_name(), tool.circle.name))
 
         if not membership_management.active_member(account) and len(
             Company.find_active_companies_with_account(account.id)) == 0:
             raise P2k16UserException('{} does not have an active membership and is not employed in an active company'.
                                      format(account.display_name()))
 
-        publishes = []
-
-        if not event_management.has_opened_door(account):
-            system = Account.find_account_by_username("system")
-            logger.info("First door opening for {}".format(account))
-            badge_management.create_badge(account, system, "first-door-opening")
-        """
-
-
         logger.info('Checking out tool. username={}, tool={}'.format(account.username, tool.name))
-
-#            event_management.save_event(OpenDoorEvent(door.key))
-#            publishes.append((self.prefix + door.topic, str(door.open_time)))
 
         # Make sure everything has been written to the database before actually opening the door.
         db.session.flush()

@@ -3,7 +3,7 @@
 set -e
 set -x
 
-basedir=$(cd $(dirname $0); pwd)
+basedir="$(cd $(dirname $0); pwd)"
 
 if [[ ! -d env ]]
 then
@@ -28,6 +28,6 @@ export STRIPE_SECRET_KEY='sk_test_JgaPEgWXlT6VkmLcz0bcIkOf'
 export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 
 exec env/bin/gunicorn \
-    --config $basedir/infrastructure/gunicorn-config.py \
+    --config "$basedir/infrastructure/gunicorn-config.py" \
     --reload \
     p2k16.web.server:app

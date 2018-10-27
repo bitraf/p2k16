@@ -16,7 +16,10 @@
   <form class="form-horizontal">
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-4">
-        <button ng-repeat="tool in ctrl.tools" type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)">{{tool.name}}</button>
+        <div ng-repeat="tool in ctrl.tools">
+          <label for="{{tool.name}}">{{tool.circle}}</label>
+          <button type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
+        </div>
       </div>
     </div>
   </form>

@@ -9,6 +9,7 @@ node_modules/
 .pytest_cache/
 
 flyway-*.*.*
+p2k16.pid
 
 *.log
 .DS_Store

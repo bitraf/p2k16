@@ -2,7 +2,7 @@
 
 set -ex pipefail
 
-basedir=$(cd $(dirname $0); pwd)
+basedir="$(cd $(dirname $0); pwd)"
 
 if [[ ! -d env ]]
 then

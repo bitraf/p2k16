@@ -83,7 +83,7 @@ class ToolClient(object):
         db.session.delete(checkout)
         db.session.flush()
 
-        topic = "{}/{}/{}".format('/public/machine', tool.name, 'unlock')
+        topic = "{}/{}/{}".format('/public/machine', tool.name, 'lock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)

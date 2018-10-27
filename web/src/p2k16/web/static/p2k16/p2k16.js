@@ -55,6 +55,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.tool_front_page_html,
             resolve: {
+                tools: ToolDataServiceResolvers.data_tool_list
             }
         });
 
@@ -750,13 +751,10 @@
      * @param ToolDataService
      * @constructor
      */
-    function ToolFrontPageController(ToolDataService, $scope, P2k16) {
+    function ToolFrontPageController(ToolDataService, $scope, P2k16, tools) {
         var self = this;
 
-        self.tools = [
-            { name: 'Pick and Place', id: 'smallsmt' },
-            { name: 'CNC', id: 'cnc' }
-        ];
+        self.tools = tools;
 
         self.checkoutTool = function(tool) {
             ToolDataService.checkout_tool({'tool': tool.id}).then(function() {

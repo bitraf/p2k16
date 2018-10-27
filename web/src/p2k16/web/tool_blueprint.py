@@ -18,7 +18,7 @@ registry = DataServiceTool("ToolDataService", "tool-data-service.js", tool)
 tool_form = {
     "type": "object",
     "properties": {
-        "tool": {"type": "string"},
+        "tool": {"type": "integer"},
     },
     "required": ["tool"]
 }

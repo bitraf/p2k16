@@ -37,7 +37,7 @@ class ToolClient(object):
         self._client = c
 
     # TODO: check permissions
-    def checkout_tool(self, account: Account, tool: str):
+    def checkout_tool(self, account: Account, tool: int):
         #door_circle = Circle.get_by_name('door')
 
         """
@@ -77,7 +77,7 @@ class ToolClient(object):
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)
 
-    def checkin_tool(self, account: Account, tool: str):
+    def checkin_tool(self, account: Account, tool: int):
         logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool))
 
 

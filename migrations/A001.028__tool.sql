@@ -80,3 +80,22 @@ GRANT ALL ON tool_checkout_version TO "p2k16-web";
 -- Add Bogus data
 INSERT INTO tool_description VALUES (default, NOW(), 1, NOW(), 1, 'cnc', 'Shopbot', 3);
 INSERT INTO tool_description VALUES (default, NOW(), 1, NOW(), 1, 'laser-red', 'Laser Red', 5);
+
+DO $$
+DECLARE
+  pnp_id            BIGINT;
+  pnp_admin_id      BIGINT;
+
+BEGIN
+  -- Note: contains assumption that superuser always is ID 1
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
+    (current_timestamp, 1, current_timestamp, 1, 'pnp', 'PickNPlace access')
+  RETURNING id
+    INTO pnp_id;
+
+  INSERT INTO circle (created_at, created_by, updated_at, updated_by, name, description) VALUES
+    (current_timestamp, 1, current_timestamp, 1, 'pnp-admin', 'PickNPlace Admin')
+  RETURNING id
+    INTO pnp_admin_id;
+END;
+$$;

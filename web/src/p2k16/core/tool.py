@@ -5,7 +5,7 @@ from typing import Optional, Mapping, List
 import paho.mqtt.client as mqtt
 from p2k16.core import P2k16UserException, membership_management
 from p2k16.core import account_management, event_management, badge_management
-from p2k16.core.models import db, Account, Circle, Event, Company, ToolDescription
+from p2k16.core.models import db, Account, Circle, Event, Company, ToolDescription, ToolCheckout
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +41,26 @@ class ToolClient(object):
         if not account_management.is_account_in_circle(account, tool.circle):
             raise P2k16UserException('{} is not in the {} circle'.format(account.display_name(), tool.circle.name))
 
-        if not membership_management.active_member(account) and len(
-            Company.find_active_companies_with_account(account.id)) == 0:
+        if not membership_management.active_member(account) \
+                and len(Company.find_active_companies_with_account(account.id)) == 0:
             raise P2k16UserException('{} does not have an active membership and is not employed in an active company'.
                                      format(account.display_name()))
 
         logger.info('Checking out tool. username={}, tool={}'.format(account.username, tool.name))
+
+        # Verify that tool is not checked out by someone else. Check in first if it is.
+        checkout = ToolCheckout.find_by_tool(tool)
+        if checkout:
+            if checkout.account is account:
+                raise P2k16UserException('Tools can only be checked out once.')
+
+            logger.info('Tool checked out by someone else. Assuming control: username={}, tool={}, old_username={}'
+                        .format(account.username, tool.name, checkout.account.name))
+            self.checkin_tool(checkout.account, checkout.tool_description)
+
+        # Make a new checkout reservation
+        checkout = ToolCheckout(tool, account, datetime.now())
+        db.session.add(checkout)
 
         # Make sure everything has been written to the database before actually opening the door.
         db.session.flush()
@@ -65,6 +79,9 @@ class ToolClient(object):
     def checkin_tool(self, account: Account, tool: ToolDescription):
         logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool.name))
 
+        checkout = ToolCheckout.find_by_tool(tool)
+        db.session.delete(checkout)
+        db.session.flush()
 
         topic = "{}/{}/{}".format('/public/machine/', tool.name, 'unlock')
         payload = 'true'

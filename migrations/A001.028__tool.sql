@@ -70,7 +70,7 @@ CREATE TABLE tool_checkout_version
   updated_by         BIGINT                   NOT NULL,
 
 
-  tool_description          BIGINT  UNIQUE    ,
+  tool_description          BIGINT    ,
   account       BIGINT      ,
   started       TIMESTAMP WITH TIME ZONE
 );

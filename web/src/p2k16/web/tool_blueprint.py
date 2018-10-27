@@ -30,7 +30,7 @@ tool_form = {
 def checkout_tool():
     account = flask_login.current_user.account
     client = flask.current_app.config.tool_client  # type: DoorClient
-    tool = request.json["tool"]
+    tool = ToolDescription.find_by_id(request.json["tool"])
     client.checkout_tool(account, tool)
     db.session.commit()
     return jsonify(dict())
@@ -41,7 +41,7 @@ def checkout_tool():
 def checkin_tool():
     account = flask_login.current_user.account
     client = flask.current_app.config.tool_client  # type: DoorClient
-    tool = request.json["tool"]
+    tool = ToolDescription.find_by_id(request.json["tool"])
     client.checkin_tool(account, tool)
     db.session.commit()
     return jsonify(dict())

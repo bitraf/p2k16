@@ -75,7 +75,3 @@ CREATE TABLE tool_checkout_version
 );
 
 GRANT ALL ON tool_checkout_version TO "p2k16-web";
-
--- Add Bogus data
-INSERT INTO tool_description VALUES (default, NOW(), 1, NOW(), 1, 'cnc', 'Shopbot', 3);
-INSERT INTO tool_description VALUES (default, NOW(), 1, NOW(), 1, 'laser-red', 'Laser Red', 5);

@@ -72,7 +72,7 @@ class ToolClient(object):
 #            logger.info("Sending message: {}: {}".format(topic, open_time))
 #            self._client.publish(topic, open_time)
 
-        topic = "{}/{}/{}".format('/public/machine/', tool.name, 'unlock')
+        topic = "{}/{}/{}".format('/public/machine', tool.name, 'unlock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)
@@ -81,7 +81,7 @@ class ToolClient(object):
         logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool.name))
 
 
-        topic = "{}/{}/{}".format('/public/machine/', tool.name, 'unlock')
+        topic = "{}/{}/{}".format('/public/machine', tool.name, 'unlock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)

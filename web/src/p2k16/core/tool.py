@@ -5,7 +5,7 @@ from typing import Optional, Mapping, List
 import paho.mqtt.client as mqtt
 from p2k16.core import P2k16UserException, membership_management
 from p2k16.core import account_management, event_management, badge_management
-from p2k16.core.models import db, Account, Circle, Event, Company
+from p2k16.core.models import db, Account, Circle, Event, Company, ToolDescription
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class ToolClient(object):
         self._client = c
 
     # TODO: check permissions
-    def checkout_tool(self, account: Account, tool: int):
+    def checkout_tool(self, account: Account, tool: ToolDescription):
         #door_circle = Circle.get_by_name('door')
 
         """
@@ -58,7 +58,7 @@ class ToolClient(object):
         """
 
 
-        logger.info('Checking out tool. username={}, tool={}'.format(account.username, tool))
+        logger.info('Checking out tool. username={}, tool={}'.format(account.username, tool.name))
 
 #            event_management.save_event(OpenDoorEvent(door.key))
 #            publishes.append((self.prefix + door.topic, str(door.open_time)))
@@ -77,8 +77,8 @@ class ToolClient(object):
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)
 
-    def checkin_tool(self, account: Account, tool: int):
-        logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool))
+    def checkin_tool(self, account: Account, tool: ToolDescription):
+        logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool.name))
 
 
         topic = "{}/{}".format('/public/machine/pick_and_place', 'lock')

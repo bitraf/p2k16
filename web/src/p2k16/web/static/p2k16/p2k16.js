@@ -55,7 +55,8 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.tool_front_page_html,
             resolve: {
-                tools: ToolDataServiceResolvers.data_tool_list
+                tools: ToolDataServiceResolvers.data_tool_list,
+                recent_events: ToolDataServiceResolvers.recent_events
             }
         });
 
@@ -751,9 +752,10 @@
      * @param ToolDataService
      * @constructor
      */
-    function ToolFrontPageController(ToolDataService, $scope, P2k16, tools) {
+    function ToolFrontPageController(ToolDataService, $scope, P2k16, tools, recent_events) {
         var self = this;
 
+        self.recent_events = recent_events;
 
         self.my_account = P2k16.currentAccount().id;
 

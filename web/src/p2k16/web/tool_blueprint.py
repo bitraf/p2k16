@@ -24,6 +24,13 @@ tool_form = {
 }
 
 
+@registry.route('/service/tool/recent-events', methods=['GET'])
+def recent_events():
+    from datetime import datetime, timedelta
+    start = datetime.now() - timedelta(days=7)
+    return jsonify([e.to_dict() for e in event_management.get_tool_recent_events(start)])
+
+
 @registry.route('/service/tool/checkout', methods=['POST'])
 @validate_schema(tool_form)
 @flask_login.login_required
@@ -34,6 +41,7 @@ def checkout_tool():
     client.checkout_tool(account, tool)
     db.session.commit()
     return data_tool_list()
+
 
 @registry.route('/service/tool/checkin', methods=['POST'])
 @validate_schema(tool_form)

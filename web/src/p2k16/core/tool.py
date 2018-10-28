@@ -14,6 +14,52 @@ class DummyClient(object):
     pass
 
 
+@event_management.converter_for("tool", "checkout")
+class ToolCheckoutEvent(object):
+    def __init__(self, tool_name: str, created_at: Optional[datetime] = None, created_by: Optional[Account] = None):
+        self.tool_name = tool_name
+        self.created_at = created_at
+        self.created_by = created_by
+
+    def to_event(self):
+        return {"text1": self.tool_name}
+
+    @staticmethod
+    def from_event(event: Event) -> "ToolCheckoutEvent":
+        return ToolCheckoutEvent(event.text1, event.created_at, event.created_by)
+
+    def to_dict(self):
+        return {**event_management.base_dict(self), **{
+            "created_at": self.created_at,
+            "created_by": self.created_by,
+            "created_by_username": self.created_by.username,
+            "tool_name": self.tool_name
+        }}
+
+
+@event_management.converter_for("tool", "checkin")
+class ToolCheckinEvent(object):
+    def __init__(self, tool_name: str, created_at: Optional[datetime] = None, created_by: Optional[Account] = None):
+        self.tool_name = tool_name
+        self.created_at = created_at
+        self.created_by = created_by
+
+    def to_event(self):
+        return {"text1": self.tool_name}
+
+    @staticmethod
+    def from_event(event: Event) -> "ToolCheckinEvent":
+        return ToolCheckinEvent(event.text1, event.created_at, event.created_by)
+
+    def to_dict(self):
+        return {**event_management.base_dict(self), **{
+            "created_at": self.created_at,
+            "created_by": self.created_by,
+            "created_by_username": self.created_by.username,
+            "tool_name": self.tool_name
+        }}
+
+
 class ToolClient(object):
     def __init__(self, cfg: Mapping[str, str]):
 
@@ -59,6 +105,7 @@ class ToolClient(object):
             self.checkin_tool(checkout.account, checkout.tool_description)
 
         # Make a new checkout reservation
+        event_management.save_event(ToolCheckoutEvent(tool.name, datetime.now(), account))
         checkout = ToolCheckout(tool, account, datetime.now())
         db.session.add(checkout)
 
@@ -79,6 +126,7 @@ class ToolClient(object):
     def checkin_tool(self, account: Account, tool: ToolDescription):
         logger.info('Checking in tool. username={}, tool={}'.format(account.username, tool.name))
 
+        event_management.save_event(ToolCheckinEvent(tool.name, datetime.now(), account))
         checkout = ToolCheckout.find_by_tool(tool)
         db.session.delete(checkout)
         db.session.flush()

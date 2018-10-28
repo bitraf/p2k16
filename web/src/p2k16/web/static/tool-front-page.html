@@ -28,4 +28,21 @@
     </div>
   </form>
 
+  <h3>Recent events</h3>
+
+  <ul>
+    <li ng-repeat="e in ctrl.recent_events">
+      <span ng-switch="e.domain + '-' + e.name">
+        <span ng-switch-when="tool-checkout">
+          <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
+            checked out {{ e.tool_name }} at {{ e.created_at | date:'shortTime' }}
+        </span>
+        <span ng-switch-when="tool-checkin">
+          <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
+            checked in {{ e.tool_name }} at {{ e.created_at | date:'shortTime' }}
+        </span>
+      </span>
+    </li>
+  </ul>
+
 </div>

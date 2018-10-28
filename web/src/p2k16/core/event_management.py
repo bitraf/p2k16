@@ -72,6 +72,16 @@ def get_public_recent_events(start: datetime):
     return _convert_all(events)
 
 
+def get_tool_recent_events(start: datetime):
+    events = Event.query. \
+        filter(Event.domain == "tool"). \
+        filter(Event.created_at > start). \
+        order_by(Event.created_at.desc()).limit(100). \
+        all()  # type: List[Event]
+
+    return _convert_all(events)
+
+
 def get_door_open_events_by_day(start: datetime):
     return db.session.query(func.date(Event.created_at), func.count(distinct(Event.created_by_id))). \
         filter((Event.domain == "door") & (Event.name == "open")). \

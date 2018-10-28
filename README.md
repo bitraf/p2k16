@@ -37,6 +37,7 @@ than one person is creating a schema at the same time you will get a conflict wh
 * Drop BIGSERIAL on _version tables. Should be BIGINT instead.
 * Prevent updates to certain fields like Account.username.
   SQLAlchemy's event systems seems like a useful method: http://docs.sqlalchemy.org/en/latest/orm/events.html
+* Tools: maintain state in case of reboot (using retained messages on mqtt-server)
 
 # Badge system
 

@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, request
 from p2k16.core import P2k16UserException, event_management
 from p2k16.core.door import DoorClient
 from p2k16.core.models import db, ToolDescription, ToolCheckout, Circle
-from p2k16.web.utils import validate_schema, DataServiceTool
+from p2k16.web.utils import validate_schema, DataServiceTool, require_circle_membership
 from p2k16.web.core_blueprint import model_to_json
 
 logger = logging.getLogger(__name__)
@@ -83,6 +83,8 @@ def data_tool_list():
     tools = ToolDescription.query.all()
 
     return jsonify([tool_to_json(tool) for tool in tools])
+
+
 @registry.route('/data/tool/<int:tool_id>')
 def data_tool(tool_id: int):
     tool = ToolDescription.find_by_id(tool_id)
@@ -92,14 +94,18 @@ def data_tool(tool_id: int):
 
     return jsonify(tool_to_json(tool))
 
+
 @registry.route('/data/tool', methods=["PUT"])
 def data_tool_update():
     return _data_tool_save()
+
 
 @registry.route('/data/tool', methods=["POST"])
 def data_tool_add():
     return _data_tool_save()
 
+
+@require_circle_membership("despot")
 def _data_tool_save():
     circle_name = request.json["circle"]
     circle = Circle.find_by_name(circle_name)

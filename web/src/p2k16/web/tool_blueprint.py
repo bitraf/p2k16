@@ -124,9 +124,10 @@ def _data_tool_save():
         logger.info("Updating tool: {}".format(tool))
         tool.name = request.json["name"]
         tool.circle = circle
+        tool.description = request.json["description"]
     else:
         logger.info("Creating new tooldescription: {}".format(request.json["name"]))
-        tool = ToolDescription(request.json["name"], "", circle)
+        tool = ToolDescription(request.json["name"], request.json["description"], circle)
 
     db.session.add(tool)
     db.session.commit()

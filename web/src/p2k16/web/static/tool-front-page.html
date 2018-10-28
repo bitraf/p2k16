@@ -21,7 +21,7 @@
 
         <div ng-repeat="tool in ctrl.tools">
           <label for="{{tool.name}}">{{tool.circle}}</label>
-          <span ng-if="tool.checkout.active" style="color: red">In use by {{tool.checkout.username}} since {{tool.checkout.started}}</span>
+          <span ng-if="tool.checkout.active" style="color: red">In use by {{tool.checkout.username}} since {{ tool.checkout.started | date:'short' }}</span>
           <button type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
         </div>
       </div>
@@ -35,11 +35,11 @@
       <span ng-switch="e.domain + '-' + e.name">
         <span ng-switch-when="tool-checkout">
           <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
-            checked out {{ e.tool_name }} at {{ e.created_at | date:'shortTime' }}
+            checked out {{ e.tool_name }} at {{ e.created_at | date:'short' }}
         </span>
         <span ng-switch-when="tool-checkin">
           <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
-            checked in {{ e.tool_name }} at {{ e.created_at | date:'shortTime' }}
+            checked in {{ e.tool_name }} at {{ e.created_at | date:'short' }}
         </span>
       </span>
     </li>

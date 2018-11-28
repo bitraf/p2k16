@@ -619,6 +619,9 @@
             });
         };
 
+        self.activeMember = P2K16.currentAccount().active_member;
+        self.doorsAvailable = selc.activeMember && 2k16.hasRole("door");
+
         self.recent_events = recent_events;
     }
 

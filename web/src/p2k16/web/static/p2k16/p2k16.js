@@ -556,7 +556,7 @@
             controller: ctrl,
             controllerAs: "ctrl",
             template: '<p ng-if="entity.id" class="text-muted entity-info">Created by {{ entity.createdBy }} at {{ entity.createdAt|date:\'medium\' }}<span\n' +
-            'ng-if="ctrl.show(entity)">, last updated by {{ entity.updatedBy }} at\n{{ entity.updatedAt|date:\'medium\' }}</span>.</p>\n'
+                'ng-if="ctrl.show(entity)">, last updated by {{ entity.updatedBy }} at\n{{ entity.updatedAt|date:\'medium\' }}</span>.</p>\n'
         }
     }
 
@@ -599,7 +599,7 @@
     }
 
     function YesNoFilter() {
-        return function(b) {
+        return function (b) {
             return b ? 'Yes' : 'No';
         }
     }
@@ -724,10 +724,11 @@
     /**
      * @param $scope
      * @param {P2k16} P2k16
+     * @param {CoreDataService} CoreDataService
      * @param badgeDescriptions
      * @constructor
      */
-    function MyProfileController($scope, P2k16, badgeDescriptions) {
+    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions) {
         var self = this;
 
         P2k16.accountListeners.add($scope, function (newValue) {
@@ -739,9 +740,18 @@
             self.badges = _.values(account.badges);
         }
 
+        function changePassword() {
+            CoreDataService.service_set_password(self.changePasswordForm).then(function (res) {
+                var msg = res.message || "Password changed";
+                P2k16.addInfos(msg);
+            });
+        }
+
         self.badges = [];
         self.newBadge = {};
         self.descriptions = badgeDescriptions;
+        self.changePasswordForm = {};
+        self.changePassword = changePassword;
 
         updateBadges(P2k16.currentAccount());
     }
@@ -765,15 +775,15 @@
 
         update(tools);
 
-        self.checkoutTool = function(tool) {
-            ToolDataService.checkout_tool({'tool': tool.id}).then(function(res) {
+        self.checkoutTool = function (tool) {
+            ToolDataService.checkout_tool({'tool': tool.id}).then(function (res) {
                 console.log('checkout succeded', tool);
                 update(res.data);
             })
         };
 
-        self.checkinTool = function(tool) {
-            ToolDataService.checkin_tool({'tool': tool.id}).then(function(res) {
+        self.checkinTool = function (tool) {
+            ToolDataService.checkin_tool({'tool': tool.id}).then(function (res) {
                 console.log('checkin succeded', tool);
                 update(res.data);
             })

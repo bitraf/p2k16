@@ -46,6 +46,18 @@ start_reset_password_form = {
     # "required": ["username"]
 }
 
+set_password_form = {
+    "type": "object",
+    "properties": {
+        "oldPassword": nonempty_string,
+        "newPassword": nonempty_string
+    },
+    "required": [
+        "oldPassword",
+        "newPassword"
+    ]
+}
+
 login_form = {
     "type": "object",
     "properties": {
@@ -634,6 +646,23 @@ def service_start_reset_password():
     return jsonify(response)
 
 
+@registry.route('/service/set-password', methods=['POST'])
+@validate_schema(set_password_form)
+def service_set_password():
+    old_password = flask.request.json["oldPassword"]
+    new_password = flask.request.json["newPassword"]
+
+    a = flask_login.current_user.account # type: Account
+
+    if not a.valid_password(old_password):
+        raise P2k16UserException("Bad password")
+    else:
+        account_management.set_password(a, new_password, old_password=old_password)
+        db.session.commit()
+
+    return jsonify({})
+
+
 @registry.route('/service/recent-events', methods=['GET'])
 def recent_events():
     from datetime import datetime, timedelta
@@ -660,9 +689,8 @@ def set_new_password():
     if not account or not account.is_valid_reset_token(reset_token):
         return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 
-    password = flask.request.form['password']
-    account.password = password
-    logger.info('Updating password for account={}'.format(account))
+    new_password = flask.request.form['password']
+    account_management.set_password(account, new_password, reset_token=reset_token)
     db.session.commit()
     return flask.redirect(flask.url_for('core.index'))
 

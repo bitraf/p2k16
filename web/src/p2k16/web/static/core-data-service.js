@@ -166,6 +166,14 @@ function CoreDataService($http) {
         return $http(req);
     };
 
+    this.service_set_password = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/service/set-password';
+        req.data = payload;
+        return $http(req);
+    };
+
     this.recent_events = function () {
         var req = {};
         req.method = 'GET';

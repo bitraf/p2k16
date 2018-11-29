@@ -178,6 +178,23 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     return account
 
 
+# This function raises technical exceptions as a last resort. Methods using this function should check the token or
+# password before calling this.
+def set_password(account: Account, new_password: str, old_password: Optional[str] = None,
+                 reset_token: Optional[str] = None):
+    if reset_token is not None:
+        if not account.is_valid_reset_token(reset_token):
+            raise P2k16TechnicalException("Invalid reset token")
+    elif old_password is not None:
+        if not account.valid_password(old_password):
+            raise P2k16TechnicalException("Bad password")
+    else:
+        raise P2k16TechnicalException("Either old_password or reset_token has to be set.")
+
+    account.password = new_password
+    logger.info('Updating password for account={}'.format(account))
+
+
 def create_circle(name: str, description: str, comment_required_for_membership, management_style: CircleManagementStyle,
                   admin_circle_name: Optional[str] = None, username: Optional[str] = None,
                   comment: Optional[str] = None) -> Circle:

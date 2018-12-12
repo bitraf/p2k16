@@ -453,6 +453,9 @@
         if (window.p2k16.account) {
             setLoggedIn(window.p2k16.account);
         }
+        if (window.p2k16.profile) {
+            self.profile = window.p2k16.profile;
+        }
 
         self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
         Circles.executeControl({type: "replace-collection", data: window.p2k16.circles || []});
@@ -619,8 +622,8 @@
             });
         };
 
-        self.activeMember = P2K16.currentAccount().active_member;
-        self.doorsAvailable = selc.activeMember && 2k16.hasRole("door");
+        self.activeMember = P2k16.currentAccount().active_member;
+        self.doorsAvailable = self.activeMember && P2k16.hasRole("door");
 
         self.recent_events = recent_events;
     }

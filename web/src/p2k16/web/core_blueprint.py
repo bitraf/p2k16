@@ -8,11 +8,11 @@ from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
-from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management
+from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management, authz_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership, \
     get_membership, get_membership_payments, active_member, get_membership_fee
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
-    CircleManagementStyle, Membership
+    CircleManagementStyle, Membership, StripePayment
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -603,6 +603,12 @@ def index():
 
         kwargs["account"] = account_json
         kwargs["circles_with_admin_access"] = [c.id for c in circles_with_admin_access]
+
+        kwargs["profile"] = {
+                "has_door_access": authz_management.can_haz_door_access(account),
+                "is_paying_member": StripePayment.is_account_paying_member(account.id),
+                "is_employed": Company.is_account_employed(account.id)
+                }
 
     return render_template("index.html", **kwargs)
 

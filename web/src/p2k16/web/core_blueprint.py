@@ -168,22 +168,30 @@ def circle_to_json(circle: Circle, include_members=False):
     return d
 
 
-def account_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]]):
-    from .badge_blueprint import badge_to_json
+def account_to_json(account: Account):
 
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
-        "avatar": create_avatar_url(account.email or account.username),
         "email": account.email,
         "name": account.name,
         "phone": account.phone,
+    }}
+
+
+def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]]):
+    from .badge_blueprint import badge_to_json
+    return {
+        "account": account_to_json(account),
+        "avatar": create_avatar_url(account.email or account.username),
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
         "badges": {b.id: badge_to_json(b) for b in badges} if badges else None,
         "active_member": active_member(account),
-        "membership_fee": get_membership_fee(account)
-    }}
-
+        "membership_fee": get_membership_fee(account),
+        "has_door_access": authz_management.can_haz_door_access(account),
+        "is_paying_member": StripePayment.is_account_paying_member(account.id),
+        "is_employed": Company.is_account_employed(account.id)
+    }
 
 def create_avatar_url(email):
     hash = hashlib.md5(email.encode("utf-8")).hexdigest()
@@ -282,7 +290,7 @@ def service_authz_login():
     authenticated_account = auth.AuthenticatedAccount(account, circles)
     flask_login.login_user(authenticated_account)
 
-    return jsonify(account_to_json(account, circles, badges))
+    return jsonify(profile_to_json(account, circles, badges))
 
 
 @registry.route('/service/authz/log-out', methods=['POST'])
@@ -327,7 +335,7 @@ def data_account_list():
     circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
                           cms_by_account}  # type: Mapping[int, Set[Circle]]
 
-    accounts = [account_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
+    accounts = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
                 accounts.items()]
 
     return jsonify(accounts)
@@ -364,7 +372,7 @@ def data_account(account_id):
         })
     membership_details['payments'] = payments
 
-    detail = account_to_json(account, circles, None)
+    detail = profile_to_json(account, circles, None)
     detail['membership'] = membership_details
 
     return jsonify(detail)
@@ -376,7 +384,6 @@ def data_account_summary(account_id):
     if account is None:
         abort(404)
 
-    circles = account_management.get_circles_for_account(account.id)
     badges = badge_management.badges_for_account(account.id)
 
     open_door_event = event_management.last_door_open(account)
@@ -384,7 +391,7 @@ def data_account_summary(account_id):
     # Add to response
     from .badge_blueprint import badge_to_json
     summary = {
-        "account": account_to_json(account, circles, None),
+        "account": account_to_json(account),
         "badges": [badge_to_json(b) for b in badges],
         "lastDoorOpen": open_door_event.to_dict() if open_door_event else None,
     }
@@ -598,17 +605,11 @@ def index():
         badges = badge_management.badges_for_account(account.id)
         circles_with_admin_access = account_management.get_circles_with_admin_access(account.id)
 
-        account_json = account_to_json(account, circles, badges)
+        account_json = profile_to_json(account, circles, badges)
         circles_with_admin_access_json = [circle_to_json(c) for c in circles_with_admin_access]
 
-        kwargs["account"] = account_json
+        kwargs["profile"] = account_json
         kwargs["circles_with_admin_access"] = [c.id for c in circles_with_admin_access]
-
-        kwargs["profile"] = {
-                "has_door_access": authz_management.can_haz_door_access(account),
-                "is_paying_member": StripePayment.is_account_paying_member(account.id),
-                "is_employed": Company.is_account_employed(account.id)
-                }
 
     return render_template("index.html", **kwargs)
 
@@ -682,7 +683,7 @@ def reset_password_form():
     account = Account.find_account_by_reset_token(reset_token)
 
     if account and account.is_valid_reset_token(reset_token):
-        return render_template("reset-password.html", reset_token=reset_token, account=account_to_json(account, [], []))
+        return render_template("reset-password.html", reset_token=reset_token, account=account_to_json(account))
 
     return flask.redirect(flask.url_for('.login', show_message='recovery-invalid-request'))
 

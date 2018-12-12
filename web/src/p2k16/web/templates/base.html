@@ -24,10 +24,8 @@
   <script id="p2k16-circles">
     p2k16.circles = {{ circles | tojson | safe }};
   </script>
-  {% if account and current_user.is_authenticated %}
+  {% if profile and current_user.is_authenticated %}
     <script id="p2k16-account">
-      // TODO: Fjern account og flytt inn i profile det som trengs
-      p2k16.account = {{ account | tojson | safe }};
       p2k16.profile = {{ profile | tojson | safe }};
     </script>
   {% endif %}

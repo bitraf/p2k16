@@ -387,7 +387,7 @@
             self.messages.splice(index, 1);
         };
 
-        self.account = null;
+        self.profile = null;
 
         /**
          * @type {Listeners}
@@ -395,17 +395,21 @@
         self.accountListeners = new Listeners($rootScope, "account");
 
         function isLoggedIn() {
-            return !!self.account;
+            return !!self.profile;
         }
 
-        function currentAccount() {
-            return self.account;
+        function currentProfile() {
+            return self.profile;
         }
+        function currentAccount() {
+            return self.profile.account;
+        }
+
 
         function refreshAccount(updated) {
             console.log("refreshing account");
-            _.merge(self.account, updated);
-            self.accountListeners.notify(self.account);
+            _.merge(self.profile, updated);
+            self.accountListeners.notify(self.profile);
         }
 
         function refreshAccountFromResponse(res) {
@@ -413,11 +417,11 @@
         }
 
         function isInCircle(circleName) {
-            return self.account && _.some(self.account.circles, {"name": circleName});
+            return self.profile && _.some(self.profile.circles, {"name": circleName});
         }
 
         function setLoggedIn(data) {
-            self.account = data || null;
+            self.profile = data || null;
         }
 
         function addInfos(messages) {
@@ -450,11 +454,8 @@
             return _.indexOf(self.circlesWithAdminAccess, circleId) !== -1;
         }
 
-        if (window.p2k16.account) {
-            setLoggedIn(window.p2k16.account);
-        }
         if (window.p2k16.profile) {
-            self.profile = window.p2k16.profile;
+            setLoggedIn(window.p2k16.profile);
         }
 
         self.circlesWithAdminAccess = window.p2k16.circlesWithAdminAccess || [];
@@ -469,6 +470,7 @@
          */
         return {
             isLoggedIn: isLoggedIn,
+            currentProfile: currentProfile,
             currentAccount: currentAccount,
             refreshAccount: refreshAccount,
             refreshAccountFromResponse: refreshAccountFromResponse,
@@ -518,6 +520,7 @@
     function p2k16HeaderDirective() {
         function p2k16HeaderController($scope, $location, P2k16, AuthzService) {
             var self = this;
+            self.currentProfile = P2k16.currentProfile;
             self.currentAccount = P2k16.currentAccount;
 
             self.logout = function ($event) {
@@ -622,8 +625,10 @@
             });
         };
 
-        self.activeMember = P2k16.currentAccount().active_member;
-        self.doorsAvailable = self.activeMember && P2k16.hasRole("door");
+        var profile = P2k16.currentProfile();
+        self.doorsAvailable = profile.has_door_access;
+        self.payingMember = profile.is_paying_member;
+        self.employed = profile.is_employed;
 
         self.recent_events = recent_events;
     }
@@ -759,7 +764,7 @@
         self.changePasswordForm = {};
         self.changePassword = changePassword;
 
-        updateBadges(P2k16.currentAccount());
+        updateBadges(P2k16.currentProfile());
     }
 
     /**

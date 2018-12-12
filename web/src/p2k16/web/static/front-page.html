@@ -1,7 +1,7 @@
 <p2k16-header active="front-page"></p2k16-header>
 
 <div class="container">
-  <div class="row" ng-if"!ctrl.activeMember">
+  <div class="row" ng-if="!ctrl.employed && !ctrl.payingMember">
     <div class="col-xs-12">
       <h2>Become a paying Bitraf member</h2>
 
@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <section ng-if="ctrl.activeMember && !ctrl.doorsAvailable">
+  <section ng-if="ctrl.payingMember && !ctrl.doorsAvailable">
     <div class="row">
       <div class="col-xs-12">
         <h2>Gain access to bitraf</h2>
@@ -63,8 +63,8 @@
           opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
         </span>
         <span ng-switch-when="badge-awarded">
-          <a href="#!/user/{{ e.created_by_id }}">{{ e.created_by_username }}</a>
-          got the <span class="label label-default">{{ e.badge_description.title }}</span> Badge!
+          <a href="#!/user/{{ e.account_badge.account_id }}">{{ e.account_badge.account_username }}</a>
+          got the <span class="label label-default">{{ e.badge_description.title }}</span> badge<span ng-if="e.account_badge.account_id !== e.created_by"> awarded by {{ e.created_by_username }}</span>!
         </span>
       </span>
     </li>

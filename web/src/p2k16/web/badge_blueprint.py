@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, request
 from p2k16.core import account_management, badge_management, P2k16UserException
 from p2k16.core.models import Account, AccountBadge, BadgeDescription
 from p2k16.core.models import db
-from p2k16.web.core_blueprint import model_to_json, account_to_json
+from p2k16.web.core_blueprint import model_to_json, account_to_json, profile_to_json
 from p2k16.web.utils import validate_schema, DataServiceTool
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ def create():
 
     db.session.commit()
 
-    return jsonify(account_to_json(account, circles, badges))
+    return jsonify(profile_to_json(account, circles, badges))
 
 
 @registry.route('/badge/recent-badges', methods=["GET"])

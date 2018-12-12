@@ -30,4 +30,5 @@ export STRIPE_PUBLIC_KEY='pk_test_hUoh3MEu4Oa8RjVFwZrFge4b'
 exec env/bin/gunicorn \
     --config "$basedir/infrastructure/gunicorn-config.py" \
     --reload \
+    --bind "0.0.0.0:5000" \
     p2k16.web.server:app

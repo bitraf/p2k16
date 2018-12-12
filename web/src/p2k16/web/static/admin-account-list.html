@@ -2,7 +2,7 @@
 
 <div class="container">
   <h1>Accounts</h1>
-  <label>Show only active members <input type="checkbox" ng-model="accountFilter.active_member"></label><br>
+  <label>Show only paying members or company employees <input type="checkbox" ng-model="accountFilter.active_member"></label><br>
 
   <table class="table">
     <thead>
@@ -15,11 +15,11 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="account in ctrl.accounts | orderBy:'id'" ng-if="accountFilter.active_member ? account.active_member : true">
-      <td>{{ account.username }}</td>
-      <td>{{ account.email }}</td>
-      <td>{{ account.name }}</td>
-      <td>{{ account.membership_fee}}</td>
+    <tr ng-repeat="p in ctrl.profiles | orderBy:'account.id'" ng-if="accountFilter.active_member ? p.is_paying_member || p.is_employed : true">
+      <td>{{ p.account.username }}</td>
+      <td>{{ p.account.email }}</td>
+      <td>{{ p.account.name }}</td>
+      <td>{{ p.membership_fee}}</td>
       <td>
         <a href="#!/admin/account/{{ account.id }}">show</a>
       </td>

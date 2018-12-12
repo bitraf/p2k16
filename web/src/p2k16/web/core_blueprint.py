@@ -318,7 +318,7 @@ def register_account():
 
 # This shouldn't return that much data, it should only return circle ids and badge descriptor ids.
 @registry.route('/data/account')
-def data_account_list():
+def data_profile_list():
     accounts = {a.id: a for a in Account.all_user_accounts()}  # type:Mapping[int, Account]
     account_ids = [a for a in accounts]
     from itertools import groupby
@@ -335,10 +335,10 @@ def data_account_list():
     circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
                           cms_by_account}  # type: Mapping[int, Set[Circle]]
 
-    accounts = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
+    profiles = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
                 accounts.items()]
 
-    return jsonify(accounts)
+    return jsonify(profiles)
 
 
 @registry.route("/data/account/<int:account_id>")

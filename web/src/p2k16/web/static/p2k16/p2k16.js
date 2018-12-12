@@ -92,7 +92,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_account_list_html,
             resolve: {
-                accounts: CoreDataServiceResolvers.data_account_list
+                profiles: CoreDataServiceResolvers.data_profile_list
             }
         }).when("/admin/account/:account_id", {
             controller: AdminAccountDetailController,
@@ -139,7 +139,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
-                accounts: CoreDataServiceResolvers.data_account_list,
+                profiles: CoreDataServiceResolvers.data_profile_list,
                 company: _.constant({active: true})
             }
         }).when("/admin/company/:company_id", {
@@ -147,7 +147,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
-                accounts: CoreDataServiceResolvers.data_account_list,
+                profiles: CoreDataServiceResolvers.data_profile_list,
                 company: CoreDataServiceResolvers.data_company
             }
         }).when("/admin/tool", {
@@ -859,10 +859,10 @@
      * @param accounts
      * @constructor
      */
-    function AdminAccountListController(CoreDataService, accounts) {
+    function AdminAccountListController(CoreDataService, profiles) {
         var self = this;
 
-        self.accounts = accounts;
+        self.profiles = profiles;
     }
 
     /**
@@ -980,11 +980,11 @@
      * @param {CoreDataService} CoreDataService
      * @constructor
      */
-    function AdminCompanyDetailController($location, accounts, company, CoreDataService) {
+    function AdminCompanyDetailController($location, profiles, company, CoreDataService) {
         var self = this;
         var isNew;
 
-        self.accounts = accounts;
+        self.profiles = profiles;
 
         function setCompany(company) {
             self.company = angular.copy(company);
@@ -1007,8 +1007,8 @@
             });
         };
 
-        self.existingEmployeeFilter = function (account) {
-            return _.findIndex(self.company.employees, {account: {username: account.username}}) === -1
+        self.existingEmployeeFilter = function (profile) {
+            return _.findIndex(self.company.employees, {account: {username: profile.account.username}}) === -1
         };
 
         self.removeEmployee = function ($event, employee) {
@@ -1019,10 +1019,10 @@
                 });
         };
 
-        self.addEmployee = function ($event, account) {
+        self.addEmployee = function ($event, profile) {
             $event.preventDefault();
             self.query = '';
-            CoreDataService.data_company_add_employee(company.id, {accountId: account.id})
+            CoreDataService.data_company_add_employee(company.id, {accountId: profile.account.id})
                 .then(function (res) {
                     setCompany(res.data);
                 });

@@ -67,7 +67,7 @@ class ToolClient(object):
         port = cfg["MQTT_PORT"]
         username = cfg["MQTT_USERNAME"]
         password = cfg["MQTT_PASSWORD"]
-        self.prefix = cfg["MQTT_PREFIX"]
+        self.prefix = cfg["MQTT_PREFIX_TOOL"]
 
         logger.info("Connecting to {}:{}".format(host, port))
         logger.info("config: username={}, prefix={}".format(username, self.prefix))
@@ -81,6 +81,9 @@ class ToolClient(object):
         c.loop_start()
 
         self._client = c
+
+    def _mqtt_topic(self, tool, action):
+        return '/'.join([self.prefix, tool, action])
 
     def checkout_tool(self, account: Account, tool: ToolDescription):
         # Check that user has correct circle and is paying member
@@ -118,7 +121,7 @@ class ToolClient(object):
 #            logger.info("Sending message: {}: {}".format(topic, open_time))
 #            self._client.publish(topic, open_time)
 
-        topic = "{}/{}/{}".format('/public/machine', tool.name, 'unlock')
+        topic = self._mqtt_topic(tool=tool.name, action='unlock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)
@@ -131,7 +134,7 @@ class ToolClient(object):
         db.session.delete(checkout)
         db.session.flush()
 
-        topic = "{}/{}/{}".format('/public/machine', tool.name, 'lock')
+        topic = self._mqtt_topic(tool=tool.name, action='lock')
         payload = 'true'
         logger.info("Sending message: {}: {}".format(topic, payload))
         self._client.publish(topic, payload)

@@ -766,26 +766,18 @@
         var self = this;
 
         self.recent_events = recent_events;
-
         self.my_account = P2k16.currentAccount().id;
+
+        function isMyTool(tool) {
+            return tool.checkout.account == self.my_account;
+        }
 
         function update(data) {
             self.tools = data;
+            self.my_tools = self.tools.filter(isMyTool);
         }
 
         update(tools);
-
-        self.anythingCheckedoutByMe = function () {
-            var isAnythingUsedByMe = false;
-            for( var i=0;i<tools.length;i++ )
-            {
-                if( tools[i].checkout.account == self.my_account )
-                {
-                    isAnythingUsedByMe = true;
-                }
-            }
-            return isAnythingUsedByMe;
-        };
 
         self.checkoutToolConfirm = function (tool) {
             console.log('ask for checkout of ', tool);

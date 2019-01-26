@@ -255,6 +255,8 @@ def member_cancel_membership(account):
 
         db.session.commit()
 
+        mail.send_membership_ended(account)
+
     except stripe.error.StripeError as e:
         logger.error("Stripe error: " + repr(e.json_body))
 

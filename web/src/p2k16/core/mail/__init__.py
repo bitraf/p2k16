@@ -66,7 +66,7 @@ def send_new_member(account: Account):
     m = _templates.new_member(account=account)
     m.mail_to = (account.username, account.email)
     m.mail_from = mail_from
-    m.cc = membership_cc
+    m.bcc = membership_cc
     m.send()
 
 def send_membership_ended(account: Account):
@@ -75,6 +75,6 @@ def send_membership_ended(account: Account):
     m = _templates.membership_ended(account=account)
     m.mail_to = (account.username, account.email)
     m.mail_from = mail_from
-    m.cc = membership_cc
+    m.bcc = membership_cc
     m.send()
 

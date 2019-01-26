@@ -775,6 +775,25 @@
 
         update(tools);
 
+        self.anythingCheckedoutByMe = function () {
+            var isAnythingUsedByMe = false;
+            for( var i=0;i<tools.length;i++ )
+            {
+                if( tools[i].checkout.account == self.my_account )
+                {
+                    isAnythingUsedByMe = true;
+                }
+            }
+            return isAnythingUsedByMe;
+        };
+
+        self.checkoutToolConfirm = function (tool) {
+            console.log('ask for checkout of ', tool);
+            if ( window.confirm("Do you really want to checkout "+tool.name+"? This may destroy a job in progress!" ) ) { 
+              self.checkoutTool(tool);
+            }
+        };
+
         self.checkoutTool = function (tool) {
             ToolDataService.checkout_tool({'tool': tool.id}).then(function (res) {
                 console.log('checkout succeded', tool);

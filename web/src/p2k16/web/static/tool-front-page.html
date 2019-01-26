@@ -2,29 +2,31 @@
 
 <div class="container">
   <h1>Tools</h1>
-
-  <h2>My currently checked out tools</h2>
-  <p>Click a tool to return it</p>
-  <form class="form-horizontal">
-    <table class="table">
-      <tr ng-repeat="tool in ctrl.tools" ng-if="tool.checkout.active">
-        <td class="col-sm-2 text-left">
-          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.name}}</button>
-        </td>
-        <td class="col-sm-8">
-          <p ng-if="tool.checkout.active" style="color: red">Checked out since {{tool.checkout.started | date:'medium'}}</p>
-        </td>
-      </tr>
-    </table>
-  </form>
-
+  <div ng-if="ctrl.anythingCheckedoutByMe()">
+    <h2>My currently checked out tools</h2>
+    <p>Click a tool to return it</p>
+    <form class="form-horizontal">
+      <table class="table">
+        <tr ng-repeat="tool in ctrl.tools" ng-if="tool.checkout.active">
+          <td class="col-sm-2 text-left">
+            <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.name}}</button>
+          </td>
+          <td class="col-sm-8">
+            <p ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" style="color: red">Checked out since {{tool.checkout.started | date:'medium'}}</p>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
   <h2>Checkout a tool</h2>
   <p>Click a tool to check it out. Always return the tool before you leave. <br /><em>Please note: No tools should ever leave Bitraf, so you cannot "borrow" a tool to work on stuff at home.</em></p>
   <form class="form-horizontal">
     <table class="table">
       <tr ng-repeat="tool in ctrl.tools">
         <td class="col-sm-2 text-left">
-          <button type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
+          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}} isMine">{{tool.name}}</button>
+          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}} notMine">{{tool.name}}</button>
+          <button ng-if="!tool.checkout.active" type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
         </td>
         <td class="col-sm-8">
           <p ng-if="tool.checkout.active" style="color: red">In use by {{tool.checkout.username}} since {{tool.checkout.started | date:'medium'}}</p>

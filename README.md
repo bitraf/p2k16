@@ -15,7 +15,7 @@ Running the application:
 
 This will fail unless you have the required applications installed.
 
-## Windows
+## Developing on Windows
 Note that it's "almost" possible to install p2k16 and all the required code on Windows, but after about 1.5hrs of installing and jumping across obstacles, you'll end up at a dead end trying to make "fcntl.py" work. Just download Ubuntu on Windows to save you time?
 
 # Creating SQL migrations

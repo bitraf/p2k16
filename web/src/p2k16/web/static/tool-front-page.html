@@ -9,7 +9,7 @@
       <table class="table">
         <tr ng-repeat="tool in ctrl.tools" ng-if="tool.checkout.active">
           <td class="col-sm-2 text-left">
-            <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.name}}</button>
+            <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)">{{tool.description}}</button>
           </td>
           <td class="col-sm-8">
             <p ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" style="color: red">Checked out since {{tool.checkout.started | date:'medium'}}</p>
@@ -24,9 +24,9 @@
     <table class="table">
       <tr ng-repeat="tool in ctrl.tools">
         <td class="col-sm-2 text-left">
-          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}} isMine">{{tool.name}}</button>
-          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)" id="{{tool.name}} notMine">{{tool.name}}</button>
-          <button ng-if="!tool.checkout.active" type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.name}}</button>
+          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}} isMine">{{tool.description}}</button>
+          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default" ng-click="ctrl.checkinTool(tool)" id="{{tool.name}} notMine">{{tool.description}}</button>
+          <button ng-if="!tool.checkout.active" type="submit" class="btn btn-default" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">{{tool.description}}</button>
         </td>
         <td class="col-sm-8">
           <p ng-if="tool.checkout.active" style="color: red">In use by {{tool.checkout.username}} since {{tool.checkout.started | date:'medium'}}</p>

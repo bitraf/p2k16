@@ -777,14 +777,25 @@
         var self = this;
 
         self.recent_events = recent_events;
-
         self.my_account = P2k16.currentAccount().id;
+
+        function isMyTool(tool) {
+            return tool.checkout.account == self.my_account;
+        }
 
         function update(data) {
             self.tools = data;
+            self.my_tools = self.tools.filter(isMyTool);
         }
 
         update(tools);
+
+        self.checkoutToolConfirm = function (tool) {
+            console.log('ask for checkout of ', tool);
+            if ( window.confirm("Do you really want to checkout "+tool.name+"? This may destroy a job in progress!" ) ) { 
+              self.checkoutTool(tool);
+            }
+        };
 
         self.checkoutTool = function (tool) {
             ToolDataService.checkout_tool({'tool': tool.id}).then(function (res) {

@@ -10,7 +10,7 @@ then
     virtualenv -p python3 env
 fi
 
-env/bin/pip install --trusted-host github.com -e web --process-dependency-links
+env/bin/pip install --trusted-host github.com -e web
 
 ./flyway migrate
 

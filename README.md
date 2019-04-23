@@ -15,6 +15,9 @@ Running the application:
 
 This will fail unless you have the required applications installed.
 
+## Developing on Windows
+Note that it's "almost" possible to install p2k16 and all the required code on Windows, but after about 1.5hrs of installing and jumping across obstacles, you'll end up at a dead end trying to make "fcntl.py" work. Just download Ubuntu on Windows to save you time?
+
 # Creating SQL migrations
 
 We use Flyway (https://flywaydb.org) to manage the schema. Flyway is a upgrade-only, sql-only tool (at least in our
@@ -37,6 +40,7 @@ than one person is creating a schema at the same time you will get a conflict wh
 * Drop BIGSERIAL on _version tables. Should be BIGINT instead.
 * Prevent updates to certain fields like Account.username.
   SQLAlchemy's event systems seems like a useful method: http://docs.sqlalchemy.org/en/latest/orm/events.html
+* Tools: maintain state in case of reboot (using retained messages on mqtt-server)
 
 # Badge system
 

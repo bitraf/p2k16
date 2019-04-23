@@ -9,7 +9,7 @@ then
     virtualenv -p python3 env
 fi
 
-env/bin/pip install -e web --process-dependency-links
+env/bin/pip install -e web
 env/bin/pip install -r requirements.txt
 
 ./flyway migrate

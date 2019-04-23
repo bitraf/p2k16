@@ -4,7 +4,7 @@ from sqlalchemy import text, func
 from typing import Mapping, Optional
 
 import stripe
-from p2k16.core import P2k16UserException
+from p2k16.core import P2k16UserException, mail
 from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer, Company
 
 logger = logging.getLogger(__name__)
@@ -253,6 +253,8 @@ def member_cancel_membership(account):
 
         db.session.commit()
 
+        mail.send_membership_ended(account)
+
     except stripe.error.StripeError as e:
         logger.error("Stripe error: " + repr(e.json_body))
 
@@ -311,6 +313,9 @@ def member_set_membership(account, membership_plan, membership_price):
 
         logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
             account.username, membership_plan, membership_price))
+
+        mail.send_new_member(account)
+
         return True
 
     except stripe.error.CardError as e:

@@ -1,39 +1,57 @@
 <p2k16-header active="front-page"></p2k16-header>
 
 <div class="container">
-  <div>
-    <h2>Become a paying Bitraf member</h2>
-
-    <p>Set a <a href="#!membership">credit card and select membership level</a> to become a paying member.</p>
-
-    <p>You will receive access to open the door 24/7 and access machines at Bitraf.</p>
-  </div>
-
-  <h2>Open a door</h2>
-
-  <div class="row door-buttons">
-    <div class="col-xs-6">
-      <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor'])">Frontdoor only</button>
-    </div>
-    <div class="col-xs-6">
-      <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor', '2floor'])">
-        Frontdoor and lab / 2nd floor
-      </button>
-    </div>
-  </div>
-  <div class="row door-buttons">
-    <div class="col-xs-6">
-      <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3office'])">3rd, office</button>
-    </div>
-    <div class="col-xs-6">
-      <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3workshop'])">3rd, workshop</button>
-    </div>
-  </div>
-  <div class="row door-buttons">
+  <div class="row" ng-if="!ctrl.employed && !ctrl.payingMember">
     <div class="col-xs-12">
-      <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['4floor'])">4th floor, office</button>
+      <h2>Become a paying Bitraf member</h2>
+
+      <p>Set a <a href="#!membership">credit card and select membership level</a> to become a paying member.</p>
+
+      <p>You will receive access to open the door 24/7 and access machines at Bitraf.</p>
     </div>
   </div>
+
+  <section ng-if="ctrl.payingMember && !ctrl.doorsAvailable">
+    <div class="row">
+      <div class="col-xs-12">
+        <h2>Gain access to bitraf</h2>
+        <p>Since you are an active, paying member of Bitraf you can get key access to
+        Bitraf. To gain this access you need to visit Bitraf in person and get someone
+        to add you to the door circle, which grants access to opening the
+        doors. One of the regular build-night is a good time to go.</p>
+
+        <p>Once you have been granted door access by a door admin, revisiting this page
+        will allow you to open the doors from eg your mobile phone</p>
+      </div>
+    </div>
+  </section>
+
+  <section ng-if="ctrl.doorsAvailable">
+    <h2>Open a door</h2>
+    <div class="row door-buttons">
+      <div class="col-xs-6">
+        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor'])">Frontdoor only</button>
+      </div>
+      <div class="col-xs-6">
+        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor', '2floor'])">
+          Frontdoor and lab / 2nd floor
+        </button>
+      </div>
+    </div>
+    <div class="row door-buttons">
+      <div class="col-xs-6">
+        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3office'])">3rd, office</button>
+      </div>
+      <div class="col-xs-6">
+        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3workshop'])">3rd, workshop</button>
+      </div>
+    </div>
+    <div class="row door-buttons">
+      <div class="col-xs-12">
+        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['4floor'])">4th floor, office</button>
+      </div>
+    </div>
+  </section>
 
   <h3>Recent events</h3>
 
@@ -45,8 +63,8 @@
           opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
         </span>
         <span ng-switch-when="badge-awarded">
-          <a href="#!/user/{{ e.created_by_id }}">{{ e.created_by_username }}</a>
-          got the <span class="label label-default">{{ e.badge_description.title }}</span> Badge!
+          <a href="#!/user/{{ e.account_badge.account_id }}">{{ e.account_badge.account_username }}</a>
+          got the <span class="label label-default">{{ e.badge_description.title }}</span> badge<span ng-if="e.account_badge.account_id !== e.created_by"> awarded by {{ e.created_by_username }}</span>!
         </span>
       </span>
     </li>

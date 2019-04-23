@@ -29,7 +29,7 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.data_account_list = function () {
+    this.data_profile_list = function () {
         var req = {};
         req.method = 'GET';
         req.url = '/data/account';
@@ -183,8 +183,8 @@ function CoreDataService($http) {
 }
 
 var CoreDataServiceResolvers = {};
-CoreDataServiceResolvers.data_account_list = function (CoreDataService) {
-  return CoreDataService.data_account_list().then(function (res) { return res.data; });
+CoreDataServiceResolvers.data_profile_list = function (CoreDataService) {
+  return CoreDataService.data_profile_list().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
   var account_id = $route.current.params.account_id;

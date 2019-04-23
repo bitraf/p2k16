@@ -16,20 +16,18 @@ def paid_members():
         filter(StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))). \
         all()
 
-
+# TODO: Deprecated
 def active_member(account: Account = None) -> bool:
     """
     Verify that user is an active member of Bitraf either by paying or member of company
     """
 
     # Check paying membership
-    if StripePayment.query. \
-        filter(StripePayment.created_by_id == account.id,
-               StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0:
+    if StripePayment.is_account_paying_member(account.id):
         return True
 
     # Check company membership
-    if len(Company.find_active_companies_with_account(account.id)) > 0:
+    if Company.is_account_employed(account.id):
         return True
 
     return False

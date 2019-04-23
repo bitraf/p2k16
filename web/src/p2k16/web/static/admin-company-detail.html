@@ -24,7 +24,7 @@
       </label>
       <div class="col-sm-10">
         <select class="form-control" id="contact" ng-model="ctrl.company.contact"
-                ng-options="a.id as (a.username + ' (' + a.name + ')') for a in ctrl.accounts | orderBy:'username'"></select>
+                ng-options="p.account.id as (p.account.username + ' (' + p.account.name + ')') for p in ctrl.profiles | orderBy:'account.username'"></select>
       </div>
     </div>
     <div class="form-group">
@@ -80,17 +80,17 @@
     <h3>Add employee</h3>
     <div class="form">
       <div class="form-group">
-        <input class="form-control" type="text" placeholder="Search" ng-model="ctrl.query" ng-change="ctrl.search()">
+        <input class="form-control" type="text" placeholder="Search" ng-model="ctrl.query">
       </div>
     </div>
 
     <table class="table">
       <tbody ng-if="ctrl.query">
-      <tr ng-repeat="a in ctrl.accounts | filter:ctrl.existingEmployeeFilter | filter:ctrl.query:'username' | orderBy:'username'">
-        <td>{{ a.username }}</td>
-        <td>{{ a.name }}</td>
+        <tr ng-repeat="p in ctrl.profiles | filter:ctrl.existingEmployeeFilter | filter:{account: { username: ctrl.query } } | orderBy:'account.username' | limitTo:20">
+        <td>{{ p.account.username }}</td>
+        <td>{{ p.account.name }}</td>
         <td>
-          <a ng-click="ctrl.addEmployee($event, a)">add</a>
+          <a ng-click="ctrl.addEmployee($event, p)">add</a>
         </td>
       </tr>
       </tbody>

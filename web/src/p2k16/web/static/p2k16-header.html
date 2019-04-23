@@ -18,9 +18,9 @@
     <ul class="nav navbar-nav navbar-right">
       <li ng-class="{'admin': 'active'}[active]"></li>
 
-      <li uib-dropdown ng-show="header.currentAccount()">
+      <li uib-dropdown ng-show="header.currentProfile()">
         <a href uib-dropdown-toggle>
-          <img ng-src="{{ header.currentAccount().avatar }}?s=30" class="header-avatar">
+          <img ng-src="{{ header.currentProfile().avatar }}?s=30" class="header-avatar">
           {{ header.currentAccount().username }}
           <span class="caret"></span>
         </a>

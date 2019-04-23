@@ -433,6 +433,14 @@ class StripePayment(DefaultMixin, db.Model):
         return '<MembershipPayment:%r, %r, start_date=%r, end_date=%r, amount=%r>' % (
             self.id, self.created_by_id, self.start_date, self.end_date, self.amount)
 
+    @staticmethod
+    def is_account_paying_member(account_id):
+        return StripePayment.query. \
+                filter(StripePayment.created_by_id == account_id,
+                        StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0
+
+
+
 
 class StripeCustomer(DefaultMixin, db.Model):
     __tablename__ = 'stripe_customer'
@@ -484,6 +492,14 @@ class Company(DefaultMixin, db.Model):
             filter(Company.active). \
             filter(CompanyEmployee.account_id == account_id) \
             .all()
+
+    @staticmethod
+    def is_account_employed(account_id: int) -> bool:
+        return Company.query. \
+                join(Company.employees). \
+                filter(Company.active). \
+                filter(CompanyEmployee.account_id == account_id) \
+                .count() > 0
 
 
 class CompanyEmployee(DefaultMixin, db.Model):

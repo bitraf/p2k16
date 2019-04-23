@@ -36,8 +36,8 @@ class AccountTest(P2k16TestCase):
         admin = Account('admin1', 'admin1@example.org', password='123')
         a1 = Account('account1', 'account1@example.org', password='123')
         a2 = Account('account2', 'account2@example.org', password='123')
-        c_admin = Circle('c-admin', 'Circle 1 Admins', CircleManagementStyle.SELF_ADMIN)
-        c = Circle('c', 'Circle 1', CircleManagementStyle.ADMIN_CIRCLE)
+        c_admin = Circle('c-admin', 'Circle 1 Admins', False, CircleManagementStyle.SELF_ADMIN)
+        c = Circle('c', 'Circle 1', True, CircleManagementStyle.ADMIN_CIRCLE)
         c.admin_circle = c_admin
 
         with session.begin(subtransactions=True):
@@ -89,16 +89,17 @@ class AccountTest(P2k16TestCase):
         # admin trying to add a1 to c. C is managed by an admin circle (c_admin), admin is in c_admin.
         with session.begin(subtransactions=True):
             with model_support.run_as(admin):
-                account_management.add_account_to_circle(a1, c, admin, "")
+                account_management.add_account_to_circle(a1, c, admin, "added by test-script admin")
 
         session.refresh(c)
         assert len(c.members) == 1
 
-        # admin trying to add a1 to c_admin. C is managed by the circle's members, admin is in c_admin.
+        # admin trying to add a1 to c_admin. C_admin is managed by the circle's members, admin is in c_admin.
         with session.begin(subtransactions=True):
             with model_support.run_as(admin):
                 account_management.add_account_to_circle(a1, c_admin, admin, "")
 
+        
         with session.begin(subtransactions=True):
             adminable_circles = account_management.get_circles_with_admin_access(admin.id)
             self.assertSetEqual({c.name for c in adminable_circles}, {"c-admin"})

@@ -739,7 +739,7 @@
      * @param badgeDescriptions
      * @constructor
      */
-    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions) {
+    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions, LabelService) {
         var self = this;
 
         P2k16.accountListeners.add($scope, function (newValue) {
@@ -758,11 +758,20 @@
             });
         }
 
+
+        function printBoxLabel() {
+            LabelService.print_box_label({'user': P2k16.currentAccount().id}).then(function (res) {
+                var msg = res.message || 'Label sent to printer';
+                P2k16.addInfos(msg);
+            });
+        }
+
         self.badges = [];
         self.newBadge = {};
         self.descriptions = badgeDescriptions;
         self.changePasswordForm = {};
         self.changePassword = changePassword;
+        self.printBoxLabel = printBoxLabel;
 
         updateBadges(P2k16.currentProfile());
     }
@@ -1170,6 +1179,7 @@
         .service("CoreDataService", CoreDataService)
         .service("DoorDataService", DoorDataService)
         .service("ToolDataService", ToolDataService)
+        .service("LabelService", LabelService)
         .service("AuthzService", AuthzService)
         .service("P2k16HttpInterceptor", P2k16HttpInterceptor)
         .filter("yesno", YesNoFilter)

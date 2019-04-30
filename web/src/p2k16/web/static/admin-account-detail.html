@@ -1,30 +1,30 @@
 <p2k16-header active="admin"></p2k16-header>
 
 <div class="container">
-  <h1>{{ ctrl.account.username }}</h1>
+  <h1>{{ ctrl.account.account.username }}</h1>
 
   <h2>Details</h2>
   <table class="table">
     <tbody>
     <tr>
       <th class="col-xs-4">username</th>
-      <td class="col-xs-8">{{ ctrl.account.username }}</td>
+      <td class="col-xs-8">{{ ctrl.account.account.username }}</td>
     </tr>
     <tr>
       <th>Name</th>
-      <td>{{ ctrl.account.name }}</td>
+      <td>{{ ctrl.account.account.name }}</td>
     </tr>
     <tr>
       <th>email</th>
-      <td><a href="mailto:{{ ctrl.account.email }}">{{ ctrl.account.email }}</a></td>
+      <td><a href="mailto:{{ ctrl.account.email }}">{{ ctrl.account.account.email }}</a></td>
     </tr>
     <tr>
       <th>Phone number</th>
-      <td><a href="tlf:{{ ctrl.account.phone }}">{{ ctrl.account.phone }}</a></td>
+      <td><a href="tlf:{{ ctrl.account.phone }}">{{ ctrl.account.account.phone }}</a></td>
     </tr>
     <tr>
       <th>Membership fee</th>
-      <td>{{ ctrl.account.membership.fee }}</td>
+      <td>{{ ctrl.account.account.membership.fee }}</td>
     </tr>
     <tr>
       <th>Circles</th>

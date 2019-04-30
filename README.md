@@ -15,6 +15,10 @@ Running the application:
 
 This will fail unless you have the required applications installed.
 
+## Note about Java
+Running on Debian 10, the standard Java version is 11 which has a conflict with flyway 4.2.0. A work around is to update alternatives by running:
+    # sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+
 ## Developing on Windows
 Note that it's "almost" possible to install p2k16 and all the required code on Windows, but after about 1.5hrs of installing and jumping across obstacles, you'll end up at a dead end trying to make "fcntl.py" work. Just download Ubuntu on Windows to save you time?
 

@@ -22,6 +22,15 @@ Running on Debian 10, the standard Java version is 11 which has a conflict with 
 ## Developing on Windows
 Note that it's "almost" possible to install p2k16 and all the required code on Windows, but after about 1.5hrs of installing and jumping across obstacles, you'll end up at a dead end trying to make "fcntl.py" work. Just download Ubuntu on Windows to save you time?
 
+## Developing on OSX
+When setting up on OSX, you'll likely get the error:
+
+    sudo: unknown user: postgres
+
+To get around this, load the database file like this instead:
+
+    sudo psql -U YourUserNameOnTheMachine postgres -f database-setup.sql 
+
 # Creating SQL migrations
 
 We use Flyway (https://flywaydb.org) to manage the schema. Flyway is a upgrade-only, sql-only tool (at least in our

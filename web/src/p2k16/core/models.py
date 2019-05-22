@@ -436,10 +436,8 @@ class StripePayment(DefaultMixin, db.Model):
     @staticmethod
     def is_account_paying_member(account_id):
         return StripePayment.query. \
-                filter(StripePayment.created_by_id == account_id,
-                        StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0
-
-
+                   filter(StripePayment.created_by_id == account_id,
+                          StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0
 
 
 class StripeCustomer(DefaultMixin, db.Model):
@@ -496,10 +494,10 @@ class Company(DefaultMixin, db.Model):
     @staticmethod
     def is_account_employed(account_id: int) -> bool:
         return Company.query. \
-                join(Company.employees). \
-                filter(Company.active). \
-                filter(CompanyEmployee.account_id == account_id) \
-                .count() > 0
+                   join(Company.employees). \
+                   filter(Company.active). \
+                   filter(CompanyEmployee.account_id == account_id) \
+                   .count() > 0
 
 
 class CompanyEmployee(DefaultMixin, db.Model):
@@ -551,6 +549,7 @@ class BadgeDescription(DefaultMixin, db.Model):
         self.icon = None
         self.color = None
         self.certification_circle = None
+
 
 class AccountBadge(DefaultMixin, db.Model):
     __tablename__ = 'account_badge'
@@ -612,6 +611,7 @@ class ToolCheckout(DefaultMixin, db.Model):
     @staticmethod
     def find_by_tool(_tool) -> Optional['ToolCheckout']:
         return ToolCheckout.query.filter(ToolCheckout.tool_description_id == _tool.id).one_or_none()
+
 
 from sqlalchemy import event
 

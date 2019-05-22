@@ -8,7 +8,8 @@ from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
 import flask
 import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
-from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management, authz_management
+from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management, \
+    authz_management
 from p2k16.core.membership_management import member_set_credit_card, member_get_details, member_set_membership, \
     get_membership, get_membership_payments, active_member, get_membership_fee
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
@@ -169,7 +170,6 @@ def circle_to_json(circle: Circle, include_members=False):
 
 
 def account_to_json(account: Account):
-
     return {**model_to_json(account), **{
         "id": account.id,
         "username": account.username,
@@ -192,6 +192,7 @@ def profile_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         "is_paying_member": StripePayment.is_account_paying_member(account.id),
         "is_employed": Company.is_account_employed(account.id)
     }
+
 
 def create_avatar_url(email):
     hash = hashlib.md5(email.encode("utf-8")).hexdigest()
@@ -376,6 +377,7 @@ def data_account(account_id):
     detail['membership'] = membership_details
 
     return jsonify(detail)
+
 
 @registry.route("/data/account-summary/<int:account_id>")
 def data_account_summary(account_id):
@@ -659,7 +661,7 @@ def service_set_password():
     old_password = flask.request.json["oldPassword"]
     new_password = flask.request.json["newPassword"]
 
-    a = flask_login.current_user.account # type: Account
+    a = flask_login.current_user.account  # type: Account
 
     if not a.valid_password(old_password):
         raise P2k16UserException("Bad password")
@@ -715,7 +717,8 @@ def passwd_php():
     # IP check is done by the frontend webserver
 
     # $res = pg_query(
-    #     "SELECT ac.id + 100000 AS id, ac.name, au.data, am.full_name FROM auth au INNER JOIN accounts ac ON ac.id = au.account INNER JOIN active_members am ON am.account = ac.id WHERE au.realm = 'login'");
+    #     "SELECT ac.id + 100000 AS id, ac.name, au.data, am.full_name FROM auth au INNER JOIN accounts ac ON ac.id =
+    #     au.account INNER JOIN active_members am ON am.account = ac.id WHERE au.realm = 'login'");
     #
     # header('Content-Type: text/plain; charset=utf-8');
     #
@@ -728,12 +731,14 @@ def passwd_php():
 
     s = io.StringIO()
     for a in accounts:
-        s.write("{}:{}:{}:{}:{}:/bitraf/home/{}:/bin/bash\n".format(a.username, a.password, a.id, a.id, a.name, a.username))
+        s.write("{}:{}:{}:{}:{}:/bitraf/home/{}:/bin/bash\n".format(a.username, a.password, a.id, a.id, a.name,
+                                                                    a.username))
 
     r = flask.make_response()  # type: flask.Response
     r.content_type = 'text/plain;charset=utf-8'
     r.data = s.getvalue()
     return r
+
 
 @core.route('/core/ldap/users.ldif')
 def core_ldif():

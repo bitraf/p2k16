@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from sqlalchemy import text, func
-from typing import Mapping, Optional
+from typing import Optional
 
 import stripe
 from p2k16.core import P2k16UserException, mail
@@ -15,6 +14,7 @@ def paid_members():
         join(StripePayment, StripePayment.created_by_id == Account.id). \
         filter(StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))). \
         all()
+
 
 # TODO: Deprecated
 def active_member(account: Account = None) -> bool:
@@ -91,7 +91,7 @@ def parse_stripe_event(event):
     elif event.type == 'invoice.payment_failed':
         handle_payment_failed(event)
     else:
-        pass # Not implemented on purpose
+        pass  # Not implemented on purpose
 
 
 def handle_invoice_created(event):

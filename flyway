@@ -2,11 +2,11 @@
 
 set -e
 
-v=4.2.0
+v=5.2.0
 basedir="$(cd $(dirname $0); pwd)"
 cd "$basedir"
 
-if [ ! -d flyway-$v ]
+if [[ ! -d flyway-$v ]]
 then
     rm -f flyway-$v.zip
     wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$v/flyway-commandline-$v.zip

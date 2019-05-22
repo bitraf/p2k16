@@ -179,19 +179,23 @@ def account_to_json(account: Account):
     }}
 
 
-def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]]):
+def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False):
     from .badge_blueprint import badge_to_json
-    return {
+    json = {
         "account": account_to_json(account),
         "avatar": create_avatar_url(account.email or account.username),
         "circles": {c.id: {"id": c.id, "name": c.name} for c in circles},
         "badges": {b.id: badge_to_json(b) for b in badges} if badges else None,
-        "active_member": active_member(account),
-        "membership_fee": get_membership_fee(account),
-        "has_door_access": authz_management.can_haz_door_access(account),
-        "is_paying_member": StripePayment.is_account_paying_member(account.id),
-        "is_employed": Company.is_account_employed(account.id)
     }
+
+    if full:
+        json["active_member"] = active_member(account)
+        json["membership_fee"] = get_membership_fee(account)
+        json["has_door_access"] = authz_management.can_haz_door_access(account)
+        json["is_paying_member"] = StripePayment.is_account_paying_member(account.id)
+        json["is_employed"] = Company.is_account_employed(account.id)
+
+    return json
 
 
 def create_avatar_url(email):
@@ -291,7 +295,7 @@ def service_authz_login():
     authenticated_account = auth.AuthenticatedAccount(account, circles)
     flask_login.login_user(authenticated_account)
 
-    return jsonify(profile_to_json(account, circles, badges))
+    return jsonify(profile_to_json(account, circles, badges, full=True))
 
 
 @registry.route('/service/authz/log-out', methods=['POST'])
@@ -317,9 +321,16 @@ def register_account():
     return jsonify({})
 
 
+@registry.route('/data/profile-summary')
+def data_profile_summary_list():
+    return _data_profile_list(False)
+
 # This shouldn't return that much data, it should only return circle ids and badge descriptor ids.
-@registry.route('/data/account')
+@registry.route('/data/profile')
 def data_profile_list():
+    return _data_profile_list(True)
+
+def _data_profile_list(full):
     accounts = {a.id: a for a in Account.all_user_accounts()}  # type:Mapping[int, Account]
     account_ids = [a for a in accounts]
     from itertools import groupby
@@ -336,7 +347,7 @@ def data_profile_list():
     circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
                           cms_by_account}  # type: Mapping[int, Set[Circle]]
 
-    profiles = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, [])) for id, a in
+    profiles = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, []), full=full) for id, a in
                 accounts.items()]
 
     return jsonify(profiles)
@@ -373,7 +384,7 @@ def data_account(account_id):
         })
     membership_details['payments'] = payments
 
-    detail = profile_to_json(account, circles, None)
+    detail = profile_to_json(account, circles, None, full=True)
     detail['membership'] = membership_details
 
     return jsonify(detail)
@@ -607,7 +618,7 @@ def index():
         badges = badge_management.badges_for_account(account.id)
         circles_with_admin_access = account_management.get_circles_with_admin_access(account.id)
 
-        account_json = profile_to_json(account, circles, badges)
+        account_json = profile_to_json(account, circles, badges, full=True)
         circles_with_admin_access_json = [circle_to_json(c) for c in circles_with_admin_access]
 
         kwargs["profile"] = account_json

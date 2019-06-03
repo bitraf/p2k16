@@ -139,7 +139,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
-                profiles: CoreDataServiceResolvers.data_profile_list,
+                profiles: CoreDataServiceResolvers.data_profile_summary_list,
                 company: _.constant({active: true})
             }
         }).when("/admin/company/:company_id", {
@@ -147,7 +147,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_company_detail_html,
             resolve: {
-                profiles: CoreDataServiceResolvers.data_profile_list,
+                profiles: CoreDataServiceResolvers.data_profile_summary_list,
                 company: CoreDataServiceResolvers.data_company
             }
         }).when("/admin/tool", {

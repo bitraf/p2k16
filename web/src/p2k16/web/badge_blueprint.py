@@ -79,7 +79,7 @@ def create():
 
     db.session.commit()
 
-    return jsonify(profile_to_json(account, circles, badges))
+    return jsonify(profile_to_json(account, circles, badges, full=False))
 
 
 @registry.route('/badge/recent-badges', methods=["GET"])

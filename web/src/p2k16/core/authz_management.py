@@ -1,11 +1,7 @@
 import logging
-import string
-from typing import Optional, List
 
-import flask
-from p2k16.core import P2k16UserException, mail, P2k16TechnicalException, account_management, membership_management
-from p2k16.core.models import db, Account, Circle, CircleMember, CircleManagementStyle, Company
-from sqlalchemy.orm import aliased
+from p2k16.core import account_management, membership_management
+from p2k16.core.models import Circle, Company
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +12,7 @@ def can_haz_door_access(account):
     if account_management.is_account_in_circle(account, door_circle) and membership_management.active_member(account):
         return True
 
-    if (Company.is_account_employed(account.id)):
+    if Company.is_account_employed(account.id):
         return True
-    return False
 
+    return False

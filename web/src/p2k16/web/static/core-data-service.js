@@ -29,10 +29,17 @@ function CoreDataService($http) {
         return $http(req);
     };
 
+    this.data_profile_summary_list = function () {
+        var req = {};
+        req.method = 'GET';
+        req.url = '/data/profile-summary';
+        return $http(req);
+    };
+
     this.data_profile_list = function () {
         var req = {};
         req.method = 'GET';
-        req.url = '/data/account';
+        req.url = '/data/profile';
         return $http(req);
     };
 
@@ -183,6 +190,9 @@ function CoreDataService($http) {
 }
 
 var CoreDataServiceResolvers = {};
+CoreDataServiceResolvers.data_profile_summary_list = function (CoreDataService) {
+  return CoreDataService.data_profile_summary_list().then(function (res) { return res.data; });
+};
 CoreDataServiceResolvers.data_profile_list = function (CoreDataService) {
   return CoreDataService.data_profile_list().then(function (res) { return res.data; });
 };

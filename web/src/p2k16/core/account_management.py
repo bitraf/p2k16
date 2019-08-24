@@ -179,6 +179,9 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     if name is None:
         raise P2k16UserException("Name cannot be empty.")
 
+    if "@" in username:
+        raise P2k16UserException("Username looks like an email, it should be a simple string")
+
     account = Account(username, email, name, phone, password)
     db.session.add(account)
     return account

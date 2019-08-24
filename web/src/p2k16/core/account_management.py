@@ -182,6 +182,10 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     if "@" in username:
         raise P2k16UserException("Username looks like an email, it should be a simple string")
 
+    if " " in username:
+        raise P2k16UserException("Username cannot contain spaces")
+
+
     account = Account(username, email, name, phone, password)
     db.session.add(account)
     return account

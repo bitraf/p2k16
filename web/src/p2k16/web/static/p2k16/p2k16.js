@@ -379,12 +379,19 @@
      * @param {SmartCache} BadgeDescriptions
      * @constructor
      */
-    function P2k16($rootScope, Circles, BadgeDescriptions) {
+    function P2k16($rootScope, Circles, BadgeDescriptions, $timeout) {
         var self = this;
         self.$rootScope = $rootScope;
         self.messages = [];
         self.messages.dismiss = function (index) {
             self.messages.splice(index, 1);
+        };
+        self.messages.dismissByText = function (text) {
+            var idx = self.messages.findIndex(function (e) {
+                return e.text === text;
+            });
+
+            self.messages.dismiss(idx);
         };
 
         self.profile = null;
@@ -437,7 +444,16 @@
                 text = typeof(text) === "string" ? text : "";
                 text = text.trim();
                 if (text.length) {
+
                     self.messages.push(new P2k16Message(text, cssClass));
+
+                    if (cssClass === 'alert-info') {
+                        // Lets timeout this message
+                        $timeout(function() {
+                            self.messages.dismissByText(text);
+                        }, 5 * 1000);
+                    }
+
                 }
             }
 

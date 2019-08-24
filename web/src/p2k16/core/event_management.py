@@ -101,7 +101,7 @@ def last_door_open(account: Account):
     e = Event.query. \
         filter(Event.created_by == account). \
         filter((Event.domain == "door") & (Event.name == "open")). \
-        order_by(Event.created_at). \
+        order_by(Event.created_at.desc()). \
         limit(1). \
         one_or_none()
 

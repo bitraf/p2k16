@@ -28,18 +28,21 @@
 
   <h1>Badges</h1>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <ul ng-show="ctrl.badges.length">
-        <span class="label label-default" ng-repeat="b in ctrl.badges" ng-init="bd=ctrl.descriptions[b.description_id]">
-          {{ bd.title }}
-        </span>
-      </ul>
-      <ul ng-hide="ctrl.badges.length">
-        Aaw, you don't have any badges yet.
-      </ul>
-    </div>
-  </div>
+  <ul ng-show="ctrl.badges.length" class="list-inline">
+    <li ng-repeat="b in ctrl.badges" ng-init="bd=ctrl.descriptions[b.description_id]">
+      <span class="label label-default">{{ bd.title }}</span>
+    </li>
+  </ul>
+  <p ng-hide="ctrl.badges.length">
+      Aaw, you don't have any badges yet.
+  </p>
+
+  <h1>Circles</h1>
+  <ul ng-if="ctrl.circles.length" class="list-inline">
+      <li ng-repeat="c in ctrl.circles">
+          <a href="#!/admin/circle/{{c.id}}"><span class="label label-default" >{{ c.name }}</span></a>
+      </li>
+  </ul>
 
   <h1>Box label</h1>
   <div class="row">

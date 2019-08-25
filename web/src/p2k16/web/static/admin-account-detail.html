@@ -23,6 +23,10 @@
       <td><a href="tlf:{{ ctrl.account.phone }}">{{ ctrl.account.account.phone }}</a></td>
     </tr>
     <tr>
+      <th>Account created at</th>
+      <td>{{ ctrl.account.account.createdAt | date:'short' }}</td>
+    </tr>
+    <tr>
       <th>Membership fee</th>
       <td>{{ ctrl.account.account.membership.fee }}</td>
     </tr>

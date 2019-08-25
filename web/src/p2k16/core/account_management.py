@@ -128,6 +128,9 @@ def add_account_to_circle(account: Account, circle: Circle, admin: Account, comm
 
     _assert_can_admin_circle(admin, circle)
 
+    if is_account_in_circle(account, circle):
+        raise P2k16UserException("Account is already a member of the cirlce, cannot be added again")
+
     circle.add_member(account, comment)
 
 
@@ -135,6 +138,9 @@ def remove_account_from_circle(account: Account, circle: Circle, admin: Account)
     logger.info("Removing %s from circle %s, admin=%s" % (account.username, circle.name, admin.username))
 
     _assert_can_admin_circle(admin, circle)
+
+    if not is_account_in_circle(account, circle):
+        raise P2k16UserException("Account isn't a member of the circle, cannot be removed")
 
     circle.remove_member(account)
 

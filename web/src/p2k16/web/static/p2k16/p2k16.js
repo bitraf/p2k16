@@ -761,7 +761,12 @@
         P2k16.accountListeners.add($scope, function (newValue) {
             console.log("updated", newValue);
             updateBadges(newValue);
+            updateCircles(newValue);
         });
+
+        function updateCircles(account) {
+            self.circles = _.values(account.circles);
+        }
 
         function updateBadges(account) {
             self.badges = _.values(account.badges);
@@ -783,6 +788,7 @@
         }
 
         self.badges = [];
+        self.circles = [];
         self.newBadge = {};
         self.descriptions = badgeDescriptions;
         self.changePasswordForm = {};
@@ -790,6 +796,7 @@
         self.printBoxLabel = printBoxLabel;
 
         updateBadges(P2k16.currentProfile());
+        updateCircles(P2k16.currentProfile());
     }
 
     /**

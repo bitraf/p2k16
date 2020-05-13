@@ -408,6 +408,21 @@ def data_account_summary(account_id):
         "badges": [badge_to_json(b) for b in badges],
         "lastDoorOpen": open_door_event.to_dict() if open_door_event else None,
     }
+
+    # Add information about membership if current user is in a circle
+    admin_circle = Circle.get_by_name('admin')
+    if account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
+        membership = get_membership(account)
+        membership_details = {}
+        if membership is not None:
+            membership_details['fee'] = membership.fee
+            membership_details['first_membership'] = membership.first_membership
+            membership_details['start_membership'] = membership.start_membership
+        else:
+            membership_details['fee'] = 0
+        summary['membership'] = membership_details
+
+
     return jsonify(summary)
 
 

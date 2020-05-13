@@ -11,6 +11,19 @@
       <p>Last seen: {{ ctrl.summary.lastDoorOpen.created_at | date:'short' }}</p>
     </div>
   </div>
+  <div ng-if="ctrl.summary.membership" class="user-detail-contact-info">
+    <h2 class="text-muted">Membership status <span class="label label-info">admin-only</span></h2>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-sm-1 control-label">Fee</label>
+        <div class="col-sm-6">
+          <p class="form-control-static">
+          {{ ctrl.summary.membership.fee }}
+          </p>
+        </div>
+      </div>
+    </form>
+  </div>
 
   <!-- Contact info -->
   <div class="user-detail-contact-info">

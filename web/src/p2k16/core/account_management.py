@@ -184,7 +184,7 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     if " " in username:
         raise P2k16UserException("Username cannot contain spaces")
 
-    if not re.match(r"^[a-zA-Z0-9@._+-]+", username):
+    if not re.match(r"^[a-zA-Z0-9@._+-]+$", username):
         raise P2k16UserException("Username can only contain a-z, 0-9, @, ., _, + and -.")
 
     account = Account(username, email, name, phone, password)

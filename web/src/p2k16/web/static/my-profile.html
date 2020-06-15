@@ -7,14 +7,14 @@
     <div class="form-group">
       <label for="name" class="col-sm-3 control-label">Old password</label>
       <div class="col-sm-4">
-        <input class="form-control" type="password" name="oldPassword" id="oldPassword" 
+        <input class="form-control" type="password" name="oldPassword" id="oldPassword"
                ng-model="ctrl.changePasswordForm.oldPassword"/>
       </div>
     </div>
     <div class="form-group">
       <label for="name" class="col-sm-3 control-label">New password</label>
       <div class="col-sm-4">
-        <input class="form-control" type="password" name="newPassword" id="newPassword" 
+        <input class="form-control" type="password" name="newPassword" id="newPassword"
                ng-model="ctrl.changePasswordForm.newPassword"/>
       </div>
     </div>
@@ -22,6 +22,28 @@
       <label for="name" class="col-sm-3 control-label">New password</label>
       <div class="col-sm-4">
         <button class="btn btn-default" ng-click="ctrl.changePassword()">Change password</button>
+      </div>
+    </div>
+  </form>
+
+
+  <h3>Edit profile details</h3>
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label for="phone" class="col-sm-3 control-label">Phone number</label>
+      <div class="col-sm-4">
+        <input class="form-control"
+               type="text"
+               name="phone"
+               id="phone"
+               placeholder="Phone #"
+               ng-model="ctrl.profileForm.phone"
+               autocomplete="phone" />
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-4 col-sm-offset-3">
+        <button class="btn btn-default" ng-click="ctrl.saveProfile()">Save profile</button>
       </div>
     </div>
   </form>
@@ -48,7 +70,7 @@
   <div class="row">
     <div class="col-xs-12">
         <p>Boxes in the member storage area are for paying members only, and they
-        should all have a label with a QR code and basic contact information. Press 
+        should all have a label with a QR code and basic contact information. Press
         here to have a label printed near Bitmart on the second floor, and stick it
         on your box today</p>
         <button class="btn btn-default" ng-click="ctrl.printBoxLabel()">Print box label</button>

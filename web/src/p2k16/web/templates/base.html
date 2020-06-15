@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default%2Ces2015%2Ces2016%2Ces2017%2Ces2018%2Ces5%2Ces6%2Ces7"></script>
+  <script src="{{ url_for('static', filename='bower_components/js-polyfills/polyfill.min.js') }}"></script>
   <script src="{{ url_for('static', filename='bower_components/lodash/dist/lodash.js') }}"></script>
   <script src="{{ url_for('static', filename='bower_components/angular/angular.js') }}"></script>
   <script src="{{ url_for('static', filename='bower_components/angular-i18n/angular-locale_nb-no.js') }}"></script>

@@ -59,6 +59,13 @@ set_password_form = {
     ]
 }
 
+edit_profile_form = {
+    "type": "object",
+    "properties": {
+        "phone": {"type": "string"}
+    }
+}
+
 login_form = {
     "type": "object",
     "properties": {
@@ -697,6 +704,14 @@ def service_set_password():
 
     return jsonify({})
 
+@registry.route('/service/edit-profile', methods=['POST'])
+@validate_schema(edit_profile_form)
+def service_edit_profile():
+    a = flask_login.current_user.account # type: Account
+
+    account_management.edit_profile(a, flask.request.json["phone"])
+    db.session.commit()
+    return jsonify({})
 
 @registry.route('/service/recent-events', methods=['GET'])
 def recent_events():

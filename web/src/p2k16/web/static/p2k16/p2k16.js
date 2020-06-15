@@ -787,6 +787,13 @@
             });
         }
 
+        function saveProfile() {
+            CoreDataService.service_edit_profile(self.profileForm).then(function (res) {
+                var msg = res.message || "Profile saved";
+                P2k16.addInfos(msg);
+            });
+        }
+
         self.badges = [];
         self.circles = [];
         self.newBadge = {};
@@ -794,6 +801,11 @@
         self.changePasswordForm = {};
         self.changePassword = changePassword;
         self.printBoxLabel = printBoxLabel;
+
+        self.saveProfile = saveProfile;
+        self.profileForm = {
+            phone: P2k16.currentProfile().account.phone
+        };
 
         updateBadges(P2k16.currentProfile());
         updateCircles(P2k16.currentProfile());

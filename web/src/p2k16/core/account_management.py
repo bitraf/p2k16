@@ -192,6 +192,10 @@ def register_account(username: str, email: str, name: str, password: str, phone:
     return account
 
 
+def edit_profile(account: Account, new_phone: str):
+    account.phone = new_phone
+    logger.info('Updating profile for account={}'.format(account))
+
 # This function raises technical exceptions as a last resort. Methods using this function should check the token or
 # password before calling this.
 def set_password(account: Account, new_password: str, old_password: Optional[str] = None,

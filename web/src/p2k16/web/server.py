@@ -213,6 +213,31 @@ app.register_blueprint(membership_blueprint.membership)
 
 _env = app.config.get("P2K16_ENV", None)
 
+import yaml
+@app.route('/openapi')
+def openapi_sec():
+    a = {
+        "openapi": "3.0.2",
+        "info": {
+            "version": "1",
+            "title": "P2k16",
+            "description": "All the things"
+        }
+    }
+    # Fetch spec parts from each blueprint above
+
+    a["paths"] = {
+        **door_blueprint.registry.generate_openapi(),
+        **core_blueprint.registry.generate_openapi(),
+        **door_blueprint.registry.generate_openapi(),
+        **tool_blueprint.registry.generate_openapi(),
+        **label_blueprint.registry.generate_openapi(),
+    }
+    # combine them all
+    # generate yaml
+    # return yaml
+    return yaml.dump(a)
+
 if _env == "local":
     for registry in [badge_blueprint.registry, core_blueprint.registry, door_blueprint.registry]:
         with open(os.path.join(app.static_folder, registry.jsName), "w") as f:

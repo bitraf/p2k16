@@ -169,6 +169,72 @@ class DataServiceTool(object):
     # path_re = re.compile("(<([^:]+)+:([^>]+)>)")
     segments_re = re.compile("(/<([^:]+)+:([^>]+)>)|(/[^/]*)")
 
+    def generate_openapi(self, ):
+
+        paths = {}
+
+        names = [r.name for r in self._routes]
+
+        for r in self._routes:
+            args = []
+            url_parts = []
+            if (r.url.endswith(self.jsName)):
+                continue
+
+            matches = list(DataServiceTool.segments_re.finditer(r.url))
+            if len(matches):
+                print("len(matches)={}, str={}".format(len(matches), r.url))
+                # i = 0
+                url = ""
+                for m in matches:
+                    g = m.groups()
+                    if g[3]:
+                        url_parts.append((None, g[3]))
+                    else:
+                        url_parts.append((g[2], None))
+                        args.append(g[2])
+
+                print("url={}".format(url))
+            else:
+                raise Exception("Hm..")
+
+            has_payload = r.method != "GET" and r.method != "HEAD"
+
+            print("url_parts={}".format(url_parts))
+
+            up = []
+            tmp = None
+            for p in url_parts:
+                if p[1]:
+                    if tmp:
+                        tmp += p[1]
+                    else:
+                        tmp = p[1]
+                else:
+                    if tmp:
+                        up.append((None, tmp))
+                        tmp = None
+
+                    up.append(p)
+            if tmp:
+                up.append((None, tmp))
+            print("url_parts={}".format(up))
+            url = ""
+            for p in up:
+                if p[1]:
+                    url += "{}".format(p[1])
+                else:
+                    url += "/{{{}}}".format(p[0])
+
+            paths[url] = {}
+            paths[url][r.method.lower()] = {
+                "operationId": r.name,
+                "summary": "Something from docstring of method here if we can"
+            }
+
+        return paths
+
+
     def generate(self, ):
         s = "'use strict';\n\n"
         s += "/**\n * @constructor\n */\n"

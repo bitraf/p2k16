@@ -1,12 +1,23 @@
 language: python
 before_install: npm install -g bower
 python:
-  - 3.5
-before_script:
-  - psql -U postgres -f database-setup.sql
-script: ". .settings; ./p2k16-run-test"
+  - 3.8
+env:
+  global:
+  - PGPORT=2016
 addons:
-  postgresql: '9.6'
+  postgresql: '12'
+  apt:
+    packages:
+    - postgresql-12
+    - postgresql-client-12
+before_script:
+  - id
+  - sudo sed -i 's/port = 5433/port = 2016/' /etc/postgresql/12/main/postgresql.conf
+  - sudo grep port /etc/postgresql/12/main/postgresql.conf
+  - sudo systemctl restart postgresql@12-main.service
+  - cat database-setup.sql | sudo -u postgres psql -f -
+script: ". .settings.sh && PGHOST=localhost p2k16-run-test"
 notifications:
   slack:
     secure: hJTZ6g/d8TjFYLs5vdRxrZPP2Il5bpHTZ2eZ9GBzUHjf75dIcWrk4Uu8J7UyWglReNdICGTDVNTmasShoRtZIs8WgqoIxPUxsqPCqwIioYttXvDZnW+GyYg6r0aquJS1DaG2kL964Wegr4+JKC+1w1W4OO+BP8vh2SSpI+HKhqhFPOutD0lUT4SGofhZA4hGzimQSeGfT7hRbIrGMgE9sOeou2SMjecmVhDzdPKmqfFdfgdNf9wdAibS4kgwy/oHWjl0WAiCuFbiuoTe+7Y5dZurjvay9NaF+shObajonKprxLSPAtK6F8EkThBIg/LoV0JWVreClvwEH64hpo3fiIioP3unhbm3Y8Qrsi4K3IGsq6SK46XVqZgiz+L1fsddjewDEwTm76k9KHU+9n1H0RPxG47ehb3cyuXc0W1WsruCxvcpBH4vitXoBKxVGNUnAjOz2xQac5SCb/msH7yjDcQzDgTgTTkw91jiVzbBvNGHM5rlP27JOyJ78BhyYYQjsSheXDtNhSJ3Hq3j92RK4I551lQxlXCDeDrYMyyOf+I8PH94euqXwCaoeFBaGq7C9pEmu52jkpho3RyLFmvszHHz03dGNbvvj5eXXpF32Ey+YBxVFp+Pds6VegjOeMczUZ72uPM9WWkDMQh5753EmO2YadlD7Wf5Q9Hcr6iR088=

@@ -504,6 +504,17 @@ def data_circle(circle_id):
     return jsonify(circle_to_json(circle, include_members=True))
 
 
+@registry.route('/data/circle/<int:circle_id>', methods=["DELETE"])
+def remove_circle(circle_id):
+    admin = flask_login.current_user.account
+    circle = Circle.get_by_id(circle_id)
+    account_management.remove_circle(admin, circle)
+
+    db.session.commit()
+
+    return jsonify({})
+
+
 @registry.route('/data/circle', methods=["POST"])
 @validate_schema(add_circle_form)
 def create_circle():

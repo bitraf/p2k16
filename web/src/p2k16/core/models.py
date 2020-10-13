@@ -301,12 +301,18 @@ class Circle(DefaultMixin, db.Model):
             raise P2k16UserException("A circle which is self-administrated must have at least one member")
 
     @staticmethod
-    def find_by_id(id) -> Optional["Circle"]:
-        return Circle.query.filter(Circle.id == id).one_or_none()
+    def find_by_id(_id) -> Optional["Circle"]:
+        return Circle.query.filter(Circle.id == _id).one_or_none()
 
     @staticmethod
-    def get_by_id(id) -> "Circle":
-        return Circle.query.filter(Circle.id == id).one()
+    def get_by_id(_id) -> "Circle":
+        return Circle.query.filter(Circle.id == _id).one()
+
+    @staticmethod
+    def delete_by_id(_id):
+        c = Circle.get_by_id(_id)
+        db.session.delete(c)
+        db.session.flush()
 
     @staticmethod
     def find_by_name(name) -> Optional["Circle"]:
@@ -468,6 +474,7 @@ class Company(DefaultMixin, db.Model):
     employees = relationship("CompanyEmployee")  # type: Iterable[CompanyEmployee]
 
     def __init__(self, name, contact: Account, active: bool):
+        super().__init__()
         self.name = name
         self.contact_id = contact.id
         self.active = active
@@ -510,6 +517,7 @@ class CompanyEmployee(DefaultMixin, db.Model):
     account = relationship("Account", foreign_keys=[account_id])
 
     def __init__(self, company: Company, account: Account):
+        super().__init__()
         self.company_id = company.id
         self.account_id = account.id
 
@@ -543,6 +551,7 @@ class BadgeDescription(DefaultMixin, db.Model):
     certification_circle = relationship("Circle")
 
     def __init__(self, title: str):
+        super().__init__()
         self.title = title
         self.description = None
         self.slug = None
@@ -564,6 +573,7 @@ class AccountBadge(DefaultMixin, db.Model):
     awarded_by = relationship("Account", foreign_keys=[awarded_by_id])
 
     def __init__(self, account: Account, awarded_by: Account, description: BadgeDescription):
+        super().__init__()
         self.account_id = account.id
         self.awarded_by = awarded_by
         self.description = description
@@ -582,6 +592,7 @@ class ToolDescription(DefaultMixin, db.Model):
     circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
 
     def __init__(self, name: str, description: str, circle: Circle):
+        super().__init__()
         self.name = name
         self.description = description
         self.circle_id = circle.id
@@ -604,6 +615,7 @@ class ToolCheckout(DefaultMixin, db.Model):
     started = Column(DateTime, nullable=True)
 
     def __init__(self, tool: ToolDescription, account: Account, started: DateTime):
+        super().__init__()
         self.tool_description = tool
         self.account = account
         self.started = started

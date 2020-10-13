@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -euo pipefail
+
+self=$(basename "$0")
+basedir=$(dirname "$0")
+cmd="$basedir/node_modules/.bin/$self"
+
+if [[ ! -x $cmd ]]
+then
+  (cd "$basedir" && npm install)
+fi
+
+exec "$cmd" "${@}"

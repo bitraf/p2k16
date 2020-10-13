@@ -2,7 +2,8 @@
 
 set -ex pipefail
 
-basedir="$(cd $(dirname $0); pwd)"
+tools=$(dirname "$0")
+basedir=$(dirname "$tools")
 
 if [[ ! -d env ]]
 then
@@ -12,7 +13,7 @@ fi
 env/bin/pip install -e web
 env/bin/pip install -r requirements.txt
 
-./flyway migrate
+flyway migrate
 
 export FLASK_APP=p2k16.web.server
 export FLASK_DEBUG=1

@@ -1,0 +1,12 @@
+version: "3"
+services:
+  pdb:
+    image: postgres:12
+    restart: always
+    ports:
+      - "2016:5432"
+    volumes:
+      - ./pdb:/data
+    environment:
+      PGDATA: /data
+      POSTGRES_PASSWORD: postgres

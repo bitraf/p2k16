@@ -4,7 +4,7 @@ python:
   - 3.5
 before_script:
   - psql -U postgres -f database-setup.sql
-script: "./run-p2k16-test"
+script: ". .settings; ./p2k16-run-test"
 addons:
   postgresql: '9.6'
 notifications:

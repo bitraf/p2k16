@@ -106,6 +106,15 @@ function CoreDataService($http) {
         return $http(req);
     };
 
+    this.remove_circle = function (circle_id, payload) {
+        var req = {};
+        req.method = 'DELETE';
+        req.url = '/data/circle';
+        req.url += '/' + circle_id;
+        req.data = payload;
+        return $http(req);
+    };
+
     this.create_circle = function (payload) {
         var req = {};
         req.method = 'POST';

@@ -269,6 +269,15 @@
         // Unsorted array with all values
         var values = [];
 
+        function remove(value) {
+            var mapped = mapper(value);
+            var key = mapped.key;
+            var item = items[key];
+            delete by_key[key];
+            values[item.index] = null;
+            delete items[key];
+        }
+
         function put(value) {
             var mapped = mapper(value);
             var key = mapped.key;
@@ -329,6 +338,7 @@
             promise: promise,
             executeControl: executeControl,
             put: put,
+            remove: remove,
             values: values,
             by_key: by_key,
             getName: function () {
@@ -377,6 +387,7 @@
      * @param $rootScope
      * @param {SmartCache} Circles
      * @param {SmartCache} BadgeDescriptions
+     * @param $timeout
      * @constructor
      */
     function P2k16($rootScope, Circles, BadgeDescriptions, $timeout) {
@@ -408,6 +419,7 @@
         function currentProfile() {
             return self.profile;
         }
+
         function currentAccount() {
             return self.profile.account;
         }
@@ -441,7 +453,7 @@
 
         function addMessages(messages, cssClass) {
             function add(text, cssClass) {
-                text = typeof(text) === "string" ? text : "";
+                text = typeof (text) === "string" ? text : "";
                 text = text.trim();
                 if (text.length) {
 
@@ -449,7 +461,7 @@
 
                     if (cssClass === 'alert-info') {
                         // Lets timeout this message
-                        $timeout(function() {
+                        $timeout(function () {
                             self.messages.dismissByText(text);
                         }, 5 * 1000);
                     }
@@ -459,8 +471,7 @@
 
             if (typeof messages === 'string') {
                 add(messages, cssClass);
-            }
-            else {
+            } else {
                 angular.forEach(messages, add);
             }
 
@@ -753,6 +764,7 @@
      * @param {P2k16} P2k16
      * @param {CoreDataService} CoreDataService
      * @param badgeDescriptions
+     * @param {LabelService} LabelService
      * @constructor
      */
     function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions, LabelService) {
@@ -812,9 +824,11 @@
     }
 
     /**
+     * @param {ToolDataService} ToolDataService
      * @param $scope
      * @param {P2k16} P2k16
-     * @param ToolDataService
+     * @param tools
+     * @param recent_events
      * @constructor
      */
     function ToolFrontPageController(ToolDataService, $scope, P2k16, tools, recent_events) {
@@ -836,8 +850,8 @@
 
         self.checkoutToolConfirm = function (tool) {
             console.log('ask for checkout of ', tool);
-            if ( window.confirm("Do you really want to checkout "+tool.name+"? This may destroy a job in progress!" ) ) { 
-              self.checkoutTool(tool);
+            if (window.confirm("Do you really want to checkout " + tool.name + "? This may destroy a job in progress!")) {
+                self.checkoutTool(tool);
             }
         };
 
@@ -911,7 +925,7 @@
 
     /**
      * @param {CoreDataService} CoreDataService
-     * @param accounts
+     * @param profiles
      * @constructor
      */
     function AdminAccountListController(CoreDataService, profiles) {
@@ -960,12 +974,13 @@
 
     /**
      * @param $location
+     * @param $uibModal
      * @param {CoreDataService} CoreDataService
      * @param {SmartCache} circles
      * @param circle
      * @constructor
      */
-    function AdminCircleDetailController($location, CoreDataService, circles, circle) {
+    function AdminCircleDetailController($location, $uibModal, CoreDataService, circles, circle) {
         var self = this;
 
         self.isNew = !circle.id;
@@ -1021,6 +1036,31 @@
                 update(res.data);
             });
         };
+        self.removeCircle = function (circle) {
+            console.log("removeCircle", "circle", circle);
+            $uibModal.open({
+                animation: true,
+                templateUrl: 'admin-circle-detail/remove-circle-modal.html',
+                controller: function ($uibModalInstance) {
+                    var self = this;
+                    self.ok = function () {
+                        $uibModalInstance.close(circle);
+                    };
+                    self.cancel = function () {
+                        $uibModalInstance.dismiss('cancel');
+                    };
+                },
+                controllerAs: 'ctrl'
+            }).result.then(function (circle) {
+                console.log("Removing circle", circle);
+                CoreDataService.remove_circle(circle.id).then(function (res) {
+                    circles.remove(circle);
+                    $location.url("/admin/circle");
+                });
+            }, function () {
+                console.log("Remove aborted");
+            });
+        };
         self.selfAdminSelected = function () {
             if (!self.addCircleForm.comment && self.addCircleForm.commentRequiredForMembership) {
                 self.addCircleForm.comment = 'Initial admin';
@@ -1030,7 +1070,7 @@
 
     /**
      * @param $location
-     * @param accounts
+     * @param profiles
      * @param company
      * @param {CoreDataService} CoreDataService
      * @constructor
@@ -1085,7 +1125,7 @@
     }
 
     /**
-     * @param {CoreDataService} CoreDataService
+     * @param {ToolDataService} ToolDataService
      * @param {SmartCache} tools
      * @constructor
      */
@@ -1096,10 +1136,6 @@
     }
 
     /**
-     * @param $location
-     * @param {CoreDataService} CoreDataService
-     * @param {SmartCache} circles
-     * @param circle
      * @constructor
      */
     function AdminToolDetailController($location, ToolDataService, tools, tool) {

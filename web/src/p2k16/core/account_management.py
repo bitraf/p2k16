@@ -196,6 +196,7 @@ def edit_profile(account: Account, new_phone: str):
     account.phone = new_phone
     logger.info('Updating profile for account={}'.format(account))
 
+
 # This function raises technical exceptions as a last resort. Methods using this function should check the token or
 # password before calling this.
 def set_password(account: Account, new_password: str, old_password: Optional[str] = None,
@@ -244,3 +245,26 @@ def create_circle(name: str, description: str, comment_required_for_membership, 
     db.session.add(c)
 
     return c
+
+
+def remove_circle(admin: Account, circle: Circle):
+    _assert_can_admin_circle(admin, circle)
+
+    logger.info("Removing circle, id={}, admin={}".format(circle.id, admin.id))
+    c = Circle.get_by_id(circle.id)
+
+    logger.info("c.members[0]={}".format(c.members[0]))
+
+    if c.management_style == CircleManagementStyle.SELF_ADMIN:
+        ok = len(c.members) == 1 and c.members[0].account == admin
+
+        if not ok:
+            raise P2k16UserException("A circle which is self-administrated must only contain the remover.")
+
+    elif c.management_style == CircleManagementStyle.ADMIN_CIRCLE:
+        if len(c.members) != 0:
+            raise P2k16UserException("The circle has to be empty to be removed.")
+    else:
+        raise P2k16UserException("Unknown management style")
+
+    Circle.delete_by_id(circle.id)

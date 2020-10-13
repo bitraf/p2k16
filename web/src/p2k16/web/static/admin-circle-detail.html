@@ -75,7 +75,8 @@
       <label for="comment" class="col-sm-3 control-label">Membership comment</label>
       <div class="col-sm-4">
         <input class="form-control" type="text" id="comment" placeholder="Comment"
-               ng-model="ctrl.addCircleForm.comment" ng-disabled="ctrl.addCircleForm.managementStyle != 'SELF_ADMIN' || !ctrl.addCircleForm.commentRequiredForMembership"/>
+               ng-model="ctrl.addCircleForm.comment"
+               ng-disabled="ctrl.addCircleForm.managementStyle != 'SELF_ADMIN' || !ctrl.addCircleForm.commentRequiredForMembership"/>
       </div>
     </div>
     <div class="form-group">
@@ -95,6 +96,10 @@
       <th class="col-sm-4">Management style</th>
       <td class="col-sm-8">{{ ctrl.circle.managementStyle }}</td>
     </tr>
+    <tr>
+      <th class="col-sm-4">Can I manage this circle?</th>
+      <td class="col-sm-8">{{ p2k16.canAdminCircle(ctrl.circle.id) | yesno }}</td>
+    </tr>
     <tr ng-show="ctrl.circle.managementStyle == 'ADMIN_CIRCLE'">
       <th>Admin circle</th>
       <td><a ng-href="#!admin/circle/{{ ctrl.adminCircle.id }}">{{ ctrl.adminCircle.name }}</a></td>
@@ -107,6 +112,9 @@
   </table>
 
   <section ng-if="p2k16.canAdminCircle(ctrl.circle.id)">
+
+    <button class="btn btn-danger" ng-click="ctrl.removeCircle(ctrl.circle)">Remove circle</button>
+
     <h2>Add member</h2>
 
     <form class="form-horizontal">
@@ -167,3 +175,19 @@
   </section>
 
 </div>
+
+
+<script type="text/ng-template" id="admin-circle-detail/remove-circle-modal.html">
+  <div class="modal-header">
+    <h3 class="modal-title" id="modal-title">Remove circle</h3>
+  </div>
+
+  <div class="modal-body" id="modal-body">
+    Are you sure you want to remove this circle?
+    <button class="btn btn-danger" type="button" ng-click="ctrl.ok()">Yes</button>
+
+    <p>
+      No, wait I want to <a ng-click="ctrl.cancel()">ABORT!!11</a>.
+    </p>
+  </div>
+</script>

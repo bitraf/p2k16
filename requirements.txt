@@ -6,7 +6,7 @@
 # To update/change dependencies, either update them manually with pip or just rm -rf env/ and run p2k16-run-web again.
 
 attrs==20.2.0
-bcrypt==3.2.0
+bcrypt==3.1.7 # 3.2.0 is not available for python@3.5
 blinker==1.4
 cachetools==4.1.1
 certifi==2020.6.20

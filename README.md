@@ -19,7 +19,7 @@ Creating the database:
     # cd -
     # PGUSER=postgres PGPASSWORD=postgres psql -f database-setup.sql
 
-The root user in the database is `postgresql`, it's password is also `postgresql`.
+The root user in the database is `postgres`, it's password is also `postgres`.
 
 Running the application:
 

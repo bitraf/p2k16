@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Configuration(metaclass=MetaFlaskEnv):
+    ENV_LOAD_ALL = True
     pass
 
 
@@ -47,5 +48,10 @@ def make_app():
 
     # Allow the environment variables to override by loading them lastly
     app.config.from_object(Configuration)
+
+    if False:
+        print("Configuration:")
+        for k, v in sorted(app.config.items(), key=lambda k: k[0]):
+            print("{}={}".format(k, v))
 
     return app

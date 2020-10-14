@@ -253,8 +253,6 @@ def remove_circle(admin: Account, circle: Circle):
     logger.info("Removing circle, id={}, admin={}".format(circle.id, admin.id))
     c = Circle.get_by_id(circle.id)
 
-    logger.info("c.members[0]={}".format(c.members[0]))
-
     if c.management_style == CircleManagementStyle.SELF_ADMIN:
         ok = len(c.members) == 1 and c.members[0].account == admin
 

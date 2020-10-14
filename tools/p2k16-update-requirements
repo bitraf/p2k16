@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+tools=$(dirname "$0")
+basedir=$(dirname "$tools")
+
+cd $basedir
+
+touch requirements.txt
+grep ^# requirements.txt > requirements.head.tmp.txt
+
+env/bin/pip freeze |grep -v '^-e' > requirements.data.tmp.txt
+
+(
+  cat requirements.head.tmp.txt
+  echo ""
+  cat requirements.data.tmp.txt
+) > requirements.txt
+
+rm -f requirements*.tmp.*

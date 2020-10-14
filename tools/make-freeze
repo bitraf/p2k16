@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-basedir=$(cd $(dirname $0); pwd)
-exec env/bin/pip freeze |grep -v '^-e' > requirements-freeze.txt

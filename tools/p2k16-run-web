@@ -11,7 +11,8 @@ then
     virtualenv -p python3 env
 fi
 
-env/bin/pip install --trusted-host github.com -e web
+env/bin/pip install -r requirements.txt
+env/bin/pip install -e web
 
 flyway migrate
 

@@ -4,7 +4,7 @@
 
   <!-- Header -->
   <div class="user-detail-header">
-    <img src="{{ ctrl.account.avatar }}?s=100" class="floatleft">
+    <img ng-src="{{ ctrl.account.avatar }}?s=100" class="floatleft">
 
     <div>
       <h2>{{ ctrl.account.username }}</h2>
@@ -23,11 +23,11 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-sm-1 control-label">
+        <label class="col-sm-1 control-label">Employee</label>
+        <div class="col-sm-6">
+          <p class="form-control-static">
           {{ ctrl.summary.employment|yesno }}
-        </label>
-        <div class="col-sm-4">
-          <p class="form-control-static">Employed at company</p>
+          </p>
         </div>
       </div>
     </form>

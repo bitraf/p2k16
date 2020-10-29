@@ -418,9 +418,8 @@ def data_account_summary(account_id):
 
     # Add information about membership if current user is in a circle
     admin_circle = Circle.get_by_name('insight-fee')
-    logger.debug("insight-fee circle: {}".format(admin_circle))
     if account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
-        logger.debug("{} is in circle {}".format(flask_login.current_user.account, admin_circle))
+        logger.debug("{} is in circle {}, will add membership and employment info".format(flask_login.current_user.account, admin_circle))
         membership = get_membership(account)
         membership_details = {}
         if membership is not None:
@@ -430,10 +429,7 @@ def data_account_summary(account_id):
         else:
             membership_details['fee'] = 0
         summary['membership'] = membership_details
-
         summary['employment'] = Company.is_account_employed(account.id)
-    else:
-        logger.debug("{} is NOT in circle {}".format(flask_login.current_user.account, admin_circle))
 
 
 

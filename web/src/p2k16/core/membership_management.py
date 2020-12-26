@@ -108,7 +108,7 @@ def handle_payment_success(event):
 
     with model_support.run_as(account):
         invoice_id = event.data.object.id
-        timestamp = datetime.fromtimestamp(event.data.object.date)
+        timestamp = datetime.fromtimestamp(event.data.object.created)
         items = event.data.object.lines.data[0]
 
         payment = StripePayment(invoice_id, datetime.fromtimestamp(items.period.start),
@@ -137,7 +137,7 @@ def member_get_details(account):
 
         if stripe_customer_id is not None:
             # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=['sources', 'subscriptions'])
 
             if len(cu.sources.data) > 0:
                 card = cu.sources.data[0]
@@ -195,22 +195,21 @@ def member_set_credit_card(account, stripe_token):
             logger.info("Created customer for user=%r" % account.username)
         else:
             # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=['sources', 'subscriptions'])
 
             if cu is None or (hasattr(cu, 'deleted') and cu.deleted):
                 logger.error("Stripe customer does not exist. This should not happen! account=%r, stripe_id=%r" %
                              (account.username, stripe_token))
                 raise P2k16UserException("Set credit card invalid state. Contact kasserer@bitraf.no")
 
+            # Delete any old cards
+            for card in cu.sources.list():
+                card.delete()
+
             # Create a new default card
             new_card = cu.sources.create(source=stripe_token)
             cu.default_source = new_card.id
             cu.save()
-
-            # Delete any old cards
-            for card in cu.sources.list():
-                if card.id != new_card.id:
-                    card.delete()
 
         # Commit to db
         db.session.add(stripe_customer_id)
@@ -249,7 +248,7 @@ def member_cancel_membership(account):
         stripe_customer_id = get_stripe_customer(account)
 
         for sub in stripe.Subscription.list(customer=stripe_customer_id):
-            sub.delete(at_period_end=True)
+            sub.delete()
 
         db.session.commit()
 
@@ -305,7 +304,7 @@ def member_set_membership(account, membership_plan, membership_price):
                                            'id': sub['items']['data'][0].id,
                                            'plan': membership_plan
                                        }],
-                                       prorate=False)
+                                       proration_behavior='none')
 
         # Commit to db
         db.session.add(membership)

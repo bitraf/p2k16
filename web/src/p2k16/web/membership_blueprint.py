@@ -16,6 +16,9 @@ def setup_stripe(cfg: Mapping[str, str]) -> None:
     stripe.api_key = cfg.get('STRIPE_SECRET_KEY')
     webhook_secret = cfg.get('STRIPE_WEBHOOK_SECRET', None)
 
+    # The API version routinely contains breaking changes and must be kept in sync with code/library.
+    stripe.api_version = '2020-08-27'
+
 
 membership = Blueprint('membership', __name__, template_folder='templates')
 

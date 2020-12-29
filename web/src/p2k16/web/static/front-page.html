@@ -77,9 +77,13 @@
   </section>
 
   <!-- Must be moved to menu  -->
-  <div class="col-md-4" ng-if="ctrl.payingMember">
-    <button type="button" class="btn btn-info" ng-click="ctrl.manageBilling()">Manage billing</button>
-  </div>
+  <section ng-if="ctrl.payingMember">
+    <div class="row">
+      <div class="col-md-4">
+        <button type="button" class="btn btn-info" ng-click="ctrl.manageBilling()">Manage billing</button>
+      </div>
+    </div>
+  </section>
 
   <section ng-if="ctrl.doorsAvailable">
     <h2>Open a door</h2>

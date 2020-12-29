@@ -2,8 +2,10 @@
 
 <div class="container">
   <h1>Tools</h1>
-  <p><a href="https://bitraf.no/wiki/Tool">Click here</a> to read more about the Bitraf Tool system.</p>
-  
+  <div class="bs-callout bs-callout-info bs-callout-xl">
+    <p><a href="https://bitraf.no/wiki/Tool">Click here</a> to read more about the Bitraf Tool system.</p>
+  </div>
+
   <h2>Checkout a tool</h2>
   <p>Click a tool to check it out. Always return the tool before you leave. <br /><em>Please note: No tools should ever leave Bitraf, so you cannot "borrow" a tool to work on stuff at home.</em></p>
   <form class="form-horizontal">
@@ -22,6 +24,7 @@
     </table>
   </form>
 
+  <section ng-if="ctrl.recent_events.length > 0">
   <h3>Recent events</h3>
 
   <ul>
@@ -38,6 +41,7 @@
       </span>
     </li>
   </ul>
+  </section>
   <div ng-if="ctrl.my_tools.length">
     <h2>My currently checked out tools</h2>
     <p>Click a tool to return it</p>

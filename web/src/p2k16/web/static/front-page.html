@@ -4,7 +4,7 @@
   <div class="row" ng-if="!ctrl.employed && !ctrl.payingMember">
     <div class="col-xs-12">
       <h2>Become a paying Bitraf member</h2>
-      
+
       <p>You will receive access to open the door 24/7 and access machines at Bitraf.</p>
       <div class="row text-center align-items-end">
 
@@ -12,9 +12,9 @@
           <div class="panel panel-primary p-5 rounded-lg shadow">
             <h1 class="h6 text-uppercase font-weight-bold mb-4">Normal member</h1>
             <h2 class="h1 font-weight-bold"> 500 kr <span class="text-small font-weight-normal ml-2">/ month</span></h2>
-  
+
             <div class="my-4 mx-auto primary"></div>
-            
+
             <!-- Needs CSS! -->
             <ul class="my-5 text-small text-left">
               <li class="mb-3">
@@ -29,7 +29,7 @@
                   <i class="mr-2 text-primary"></i> Support Bitraf!</li>
                 <p></p>
                 <b>Bitraf is funded by its members!</b>
-                
+
             </ul>
             <button ng-click="ctrl.signup(500)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Sign up</button>
           </div>
@@ -39,9 +39,9 @@
           <div class="panel panel-primary p-5 rounded-lg shadow">
             <h1 class="h6 text-uppercase font-weight-bold mb-4">Supporting member</h1>
             <h2 class="h1 font-weight-bold"> 300 kr <span class="text-small font-weight-normal ml-2">/ month</span></h2>
-  
+
             <div class="my-4 mx-auto primary"></div>
-            
+
             <!-- Needs CSS! -->
             <ul class="my-5 text-small text-left">
               <li class="mb-3">
@@ -50,28 +50,30 @@
                 <i class="mr-2 text-primary"></i> For students, unemployed or others who cannot afford a full membership</li>
                 <p></p>
                 <b>Bitraf is funded by its members!</b>
-                
+
             </ul>
             <button ng-click="ctrl.signup(300)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Sign up</button>
           </div>
         </div>
         <!-- END -->
       </div>
-      
+
     </div>
   </div>
 
   <section ng-if="ctrl.payingMember && !ctrl.doorsAvailable">
     <div class="row">
       <div class="col-xs-12">
-        <h2>Gain access to bitraf</h2>
-        <p>Since you are an active, paying member of Bitraf you can get key access to
-        Bitraf. To gain this access you need to visit Bitraf in person and get someone
-        to add you to the door circle, which grants access to opening the
-        doors. One of the regular build-night is a good time to go.</p>
+        <div class="bs-callout bs-callout-info">
+          <h4>Gain access to bitraf</h4>
+          <p>Since you are an active, paying member of Bitraf you can get key access to
+            Bitraf. To gain this access you need to visit Bitraf in person and get someone
+            to add you to the door circle, which grants access to opening the
+            doors. One of the regular build-night is a good time to go.</p>
 
-        <p>Once you have been granted door access by a door admin, revisiting this page
-        will allow you to open the doors from eg your mobile phone</p>
+          <p>Once you have been granted door access by a door admin, revisiting this page
+            will allow you to open the doors from eg your mobile phone</p>
+        </div>
       </div>
     </div>
   </section>
@@ -111,6 +113,7 @@
       </div>
     </div>
 
+    <section ng-if="ctrl.recent_events.length > 0">
     <h3>Recent events</h3>
     <ul>
       <li ng-repeat="e in ctrl.recent_events">
@@ -126,5 +129,6 @@
         </span>
       </li>
     </ul>
+    </section>
   </section>
 </div>

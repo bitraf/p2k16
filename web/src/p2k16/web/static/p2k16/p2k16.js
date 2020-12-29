@@ -1,6 +1,6 @@
 (function () {
 
-    function config($routeProvider, $httpProvider, StripeCheckoutProvider) {
+    function config($routeProvider, $httpProvider) {
 
         /**
          *
@@ -36,13 +36,6 @@
             controller: AboutController,
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.about_html
-        }).when("/membership", {
-            controller: MembershipController,
-            controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.membership_html,
-            resolve: {
-                membership_details: CoreDataServiceResolvers.membership_details
-            }
         }).when("/my-profile", {
             controller: MyProfileController,
             controllerAs: 'ctrl',
@@ -688,89 +681,6 @@
         ];
     }
 
-    function MembershipController($uibModal, $log, CoreDataService, membership_details) {
-        var self = this;
-
-        self.membership_details = membership_details;
-
-        var spinner = new Spinner().spin();
-
-        function startSpinner() {
-            // Stripe takes a long time. Need a spinner
-            document.body.appendChild(spinner.el)
-        }
-
-        function stopSpinner() {
-            document.body.removeChild(spinner.el)
-        }
-
-        function updateDetails() {
-            startSpinner();
-            CoreDataService.membership_details().then(function (res) {
-                self.membership_details = res.data;
-                stopSpinner();
-            });
-        }
-
-        self.doCheckout = function (token) {
-            startSpinner();
-            CoreDataService.membership_set_stripe_token(token).then(function () {
-                // Update membership_details from api
-                updateDetails();
-            });
-        };
-
-        self.items = getMembershipTypes();
-
-        self.openChangeMembership = function () {
-            var modalInstance = $uibModal.open({
-                animation: true,
-                ariaLabelledBy: 'modal-title',
-                ariaDescribedBy: 'modal-body',
-                templateUrl: 'updateMembershipTemplate.html',
-                controller: ChangeMembershipController,
-                controllerAs: 'ctrl',
-                resolve: {
-                    items: function () {
-                        return self.items;
-                    },
-                    membership_details: self.membership_details
-                }
-            });
-
-            modalInstance.result.then(function (selectedItem) {
-                startSpinner();
-                CoreDataService.membership_set_membership(selectedItem).then(function () {
-                    updateDetails();
-                });
-
-            }, function () {
-                $log.info('Modal dismissed at: ' + new Date());
-            });
-        };
-    }
-
-    function ChangeMembershipController($scope, $uibModalInstance, membership_details) {
-        var self = this;
-
-        $scope.items = getMembershipTypes();
-
-        $scope.selectedItem = $scope.items[0];
-        for (var i = 0; i < $scope.items.length; ++i)
-            if ($scope.items[i].price == membership_details.fee) {
-                $scope.selectedItem = $scope.items[i];
-                break;
-            }
-
-        self.ok = function () {
-            $uibModalInstance.close($scope.selectedItem);
-        };
-
-        self.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-        };
-    }
-
     /**
      * @param $scope
      * @param {P2k16} P2k16
@@ -1253,7 +1163,7 @@
         });
     }
 
-    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])
+    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap'])
         .config(configSmartCaches)
         .config(config)
         .run(run)

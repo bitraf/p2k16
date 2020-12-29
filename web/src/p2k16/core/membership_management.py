@@ -90,6 +90,8 @@ def parse_stripe_event(event):
         handle_payment_success(event)
     elif event.type == 'invoice.payment_failed':
         handle_payment_failed(event)
+    elif event.type == 'checkout.session.completed':
+        handle_session_completed(event)
     else:
         pass  # Not implemented on purpose
 
@@ -108,7 +110,7 @@ def handle_payment_success(event):
 
     with model_support.run_as(account):
         invoice_id = event.data.object.id
-        timestamp = datetime.fromtimestamp(event.data.object.date)
+        timestamp = datetime.fromtimestamp(event.data.object.created)
         items = event.data.object.lines.data[0]
 
         payment = StripePayment(invoice_id, datetime.fromtimestamp(items.period.start),
@@ -121,6 +123,22 @@ def handle_payment_success(event):
 def handle_payment_failed(event):
     pass
 
+
+def handle_session_completed(event):
+    customer_id = event.data.object.customer
+
+    account = Account.find_account_by_id(event.data.object.metadata.accountId)
+
+    stripe_customer = get_stripe_customer(account)
+
+    # Customer not registered with p2k16
+    if stripe_customer is None:
+        with model_support.run_as(account):
+            stripe_customer = StripeCustomer(customer_id)
+            db.session.add(stripe_customer)
+            db.session.commit()
+
+    mail.send_new_member(account)
 
 def member_get_details(account):
     # Get mapping from account to stripe_id
@@ -137,7 +155,7 @@ def member_get_details(account):
 
         if stripe_customer_id is not None:
             # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
+            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=['sources', 'subscriptions'])
 
             if len(cu.sources.data) > 0:
                 card = cu.sources.data[0]
@@ -177,156 +195,79 @@ def member_get_details(account):
 
     return details
 
-
-def member_set_credit_card(account, stripe_token):
-    # Get mapping from account to stripe_id
+def member_customer_portal(account: Account, base_url: str):
+    """
+    Access stripe customer portal
+    :param account:
+    :param base_url:
+    :return: customer portalUrl
+    """
     stripe_customer_id = get_stripe_customer(account)
+    
+    return_url = base_url + '/#!/'
 
     try:
-        if stripe_customer_id is None:
-            # Create a new stripe customer and set source
-            cu = stripe.Customer.create(
-                description="Customer for %r" % account.name,
-                email=account.email,
-                source=stripe_token
-            )
-            stripe_customer_id = StripeCustomer(cu.stripe_id)
+        session = stripe.billing_portal.Session.create(
+            customer=stripe_customer_id,
+            return_url=return_url)
 
-            logger.info("Created customer for user=%r" % account.username)
-        else:
-            # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id)
-
-            if cu is None or (hasattr(cu, 'deleted') and cu.deleted):
-                logger.error("Stripe customer does not exist. This should not happen! account=%r, stripe_id=%r" %
-                             (account.username, stripe_token))
-                raise P2k16UserException("Set credit card invalid state. Contact kasserer@bitraf.no")
-
-            # Create a new default card
-            new_card = cu.sources.create(source=stripe_token)
-            cu.default_source = new_card.id
-            cu.save()
-
-            # Delete any old cards
-            for card in cu.sources.list():
-                if card.id != new_card.id:
-                    card.delete()
-
-        # Commit to db
-        db.session.add(stripe_customer_id)
-        db.session.commit()
-
-        # Check if there are any outstanding invoices on this account that needs billing
-        for invoice in stripe.Invoice.list(customer=cu.stripe_id):
-            if invoice.paid is False and invoice.closed is False and invoice.forgiven is False:
-                invoice.pay()
-
-        logger.info("Successfully updated credit card for user=%r" % account.username)
-        return True
-
-    except stripe.error.CardError as e:
-        err = e.json_body.get('error', {})
-        msg = err.get('message')
-
-        logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
-
-        raise P2k16UserException("Error updating credit card: %r" % msg)
+        return {'portalUrl': session.url}
 
     except stripe.error.StripeError as e:
-        logger.error("Stripe error: " + repr(e.json_body))
+            logger.error("Stripe error: " + repr(e.json_body))
 
-        raise P2k16UserException("Error updating credit card due to stripe error. Contact kasserer@bitraf.no if the "
+            raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the "
                                  "problem persists.")
 
+def member_create_checkout_session(account: Account, base_url: str, price_id: int):
+    """
+    Create a new subscription using Stripe Checkout / Billing
+    :param account:
+    :param base_url:
+    :param price_id:
+    :return: checkout sessionId
+    """
+    stripe_customer_id = get_stripe_customer(account)
+    customer_email = account.email
 
-def member_cancel_membership(account):
+    # Existing customers should only use this flow if they have no subscriptions.
+    if stripe_customer_id is not None:
+          # Get customer object
+        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=[
+               'subscriptions'])
+
+        if len(cu.subscriptions.data) > 0:
+            raise P2k16UserException("User is already subscribed.")
+
+        # Email cannot be provided with customer object.
+        customer_email = None
+
+    success_url = base_url + '/#!/?session_id={CHECKOUT_SESSION_ID}'
+    cancel_url = base_url + '/#!/'
+
     try:
-        # Update local db
-        membership = get_membership(account)
-        db.session.delete(membership)
+        checkout_session = stripe.checkout.Session.create(
+            success_url=success_url,
+            cancel_url=cancel_url,
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items=[
+                {
+                    "price": price_id,
+                    "quantity": 1
+                }
+            ],
+            metadata={"accountId": account.id},
+            customer_email=customer_email,
+            customer=stripe_customer_id,
+        )
 
-        # Update stripe
-        stripe_customer_id = get_stripe_customer(account)
+        session_id = checkout_session['id']
 
-        for sub in stripe.Subscription.list(customer=stripe_customer_id):
-            sub.delete(at_period_end=True)
+        return {'sessionId': session_id}
 
-        db.session.commit()
-
-        mail.send_membership_ended(account)
 
     except stripe.error.StripeError as e:
-        logger.error("Stripe error: " + repr(e.json_body))
+            logger.error("Stripe error: " + repr(e.json_body))
 
-        raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")
-
-
-def member_set_membership(account, membership_plan, membership_price):
-    # TODO: Remove membership_price and look up price from model
-
-    try:
-        membership = get_membership(account)
-
-        if membership_plan == 'none':
-            member_cancel_membership(account)
-            return True
-
-        # --- Update membership in local db ---
-        if membership is not None:
-            if membership.fee is membership_price:
-                # Nothing's changed.
-                logger.info("No membership change for user=%r, type=%r, amount=%r" % (
-                    account.username, membership_plan, membership_price))
-                return
-            else:
-                membership.fee = membership_price
-                membership.start_membership = datetime.now()
-        else:
-            # New membership
-            membership = Membership(membership_price)
-
-        # --- Update membership in stripe ---
-
-        # Get customer object
-        stripe_customer_id = get_stripe_customer(account)
-
-        if stripe_customer_id is None:
-            raise P2k16UserException("You must set a credit card before changing plan.")
-
-        # Check for active subscription
-        subscriptions = stripe.Subscription.list(customer=stripe_customer_id)
-
-        if subscriptions is None or len(subscriptions) == 0:
-            sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"plan": membership_plan}])
-        else:
-            sub = next(iter(subscriptions), None)
-            stripe.Subscription.modify(sub.id, cancel_at_period_end=False,
-                                       items=[{
-                                           'id': sub['items']['data'][0].id,
-                                           'plan': membership_plan
-                                       }],
-                                       prorate=False)
-
-        # Commit to db
-        db.session.add(membership)
-        db.session.commit()
-
-        logger.info("Successfully updated membership type for user=%r, type=%r, amount=%r" % (
-            account.username, membership_plan, membership_price))
-
-        mail.send_new_member(account)
-
-        return True
-
-    except stripe.error.CardError as e:
-        err = e.json_body.get('error', {})
-        msg = err.get('message')
-
-        logger.info("Card processing failed for user=%r, error=%r" % (account.username, err))
-
-        raise P2k16UserException("Error charging credit card: %r" % msg)
-
-    except stripe.error.StripeError as e:
-        logger.error("Stripe error: " + repr(e.json_body))
-
-        raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")
+            raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the problem persists.")

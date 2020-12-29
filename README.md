@@ -27,6 +27,8 @@ Running the application:
 
 This will fail unless you have the required applications installed.
 
+You can log into p2k16 with the user 'super', password 'super'.
+
 # Development
 
 # Dependencies

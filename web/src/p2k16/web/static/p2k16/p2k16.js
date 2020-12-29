@@ -1,6 +1,6 @@
 (function () {
 
-    function config($routeProvider, $httpProvider, StripeCheckoutProvider) {
+    function config($routeProvider, $httpProvider) {
 
         /**
          *
@@ -36,13 +36,6 @@
             controller: AboutController,
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.about_html
-        }).when("/membership", {
-            controller: MembershipController,
-            controllerAs: 'ctrl',
-            templateUrl: p2k16_resources.membership_html,
-            resolve: {
-                membership_details: CoreDataServiceResolvers.membership_details
-            }
         }).when("/my-profile", {
             controller: MyProfileController,
             controllerAs: 'ctrl',
@@ -179,9 +172,9 @@
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
 
-        StripeCheckoutProvider.defaults({
-            key: window.stripe_pubkey
-        });
+        window.stripe = Stripe(window.stripe_pubkey);
+
+
     }
 
     function run(P2k16, $location, $rootScope) {
@@ -424,7 +417,6 @@
             return self.profile.account;
         }
 
-
         function refreshAccount(updated) {
             console.log("refreshing account");
             _.merge(self.profile, updated);
@@ -642,13 +634,26 @@
      * @param {P2k16} P2k16
      * @param recent_events
      */
-    function FrontPageController(DoorDataService, P2k16, recent_events) {
+    function FrontPageController(DoorDataService, P2k16, recent_events, CoreDataService) {
         var self = this;
 
         self.openDoors = function (doors) {
             DoorDataService.open_door({doors: doors}).then(function (res) {
                 var msg = res.message || "The door is open";
                 P2k16.addInfos(msg);
+            });
+        };
+        
+        self.signup = function (price) {
+            priceId = 'medlem' + price;
+            CoreDataService.membership_create_checkout_session({baseUrl: window.location.origin, priceId:priceId}).then(function (res) {
+                window.stripe.redirectToCheckout(res.data);
+            });
+        };
+        
+        self.manageBilling = function () {
+            CoreDataService.membership_customer_portal({baseUrl: window.location.origin}).then(function (res) {
+                window.location.href = res.data.portalUrl;
             });
         };
 
@@ -674,89 +679,6 @@
             {plan: 'medlem300', name: 'Støttemedlemskap (300 kr)', price: 300},
             {plan: 'none', name: 'Inaktiv (0 kr)', price: 0}
         ];
-    }
-
-    function MembershipController($uibModal, $log, CoreDataService, membership_details) {
-        var self = this;
-
-        self.membership_details = membership_details;
-
-        var spinner = new Spinner().spin();
-
-        function startSpinner() {
-            // Stripe takes a long time. Need a spinner
-            document.body.appendChild(spinner.el)
-        }
-
-        function stopSpinner() {
-            document.body.removeChild(spinner.el)
-        }
-
-        function updateDetails() {
-            startSpinner();
-            CoreDataService.membership_details().then(function (res) {
-                self.membership_details = res.data;
-                stopSpinner();
-            });
-        }
-
-        self.doCheckout = function (token) {
-            startSpinner();
-            CoreDataService.membership_set_stripe_token(token).then(function () {
-                // Update membership_details from api
-                updateDetails();
-            });
-        };
-
-        self.items = getMembershipTypes();
-
-        self.openChangeMembership = function () {
-            var modalInstance = $uibModal.open({
-                animation: true,
-                ariaLabelledBy: 'modal-title',
-                ariaDescribedBy: 'modal-body',
-                templateUrl: 'updateMembershipTemplate.html',
-                controller: ChangeMembershipController,
-                controllerAs: 'ctrl',
-                resolve: {
-                    items: function () {
-                        return self.items;
-                    },
-                    membership_details: self.membership_details
-                }
-            });
-
-            modalInstance.result.then(function (selectedItem) {
-                startSpinner();
-                CoreDataService.membership_set_membership(selectedItem).then(function () {
-                    updateDetails();
-                });
-
-            }, function () {
-                $log.info('Modal dismissed at: ' + new Date());
-            });
-        };
-    }
-
-    function ChangeMembershipController($scope, $uibModalInstance, membership_details) {
-        var self = this;
-
-        $scope.items = getMembershipTypes();
-
-        $scope.selectedItem = $scope.items[0];
-        for (var i = 0; i < $scope.items.length; ++i)
-            if ($scope.items[i].price == membership_details.fee) {
-                $scope.selectedItem = $scope.items[i];
-                break;
-            }
-
-        self.ok = function () {
-            $uibModalInstance.close($scope.selectedItem);
-        };
-
-        self.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-        };
     }
 
     /**
@@ -1241,7 +1163,7 @@
         });
     }
 
-    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap', 'stripe.checkout'])
+    angular.module('p2k16.app', ['ngRoute', 'ui.bootstrap'])
         .config(configSmartCaches)
         .config(config)
         .run(run)

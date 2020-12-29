@@ -75,25 +75,18 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.membership_set_stripe_token = function (payload) {
+    this.membership_create_checkout_session = function (payload) {
         var req = {};
         req.method = 'POST';
-        req.url = '/membership/set-stripe-token';
+        req.url = '/membership/create-checkout-session';
         req.data = payload;
         return $http(req);
     };
 
-    this.membership_details = function () {
-        var req = {};
-        req.method = 'GET';
-        req.url = '/membership/details';
-        return $http(req);
-    };
-
-    this.membership_set_membership = function (payload) {
+    this.membership_customer_portal = function (payload) {
         var req = {};
         req.method = 'POST';
-        req.url = '/membership/set-membership';
+        req.url = '/membership/customer-portal';
         req.data = payload;
         return $http(req);
     };
@@ -220,9 +213,6 @@ CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
 CoreDataServiceResolvers.data_account_summary = function (CoreDataService, $route) {
   var account_id = $route.current.params.account_id;
   return CoreDataService.data_account_summary(account_id).then(function (res) { return res.data; });
-};
-CoreDataServiceResolvers.membership_details = function (CoreDataService) {
-  return CoreDataService.membership_details().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_circle = function (CoreDataService, $route) {
   var circle_id = $route.current.params.circle_id;

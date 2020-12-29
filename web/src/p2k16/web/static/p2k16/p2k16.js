@@ -179,9 +179,9 @@
 
         $httpProvider.interceptors.push('P2k16HttpInterceptor');
 
-        StripeCheckoutProvider.defaults({
-            key: window.stripe_pubkey
-        });
+        window.stripe = Stripe(window.stripe_pubkey);
+
+
     }
 
     function run(P2k16, $location, $rootScope) {
@@ -424,7 +424,6 @@
             return self.profile.account;
         }
 
-
         function refreshAccount(updated) {
             console.log("refreshing account");
             _.merge(self.profile, updated);
@@ -642,13 +641,26 @@
      * @param {P2k16} P2k16
      * @param recent_events
      */
-    function FrontPageController(DoorDataService, P2k16, recent_events) {
+    function FrontPageController(DoorDataService, P2k16, recent_events, CoreDataService) {
         var self = this;
 
         self.openDoors = function (doors) {
             DoorDataService.open_door({doors: doors}).then(function (res) {
                 var msg = res.message || "The door is open";
                 P2k16.addInfos(msg);
+            });
+        };
+        
+        self.signup = function (price) {
+            priceId = 'medlem' + price;
+            CoreDataService.membership_create_checkout_session({baseUrl: window.location.origin, priceId:priceId}).then(function (res) {
+                window.stripe.redirectToCheckout(res.data);
+            });
+        };
+        
+        self.manageBilling = function () {
+            CoreDataService.membership_customer_portal({baseUrl: window.location.origin}).then(function (res) {
+                window.location.href = res.data.portalUrl;
             });
         };
 

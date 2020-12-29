@@ -90,6 +90,8 @@ def parse_stripe_event(event):
         handle_payment_success(event)
     elif event.type == 'invoice.payment_failed':
         handle_payment_failed(event)
+    elif event.type == 'checkout.session.completed':
+        handle_session_completed(event)
     else:
         pass  # Not implemented on purpose
 
@@ -120,6 +122,21 @@ def handle_payment_success(event):
 
 def handle_payment_failed(event):
     pass
+
+
+def handle_session_completed(event):
+    customer_id = event.data.object.customer
+
+    account = Account.find_account_by_id(event.data.object.metadata.accountId)
+
+    stripe_customer = get_stripe_customer(account)
+
+    # Customer not registered with p2k16
+    if stripe_customer is None:
+        with model_support.run_as(account):
+            stripe_customer = StripeCustomer(customer_id)
+            db.session.add(stripe_customer)
+            db.session.commit()
 
 
 def member_get_details(account):
@@ -177,6 +194,83 @@ def member_get_details(account):
 
     return details
 
+def member_customer_portal(account: Account, base_url: str):
+    """
+    Access stripe customer portal
+    :param account:
+    :param base_url:
+    :return: customer portalUrl
+    """
+    stripe_customer_id = get_stripe_customer(account)
+    
+    return_url = base_url + '/#!/membership'
+
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=stripe_customer_id,
+            return_url=return_url)
+
+        return {'portalUrl': session.url}
+
+    except stripe.error.StripeError as e:
+            logger.error("Stripe error: " + repr(e.json_body))
+
+            raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the "
+                                 "problem persists.")
+
+def member_create_checkout_session(account: Account, base_url: str, price_id: int):
+    """
+    Create a new subscription using Stripe Checkout / Billing
+    :param account:
+    :param base_url:
+    :param price_id:
+    :return: checkout sessionId
+    """
+    stripe_customer_id = get_stripe_customer(account)
+    customer_email = account.email
+
+    # Existing customers should only use this flow if they have no subscriptions.
+    if stripe_customer_id is not None:
+          # Get customer object
+        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=[
+               'subscriptions'])
+
+        if len(cu.subscriptions.data) > 0:
+            raise P2k16UserException("User is already subscribed.")
+
+        # Email cannot be provided with customer object.
+        customer_email = None
+
+    success_url = base_url + '/#!/?session_id={CHECKOUT_SESSION_ID}'
+    cancel_url = base_url + '/#!/'
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            success_url=success_url,
+            cancel_url=cancel_url,
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items=[
+                {
+                    "price": price_id,
+                    "quantity": 1
+                }
+            ],
+            metadata={"accountId": account.id},
+            customer_email=customer_email,
+            customer=stripe_customer_id,
+        )
+
+        session_id = checkout_session['id']
+
+        return {'sessionId': session_id}
+
+
+    except stripe.error.StripeError as e:
+            logger.error("Stripe error: " + repr(e.json_body))
+
+            raise P2k16UserException("Stripe error. Contact kasserer@bitraf.no if the "
+                                 "problem persists.")
 
 def member_set_credit_card(account, stripe_token):
     # Get mapping from account to stripe_id

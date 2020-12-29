@@ -75,10 +75,18 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.membership_set_stripe_token = function (payload) {
+    this.membership_create_checkout_session = function (payload) {
         var req = {};
         req.method = 'POST';
-        req.url = '/membership/set-stripe-token';
+        req.url = '/membership/create-checkout-session';
+        req.data = payload;
+        return $http(req);
+    };
+
+    this.membership_customer_portal = function (payload) {
+        var req = {};
+        req.method = 'POST';
+        req.url = '/membership/customer-portal';
         req.data = payload;
         return $http(req);
     };

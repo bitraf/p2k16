@@ -138,6 +138,7 @@ def handle_session_completed(event):
             db.session.add(stripe_customer)
             db.session.commit()
 
+    mail.send_new_member(account)
 
 def member_get_details(account):
     # Get mapping from account to stripe_id

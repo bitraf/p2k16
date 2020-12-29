@@ -91,21 +91,6 @@ function CoreDataService($http) {
         return $http(req);
     };
 
-    this.membership_details = function () {
-        var req = {};
-        req.method = 'GET';
-        req.url = '/membership/details';
-        return $http(req);
-    };
-
-    this.membership_set_membership = function (payload) {
-        var req = {};
-        req.method = 'POST';
-        req.url = '/membership/set-membership';
-        req.data = payload;
-        return $http(req);
-    };
-
     this.data_circle = function (circle_id) {
         var req = {};
         req.method = 'GET';
@@ -228,9 +213,6 @@ CoreDataServiceResolvers.data_account = function (CoreDataService, $route) {
 CoreDataServiceResolvers.data_account_summary = function (CoreDataService, $route) {
   var account_id = $route.current.params.account_id;
   return CoreDataService.data_account_summary(account_id).then(function (res) { return res.data; });
-};
-CoreDataServiceResolvers.membership_details = function (CoreDataService) {
-  return CoreDataService.membership_details().then(function (res) { return res.data; });
 };
 CoreDataServiceResolvers.data_circle = function (CoreDataService, $route) {
   var circle_id = $route.current.params.circle_id;

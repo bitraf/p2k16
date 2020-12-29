@@ -10,7 +10,7 @@ import flask_login
 from flask import current_app, abort, Blueprint, render_template, jsonify, request
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management, \
     authz_management
-from p2k16.core.membership_management import member_create_checkout_session, member_customer_portal, member_set_credit_card, member_get_details, member_set_membership, \
+from p2k16.core.membership_management import member_create_checkout_session, member_customer_portal, \
     get_membership, get_membership_payments, active_member, get_membership_fee
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
     CircleManagementStyle, Membership, StripePayment
@@ -488,27 +488,6 @@ def membership_customer_portal():
     base_url = request.json['baseUrl']
 
     return jsonify(member_customer_portal(account, base_url))
-
-def membership_set_stripe_token():
-    account = flask_login.current_user.account
-    stripe_token = request.json['id']
-
-    return jsonify(member_set_credit_card(account, stripe_token))
-
-
-@registry.route('/membership/details')
-def membership_details():
-    return jsonify(member_get_details(flask_login.current_user.account))
-
-
-@registry.route('/membership/set-membership', methods=["POST"])
-def membership_set_membership():
-    account = flask_login.current_user.account
-
-    membership_plan = request.json['plan']
-    membership_price = request.json['price']
-
-    return jsonify(member_set_membership(account, membership_plan, membership_price))
 
 
 ###############################################################################

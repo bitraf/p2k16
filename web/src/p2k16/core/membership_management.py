@@ -204,6 +204,9 @@ def member_customer_portal(account: Account, base_url: str):
     """
     stripe_customer_id = get_stripe_customer(account)
     
+    if stripe_customer_id is None:
+        raise P2k16UserException('No billing information available. Create a subscription first.')
+
     return_url = base_url + '/#!/'
 
     try:

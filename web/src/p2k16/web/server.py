@@ -233,4 +233,4 @@ if _env == "local":
 
 flask_bower.Bower(app)
 
-mail.get_templates()  # Preload templates
+mail.setup(app.config)

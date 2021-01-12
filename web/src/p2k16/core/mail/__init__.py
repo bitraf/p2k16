@@ -1,5 +1,6 @@
 import logging
 import os.path
+from typing import Mapping
 
 import emails.loader
 from jinja2 import Template, Environment
@@ -8,9 +9,8 @@ from p2k16.core.models import Account
 
 logger = logging.getLogger(__name__)
 
-mail_from = ('Bitraf', 'root@bitraf.no')
-membership_cc = 'post@bitraf.no'
-
+mail_from = ('Bitraf', 'post@bitraf.no')
+membership_cc = None
 
 class Templates():
     def __init__(self):
@@ -36,6 +36,14 @@ class Templates():
 
 
 _templates = Templates()
+
+
+def setup(cfg: Mapping[str, str]) -> Templates():
+    global membership_cc
+
+    membership_cc = cfg.get('MEMBERSHIP_CC', None)
+
+    return get_templates()  # Preload templates
 
 
 def get_templates() -> Templates:
@@ -66,7 +74,8 @@ def send_new_member(account: Account):
     m = _templates.new_member(account=account)
     m.mail_to = (account.username, account.email)
     m.mail_from = mail_from
-    m.bcc = membership_cc
+    if membership_cc is not None:
+        m.bcc = membership_cc
     m.send()
 
 def send_membership_ended(account: Account):
@@ -75,6 +84,7 @@ def send_membership_ended(account: Account):
     m = _templates.membership_ended(account=account)
     m.mail_to = (account.username, account.email)
     m.mail_from = mail_from
-    m.bcc = membership_cc
+    if membership_cc is not None:
+        m.bcc = membership_cc
     m.send()
 

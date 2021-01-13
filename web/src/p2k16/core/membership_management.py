@@ -92,6 +92,10 @@ def parse_stripe_event(event):
         handle_payment_failed(event)
     elif event.type == 'checkout.session.completed':
         handle_session_completed(event)
+    elif event.type == 'payment_method.attached':
+        handle_payment_method_updated(event)
+    elif event.type == 'payment_method.updated':
+        handle_payment_method_updated(event)
     else:
         pass  # Not implemented on purpose
 
@@ -119,11 +123,14 @@ def handle_payment_success(event):
         db.session.add(payment)
         db.session.commit()
 
-
 def handle_payment_failed(event):
     pass
 
 
+    """
+    After user completes Stripe Checkout session.
+    :return:
+    """
 def handle_session_completed(event):
     customer_id = event.data.object.customer
 
@@ -139,6 +146,22 @@ def handle_session_completed(event):
             db.session.commit()
 
     mail.send_new_member(account)
+
+    """
+    Try to charge unpaid invoices if payment method updated
+    This allows a member to openm doors/use tools right away
+    instead of waiting for a smart retry (a few days)
+    :return:
+    """
+def handle_payment_method_updated(event):
+    stripe_customer_id = event.data.object.customer
+
+    if stripe_customer_id is not None:
+        invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
+
+        for invoice in invoices.data:
+            stripe.Invoice.pay(invoice.id)
+
 
 def member_get_details(account):
     # Get mapping from account to stripe_id
@@ -203,7 +226,7 @@ def member_customer_portal(account: Account, base_url: str):
     :return: customer portalUrl
     """
     stripe_customer_id = get_stripe_customer(account)
-    
+
     if stripe_customer_id is None:
         raise P2k16UserException('No billing information available. Create a subscription first.')
 

@@ -537,7 +537,7 @@
     }
 
     function p2k16HeaderDirective() {
-        function p2k16HeaderController($scope, $location, P2k16, AuthzService) {
+        function p2k16HeaderController($scope, $location, P2k16, AuthzService, CoreDataService) {
             var self = this;
             self.currentProfile = P2k16.currentProfile;
             self.currentAccount = P2k16.currentAccount;
@@ -546,6 +546,12 @@
                 $event.preventDefault();
                 AuthzService.logOut().then(function () {
                     $location.url("/?random=" + Date.now());
+                });
+            };
+
+            self.manageBilling = function () {
+                CoreDataService.membership_customer_portal({ baseUrl: window.location.origin }).then(function (res) {
+                    window.location.href = res.data.portalUrl;
                 });
             };
 
@@ -651,12 +657,6 @@
             });
         };
         
-        self.manageBilling = function () {
-            CoreDataService.membership_customer_portal({baseUrl: window.location.origin}).then(function (res) {
-                window.location.href = res.data.portalUrl;
-            });
-        };
-
         var profile = P2k16.currentProfile();
         self.doorsAvailable = profile.has_door_access;
         self.payingMember = profile.is_paying_member;

@@ -271,6 +271,11 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
             email=account.email
             )
 
+        # Store stripe customer in case checkout fails.
+        stripe_customer = StripeCustomer(stripe_customer_id.id)
+        db.session.add(stripe_customer)
+        db.session.commit()
+
     success_url = base_url + '/#!/?session_id={CHECKOUT_SESSION_ID}'
     cancel_url = base_url + '/#!/'
 

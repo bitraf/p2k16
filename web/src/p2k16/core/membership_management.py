@@ -254,7 +254,6 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
     :return: checkout sessionId
     """
     stripe_customer_id = get_stripe_customer(account)
-    customer_email = account.email
 
     # Existing customers should only use this flow if they have no subscriptions.
     if stripe_customer_id is not None:
@@ -265,8 +264,12 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
         if len(cu.subscriptions.data) > 0:
             raise P2k16UserException("User is already subscribed.")
 
-        # Email cannot be provided with customer object.
-        customer_email = None
+    else:
+        # Create a new customer object
+        stripe_customer_id = stripe.Customer.create(
+            name=account.name,
+            email=account.email
+            )
 
     success_url = base_url + '/#!/?session_id={CHECKOUT_SESSION_ID}'
     cancel_url = base_url + '/#!/'
@@ -284,7 +287,6 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
                 }
             ],
             metadata={"accountId": account.id},
-            customer_email=customer_email,
             customer=stripe_customer_id,
         )
 

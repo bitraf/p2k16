@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -euo pipefail
+
+set -x
+
+cd /ldap
+
+cat slapd.template.conf | awk -f setup.awk > slapd.conf
+cat odbc.template.ini | awk -f setup.awk > /etc/odbc.ini
+
+if [[ 1 = 2 ]]
+then
+  echo "slapd.conf:"
+  echo "------------------------------------------------------------"
+  cat /ldap/slapd.conf
+  echo "------------------------------------------------------------"
+  echo "odbc.ini:"
+  echo "------------------------------------------------------------"
+  cat /etc/odbc.ini
+  echo "------------------------------------------------------------"
+fi
+
+cd /
+exec /usr/sbin/slapd -f /ldap/slapd.conf -d ${SLAPD_DEBUG:-0}

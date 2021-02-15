@@ -2,7 +2,7 @@ version: "3"
 services:
   pdb:
     image: postgres:12
-    restart: always
+    restart: "no"
     ports:
       - "2016:5432"
     volumes:
@@ -10,3 +10,21 @@ services:
     environment:
       PGDATA: /data
       POSTGRES_PASSWORD: postgres
+
+  ldb:
+    image: p2k16-ldap:latest
+    restart: unless-stopped
+    ports:
+      - 389:389
+    environment:
+      ODBC_PGDATABASE: p2k16
+      ODBC_PGHOST: pdb
+      ODBC_PGPORT: 5432
+
+      SLAPD_SUFFIX: dc=bitraf,dc=no
+      SLAPD_DBNAME: p2k16
+      SLAPD_DBUSER: p2k16-ldap
+      SLAPD_DBPASSWD: p2k16-ldap
+      SLAPD_DEBUG: 255
+    build:
+      context: ../../ldap

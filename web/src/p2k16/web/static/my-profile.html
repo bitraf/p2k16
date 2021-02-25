@@ -5,21 +5,21 @@
 
   <form class="form-horizontal">
     <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">Old password</label>
+      <label for="name" class="col-sm-3 col-lg-2 control-label">Old password</label>
       <div class="col-sm-4">
         <input class="form-control" type="password" name="oldPassword" id="oldPassword"
                ng-model="ctrl.changePasswordForm.oldPassword"/>
       </div>
     </div>
     <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">New password</label>
+      <label for="name" class="col-sm-3 col-lg-2 control-label">New password</label>
       <div class="col-sm-4">
         <input class="form-control" type="password" name="newPassword" id="newPassword"
                ng-model="ctrl.changePasswordForm.newPassword"/>
       </div>
     </div>
     <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">New password</label>
+      <label for="name" class="col-sm-3 col-lg-2 control-label">New password</label>
       <div class="col-sm-4">
         <button class="btn btn-default" ng-click="ctrl.changePassword()">Change password</button>
       </div>
@@ -30,7 +30,7 @@
   <h3>Edit profile details</h3>
   <form class="form-horizontal">
     <div class="form-group">
-      <label for="phone" class="col-sm-3 control-label">Phone number</label>
+      <label for="phone" class="col-sm-3 col-lg-2 control-label">Phone number</label>
       <div class="col-sm-4">
         <input class="form-control"
                type="text"
@@ -42,7 +42,7 @@
       </div>
     </div>
     <div class="form-group">
-      <div class="col-sm-4 col-sm-offset-3">
+      <div class="col-sm-4 col-sm-offset-3 col-lg-offset-2">
         <button class="btn btn-default" ng-click="ctrl.saveProfile()">Save profile</button>
       </div>
     </div>
@@ -76,5 +76,64 @@
         <button class="btn btn-default" ng-click="ctrl.printBoxLabel()">Print box label</button>
     </div>
   </div>
+
+  <h1>Account keys</h1>
+  <div class="list-group">
+    <div class="list-group-item" ng-repeat="key in ctrl.accountKeys">
+      <h4 class="list-group-item-header clearfix">
+        <button class="btn btn-danger btn-sm pull-right" ng-click="ctrl.removeAccountKey(key)">
+          <span class="glyphicon glyphicon-remove"></span> Remove
+        </button>
+        <span class="glyphicon" ng-class="{'glyphicon-console': key.key_type == 'SSH', 'glyphicon-cloud': key.key_type == 'WIREGUARD'}"></span>
+        <span class="comment">{{key.comment}}</span>
+      </h4>
+    </div>
+  </div>
+  <h3>Add key</h3>
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label for="comment" class="col-sm-3 col-lg-2 control-label">Comment</label>
+      <div class="col-sm-7">
+        <input class="form-control"
+               type="text"
+               name="comment"
+               id="comment"
+               placeholder="Key comment"
+               ng-model="ctrl.newAccountKeyForm.comment"
+               autocomplete="none" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="keyType" class="col-sm-3 col-lg-2 control-label">Key type</label>
+      <div class="col-sm-4">
+        <select
+          class="form-control"
+          name="keyType"
+          ng-model="ctrl.newAccountKeyForm.keyType">
+          <option value="SSH">SSH</option>
+          <option value="WIREGUARD">WireGuard</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="publicKey" class="col-sm-3 col-lg-2 control-label">Public key</label>
+      <div class="col-sm-7">
+        <textarea
+          style="resize: vertical"
+          class="form-control"
+          name="publicKey"
+          id="publicKey"
+          ng-model="ctrl.newAccountKeyForm.publicKey"
+          rows="7">
+        </textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-4 col-sm-offset-3 col-lg-offset-2">
+        <button class="btn btn-default" ng-click="ctrl.addAccountKey()">Add account key</button>
+      </div>
+    </div>
+  </form>
+
 
 </div>

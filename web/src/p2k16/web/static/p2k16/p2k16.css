@@ -1,5 +1,5 @@
 div.error-container {
-    position: absolute;
+    position: fixed;
     right: 3em;
     top: 3em;
     width: 25em;

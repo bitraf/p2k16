@@ -624,6 +624,56 @@ class ToolCheckout(DefaultMixin, db.Model):
     def find_by_tool(_tool) -> Optional['ToolCheckout']:
         return ToolCheckout.query.filter(ToolCheckout.tool_description_id == _tool.id).one_or_none()
 
+# Also specified in the core_blueprint.py
+class AccountKeyType(enum.Enum):
+    SSH = 1
+    WIREGUARD = 2
+
+
+class AccountKey(DefaultMixin, db.Model):
+    __tablename = 'account_key'
+    __versioned__ = {}
+
+    account_id = Column("account_id", Integer, ForeignKey('account.id'), nullable=False)
+    comment = Column("comment", String(200))
+    public_key = Column("public_key", String(10000), nullable=False)
+    _key_type = Column("key_type", String(50), nullable=False)
+
+    account = relationship("Account", foreign_keys=[account_id])
+
+    def __init__(self, account: Account, comment: str, public_key: str,
+                 key_type: AccountKeyType):
+        super().__init__()
+        self.account_id = account.id
+        self.comment = comment
+        self.public_key = public_key
+        self._key_type = key_type.name
+
+    def __repr__(self):
+        return '<AccountKey:%s, account=%s, key_type=%s, comment=%s>' % (self.id, self.account_id, self._key_type, self.comment)
+
+
+    @hybrid_property
+    def key_type(self) -> AccountKeyType:
+        return AccountKeyType[self._key_type]
+
+    @staticmethod
+    def find_by_id(_id) -> Optional["AccountKey"]:
+        return AccountKey.query.filter(AccountKey.id == _id).one_or_none()
+
+    @staticmethod
+    def get_by_id(_id) -> "AccountKey":
+        return AccountKey.query.filter(AccountKey.id == _id).one()
+
+    @staticmethod
+    def delete_by_id(_id):
+        c = AccountKey.get_by_id(_id)
+        db.session.delete(c)
+        db.session.flush()
+
+    @staticmethod
+    def find_by_account(_account) -> List["AccountKey"]:
+        return AccountKey.query.filter(AccountKey.account_id == _account.id).all()
 
 from sqlalchemy import event
 

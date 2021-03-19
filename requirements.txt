@@ -28,7 +28,7 @@ future==0.18.2
 gunicorn==20.0.4
 idna==2.10
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 jsonschema==3.2.0
 ldif3==3.2.2
 lxml==4.5.2

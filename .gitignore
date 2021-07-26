@@ -14,3 +14,4 @@ p2k16.pid
 *.log
 .DS_Store
 *.pg
+docker

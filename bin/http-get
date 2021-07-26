@@ -1,0 +1,18 @@
+#!/bin/sh
+
+url="$1"
+output="$2"
+
+if [ "$url" = "" ]
+then
+  echo "usage: $0 [url] <output>"
+fi
+
+if command -v wget > /dev/null; then
+  wget -O "$output" "$url"
+elif command -v curl > /dev/null; then
+  curl "$url" > "$output"
+else
+  echo "$0: neither curl nor wget found"
+  exit 1
+fi

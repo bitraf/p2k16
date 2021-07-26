@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -euo pipefail
+
+bin="$(cd ${0%/*} && pwd)"
+
+v=7.8.1
+url="https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$v/flyway-commandline-$v.zip"
+
+filename="${url##*/}"
+zip="$bin/.flyway/$filename"
+flyway="$bin/.flyway/flyway-$v/flyway"
+
+if [[ ! -x "$flyway" ]]
+then
+  echo "Downloading Flyway v$v ..." > /dev/stderr
+  mkdir -p "${zip%/*}"
+  http-get "$url" "$zip"
+  unzip -q "$zip" -d "$bin/.flyway"
+  chmod +x "$flyway"
+fi
+
+exec "$flyway" "${@}"

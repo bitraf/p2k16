@@ -1,6 +1,3 @@
--- TODO: remove lined with p2k16-admin, the user is not used any more.
-REVOKE ALL PRIVILEGES ON DATABASE p2k16 FROM "p2k16-admin";
-REVOKE ALL PRIVILEGES ON SCHEMA public FROM "p2k16-admin";
 REVOKE ALL PRIVILEGES ON DATABASE p2k16 FROM "p2k16-flyway";
 REVOKE ALL PRIVILEGES ON SCHEMA public FROM "p2k16-flyway";
 REVOKE ALL PRIVILEGES ON SCHEMA public FROM "p2k16-web";

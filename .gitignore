@@ -3,14 +3,14 @@ env*
 bower_components
 .idea
 
+bin/.*
 node_modules/
 *.egg-info
 .cache/
 .pytest_cache/
 
-flyway-*.*.*
 p2k16.pid
 
 *.log
 .DS_Store
-p2k16.pid
+*.pg

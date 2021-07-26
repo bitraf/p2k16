@@ -145,7 +145,7 @@ def door_service():
         content = registry.generate()
         door_service.content = content
 
-    return content, 'application/javascript'
+    return content, {'Content-Type': 'application/javascript'}
 
 
 door_service.content = None

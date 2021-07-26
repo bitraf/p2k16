@@ -108,7 +108,7 @@ def badge_service():
         content = registry.generate()
         badge_service.content = content
 
-    return content, 'application/javascript'
+    return content, {'Content-Type': 'application/javascript'}
 
 
 badge_service.content = None

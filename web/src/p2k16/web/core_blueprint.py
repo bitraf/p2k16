@@ -843,7 +843,7 @@ def core_service():
         content = registry.generate()
         core_service.content = content
 
-    return content, "application/javascript"
+    return content, {'Content-Type': 'application/javascript'}
 
 
 core_service.content = None

@@ -31,6 +31,9 @@
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="P2K16_CONFIG" value="infrastructure/config-local.cfg" />
       <env name="P2K16_LOGGING" value="infrastructure/logging-stdout.yaml" />
+      <env name="STRIPE_WEBHOOK_SECRET" value="whsec_Rr4aEG6kaZWIljjybZxqibta4Yjkakna" />
+      <env name="STRIPE_SECRET_KEY" value="sk_test_JgaPEgWXlT6VkmLcz0bcIkOf" />
+      <env name="STRIPE_PUBLIC_KEY" value="pk_test_hUoh3MEu4Oa8RjVFwZrFge4b" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/env/bin/python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />

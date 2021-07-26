@@ -843,7 +843,7 @@ def core_service():
         content = registry.generate()
         core_service.content = content
 
-    return content, "application/javascript"
+    return content, {'Content-Type': 'application/javascript'}
 
 
 core_service.content = None
@@ -855,7 +855,7 @@ def p2k16_resources():
     buf = io.StringIO()
     ResourcesTool.run(static, buf)
 
-    return buf.getvalue(), "application/javascript"
+    return buf.getvalue(), {'Content-Type': 'application/javascript'}
 
 
 @core.route("/frontpage-graph")

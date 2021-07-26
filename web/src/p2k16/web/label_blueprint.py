@@ -43,7 +43,7 @@ def service():
         content = registry.generate()
         service.content = content
 
-    return content, 'application/javascript'
+    return content, {'Content-Type': 'application/javascript'}
 
 service.content = None
 

@@ -1,9 +1,11 @@
 #!/bin/bash
 
-set -ex pipefail
+set -euo pipefail
+set -x
 
-tools=$(dirname "$0")
-basedir=$(dirname "$tools")
+self="${0##*/}"
+bin=${0%/*}
+basedir="${bin%/*}"
 
 if [[ ! -d env ]]
 then

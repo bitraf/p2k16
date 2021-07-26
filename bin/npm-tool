@@ -2,13 +2,15 @@
 
 set -euo pipefail
 
-self=$(basename "$0")
-basedir=$(dirname "$0")
+self="${0##*/}"
+basedir=${0%/*}
 cmd="$basedir/node_modules/.bin/$self"
 
 if [[ ! -x $cmd ]]
 then
-  (cd "$basedir" && npm install)
+  cd "$basedir"
+  npm install
+  cd -
 fi
 
 exec "$cmd" "${@}"

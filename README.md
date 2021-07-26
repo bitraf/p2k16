@@ -5,7 +5,7 @@ Install:
 - virtualenv
 - docker
 
-We have a collection of tools available under `tools/`. Some are utilities, other are wrappers around other tools to
+We have a collection of tools available under `bin/`. Some are utilities, other are wrappers around other tools to
 make sure that you have the correct versions.
 
 Before running any commands, you have to source our setup script:
@@ -17,7 +17,7 @@ Creating the database:
     # cd docker/p2k16
     # docker-compose up -d
     # cd -
-    # PGUSER=postgres PGPASSWORD=postgres psql -f database-setup.sql
+    # psql -U postgres -f database-setup.sql
 
 The root user in the database is `postgres`, it's password is also `postgres`.
 
@@ -36,20 +36,6 @@ You can log into p2k16 with the user 'super', password 'super'.
 * The P2K16 gui is built with [Flask](http://flask.pocoo.org)
 * We assume PostgreSQL as database
 * SQLAlchemy is used as ORM.
-
-## Developing on Windows
-
-Just download Ubuntu on Windows to save you time.
-
-## Developing on OSX
-
-When setting up on OSX, you'll likely get the error:
-
-    sudo: unknown user: postgres
-
-To get around this, load the database file like this instead:
-
-    sudo psql -U YourUserNameOnTheMachine postgres -f database-setup.sql
 
 ## Auto generated files
 

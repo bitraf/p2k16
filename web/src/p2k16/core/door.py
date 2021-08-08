@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Optional, Mapping, List
 
 import paho.mqtt.client as mqtt
+import requests
+
 from p2k16.core import P2k16UserException, membership_management
 from p2k16.core import account_management, event_management, badge_management, authz_management
 from p2k16.core.models import db, Account, Circle, Event, Company
@@ -10,16 +12,7 @@ from p2k16.core.models import db, Account, Circle, Event, Company
 logger = logging.getLogger(__name__)
 
 
-class Door(object):
-    def __init__(self, key, topic, open_time):
-        self.key = key
-        self.topic = topic
-        self.open_time = open_time
-
-
-class DummyClient(object):
-    pass
-
+# Generic door  ##############################################################
 
 @event_management.converter_for("door", "open")
 class OpenDoorEvent(object):
@@ -43,18 +36,98 @@ class OpenDoorEvent(object):
             "door": self.door
         }}
 
-
 class DoorClient(object):
     def __init__(self, cfg: Mapping[str, str]):
+        if "MQTT_HOST" in cfg:
+            self.mqtt = MqttClient(cfg)
+        else:
+            logger.info("No MQTT host configured for door, not starting door MQTT client")
 
+        if "DLOCK_BASE_URL" in cfg:
+            self.dlock = DlockClient(cfg)
+        else:
+            logger.info("No dlock base URL configured for door, not starting door dlock client")
+
+    def open_doors(self, account: Account, doors):
+        can_open_door = authz_management.can_haz_door_access(account)
+        if not can_open_door:
+            f = "{} does not have an active membership, or lacks door circle membership"
+            raise P2k16UserException(f.format(account.display_name()))
+
+        if not event_management.has_opened_door(account):
+            system = Account.find_account_by_username("system")
+            logger.info("First door opening for {}".format(account))
+            badge_management.create_badge(account, system, "first-door-opening")
+
+        for door in doors:
+            lf = "Opening door. username={}, door={}, open_time={}"
+            logger.info(lf.format(account.username, door.key, door.open_time))
+
+            event_management.save_event(OpenDoorEvent(door.key))
+
+        # Make sure everything has been written to the database before actually opening the door.
+        db.session.flush()
+
+        # TODO: move this to a handler that runs after the transaction is done
+        # TODO: we can look at the responses and see if they where successfully sent/received.
+        for door in doors:
+            if isinstance(door, DlockDoor):
+                self.dlock.open(door)
+            elif isinstance(door, MqttDoor):
+                self.mqtt.open(door)
+            else:
+                P2k16TechnicalException("Unknown kind of door")
+
+def create_client(cfg: Mapping[str, str]) -> DoorClient:
+    return DoorClient(cfg)
+
+# dlock  #####################################################################
+
+class DlockDoor(object):
+    def __init__(self, key, open_time):
+        self.key = key
+        self.open_time = open_time
+
+class DlockClient(object):
+    def __init__(self, cfg: Mapping[str, str]):
+        self.base_url = cfg["DLOCK_BASE_URL"]
+        self.username = cfg["DLOCK_USERNAME"]
+        self.password = cfg["DLOCK_PASSWORD"]
+
+        logger.info("dlock config: base_url={}, username={}".format(self.base_url, self.username))
+
+    def open(self, door):
+        logger.info("Sending dlock request: {}: {}".format(door.key, door.open_time))
+
+        url = "{}/doors/{}/unlock".format(self.base_url, door.key)
+        auth = (self.username, self.password)
+        params = {"duration": str(door.open_time)}
+
+        r = requests.post(url, auth=auth, params=params)
+        try:
+            r.raise_for_status()
+        except e:
+            logger.error("http error: {}".format(e))
+            P2k16TechnicalException("Could not unlock door through dlock")
+
+# MQTT  ######################################################################
+
+class MqttDoor(object):
+    def __init__(self, key, open_time, topic):
+        self.key = key
+        self.open_time = open_time
+        self.topic = topic
+
+class MqttClient(object):
+    def __init__(self, cfg: Mapping[str, str]):
         host = cfg["MQTT_HOST"]
         port = cfg["MQTT_PORT"]
         username = cfg["MQTT_USERNAME"]
         password = cfg["MQTT_PASSWORD"]
         self.prefix = cfg["MQTT_PREFIX"]
 
-        logger.info("Connecting to {}:{}".format(host, port))
-        logger.info("config: username={}, prefix={}".format(username, self.prefix))
+        logger.info("MQTT client connecting to {}:{}".format(host, port))
+        logger.info("MQTT config: username={}, prefix={}".format(username, self.prefix))
 
         keep_alive = 60
         c = mqtt.Client()
@@ -66,50 +139,22 @@ class DoorClient(object):
 
         self._client = c
 
-    def open_doors(self, account: Account, doors: List[Door]):
+    def open(self, door):
+        topic = self.prefix + door.topic
+        open_time = str(door.open_time)
 
-        can_open_door = authz_management.can_haz_door_access(account)
+        logger.info("Sending MQTT message: {}: {}".format(topic, open_time))
+        self._client.publish(topic, open_time)
 
-        if not can_open_door:
-            raise P2k16UserException('{} does not have an active membership, or lack door circle membership'.format(account.display_name()))
-
-        publishes = []
-
-        if not event_management.has_opened_door(account):
-            system = Account.find_account_by_username("system")
-            logger.info("First door opening for {}".format(account))
-            badge_management.create_badge(account, system, "first-door-opening")
-
-        for door in doors:
-            logger.info('Opening door. username={}, door={}, open_time={}'.format(
-                account.username, door.key, door.open_time))
-            event_management.save_event(OpenDoorEvent(door.key))
-            publishes.append((self.prefix + door.topic, str(door.open_time)))
-
-        # Make sure everything has been written to the database before actually opening the door.
-        db.session.flush()
-
-        # TODO: move this to a handler that runs after the transaction is done
-        # TODO: we can look at the responses and see if they where successfully sent/received.
-        for topic, open_time in publishes:
-            logger.info("Sending message: {}: {}".format(topic, open_time))
-            self._client.publish(topic, open_time)
-
-
-def create_client(cfg: Mapping[str, str]) -> DoorClient:
-    if "MQTT_HOST" not in cfg:
-        logger.info("No MQTT host configured for door, not starting door mqtt client")
-        return DummyClient()
-
-    return DoorClient(cfg)
-
+# Site-specific configuration  ###############################################
 
 _doors = [
-    Door("frontdoor", "frontdoor/open", 10),
-    Door("2floor", "2floor/open", 60),
-    Door("3office", "3office/open", 60),
-    Door("3workshop", "3workshop/open", 60),
-    Door("4floor", "4floor/open", 60),
+    MqttDoor(   "frontdoor",   10,  "frontdoor/open"),
+    MqttDoor(   "2floor",      60,  "2floor/open"),
+    MqttDoor(   "3office",     60,  "3office/open"),
+    MqttDoor(   "3workshop",   60,  "3workshop/open"),
+    MqttDoor(   "4floor",      60,  "4floor/open"),
+    DlockDoor(  "unused-1",     3),
 ]
 
 doors = {d.key: d for d in _doors}

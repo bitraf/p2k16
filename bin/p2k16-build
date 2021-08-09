@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -euo pipefail
+
+self="${0##*/}"
+basedir=${0%/*}/..
+
+function usage() {
+  if [[ ${1:-} != "" ]]
+  then
+    echo "Error: $1"
+    shift
+  fi
+
+  cat <<EOF
+Usage: $self -c <cmd>
+
+Commands:
+  build
+EOF
+}
+
+do_build() {
+  docker build -t "$tag" --cache-from "$tag" -f docker/Dockerfile "$basedir"
+}
+
+do_pull() {
+  local hash=$(docker image ls --quiet $tag)
+  [ "$hash" != "" ] && docker image rm "$tag"
+
+  docker image pull "$remote_tag" && docker tag "$remote_tag" "$tag"
+}
+
+do_push() {
+  local hash=$(docker image ls --quiet $tag)
+
+  [ "$hash" = "" ] && echo "No such local image: $tag"
+  docker tag "$tag" "$remote_tag"
+  docker push "$remote_tag"
+}
+
+cd "$basedir"
+
+cmd=
+git_branch=$(git rev-parse --abbrev-ref HEAD)
+branch=${CI_COMMIT_BRANCH-$git_branch}
+tag="p2k16:$branch"
+remote_tag=registry.gitlab.com/bitraf/p2k16/$tag
+while getopts :c: opt
+do
+  case $opt in
+    c)
+      cmd="$OPTARG"
+      ;;
+  esac
+done
+
+case "$cmd" in
+  "")
+    usage
+    ;;
+  build)
+    do_build
+    ;;
+  pull)
+    do_pull
+    ;;
+  push)
+    do_push
+    ;;
+esac

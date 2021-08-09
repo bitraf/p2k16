@@ -1,0 +1,21 @@
+stages:
+  - build
+
+image: docker:20.10
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:19.03.12-dind
+
+before_script:
+  - docker info
+
+build:
+  stage: build
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - apk add --no-cache bash git
+  script:
+    - bin/p2k16-build -c build
+    - bin/p2k16-build -c push

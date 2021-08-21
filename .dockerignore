@@ -1,4 +1,9 @@
+.idea
+.git
 log
 env
 docker
 bin/.*
+
+**/node_modules
+**/bower_components

@@ -1,21 +1,36 @@
 FROM debian:buster-slim
 
-RUN mkdir /p2k16
-WORKDIR /p2k16
-
 RUN apt-get update && apt-get install --no-install-recommends --yes \
-    python3 virtualenv npm && \
+    virtualenv git curl bash && \
     rm -rf /var/lib/apt/cache
+
+RUN useradd --shell /bin/bash --home-dir /p2k16 p2k16 && mkdir /p2k16 /p2k16/bin && chown -R p2k16 /p2k16
+WORKDIR /p2k16
+SHELL ["/bin/bash", "-c"]
+USER p2k16
+
+RUN git clone --depth 1 --branch v0.38.0 https://github.com/nvm-sh/nvm.git nvm 2>/dev/null
+ENV NVM_DIR="/p2k16/nvm"
+ENV NODE_VERSION="v14.7.0"
+COPY .nvmrc .
+RUN . "$NVM_DIR/nvm.sh" --no-use && nvm install
 
 RUN virtualenv -p python3 env
 
-ADD requirements.txt .
+COPY requirements.txt .
 RUN env/bin/pip install -r requirements.txt
 
-ADD web web
+COPY --chown=p2k16 web web
 RUN env/bin/pip install --trusted-host github.com -e web
 
-ADD infrastructure/gunicorn-config.py \
+COPY bin/package.json \
+    bin/package-lock.json \
+    bin/npm-tool \
+    bin/bower \
+    bin/
+RUN . "$NVM_DIR/nvm.sh" && cd web && ../bin/bower install
+
+COPY infrastructure/gunicorn-config.py \
     infrastructure/config-default.cfg \
     infrastructure/config-local.cfg \
     infrastructure/logging-stdout.yaml \

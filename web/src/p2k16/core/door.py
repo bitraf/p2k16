@@ -149,12 +149,12 @@ class MqttClient(object):
 # Site-specific configuration  ###############################################
 
 _doors = [
-    MqttDoor(   "frontdoor",   10,  "frontdoor/open"),
-    MqttDoor(   "2floor",      60,  "2floor/open"),
-    MqttDoor(   "3office",     60,  "3office/open"),
-    MqttDoor(   "3workshop",   60,  "3workshop/open"),
-    MqttDoor(   "4floor",      60,  "4floor/open"),
-    DlockDoor(  "unused-1",     3),
+    MqttDoor(   "frontdoor",        10, "frontdoor/open"),
+    MqttDoor(   "2floor",           60, "2floor/open"),
+    MqttDoor(   "3office",          60, "3office/open"),
+    MqttDoor(   "3workshop",        60, "3workshop/open"),
+    MqttDoor(   "4floor",           60, "4floor/open"),
+    DlockDoor(  "bv9-f2-entrance",  10),
 ]
 
 doors = {d.key: d for d in _doors}

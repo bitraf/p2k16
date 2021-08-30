@@ -2,9 +2,14 @@ import logging
 
 from p2k16.core import account_management
 from p2k16.core.models import Circle, Company, CircleMember, StripePayment
+import p2k16.core.door
 
 logger = logging.getLogger(__name__)
 
+def available_doors(account):
+    # Returns a list of doors that are available to the user
+    # either via employment or paying membership and circle membership
+    return [door for door in p2k16.core.door.doors.values() if can_haz_door_access(account, [door])]
 
 def can_haz_door_access(account, doors = []):
 

@@ -49,7 +49,7 @@ class DoorClient(object):
             logger.info("No dlock base URL configured for door, not starting door dlock client")
 
     def open_doors(self, account: Account, doors):
-        can_open_door = authz_management.can_haz_door_access(account)
+        can_open_door = authz_management.can_haz_door_access(account, doors)
         if not can_open_door:
             f = "{} does not have an active membership, or lacks door circle membership"
             raise P2k16UserException(f.format(account.display_name()))
@@ -84,9 +84,10 @@ def create_client(cfg: Mapping[str, str]) -> DoorClient:
 # dlock  #####################################################################
 
 class DlockDoor(object):
-    def __init__(self, key, open_time):
+    def __init__(self, key, open_time, circle):
         self.key = key
         self.open_time = open_time
+        self.circle = circle
 
 class DlockClient(object):
     def __init__(self, cfg: Mapping[str, str]):
@@ -113,9 +114,10 @@ class DlockClient(object):
 # MQTT  ######################################################################
 
 class MqttDoor(object):
-    def __init__(self, key, open_time, topic):
+    def __init__(self, key, open_time, circle, topic):
         self.key = key
         self.open_time = open_time
+        self.circle = circle
         self.topic = topic
 
 class MqttClient(object):
@@ -149,12 +151,12 @@ class MqttClient(object):
 # Site-specific configuration  ###############################################
 
 _doors = [
-    MqttDoor(   "frontdoor",        10, "frontdoor/open"),
-    MqttDoor(   "2floor",           60, "2floor/open"),
-    MqttDoor(   "3office",          60, "3office/open"),
-    MqttDoor(   "3workshop",        60, "3workshop/open"),
-    MqttDoor(   "4floor",           60, "4floor/open"),
-    DlockDoor(  "bv9-f2-entrance",  10),
+    MqttDoor(   "frontdoor",        10, {"door"}, "frontdoor/open"),
+    MqttDoor(   "2floor",           60, {"door"}, "2floor/open"),
+    MqttDoor(   "3office",          60, {"door"}, "3office/open"),
+    MqttDoor(   "3workshop",        60, {"door"}, "3workshop/open"),
+    MqttDoor(   "4floor",           60, {"door"}, "4floor/open"),
+    DlockDoor(  "bv9-f2-entrance",  10, {"door"}),
 ]
 
 doors = {d.key: d for d in _doors}

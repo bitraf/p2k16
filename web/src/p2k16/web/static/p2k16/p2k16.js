@@ -659,6 +659,7 @@
         
         var profile = P2k16.currentProfile();
         self.doorsAvailable = profile.has_door_access;
+        self.availableDoors = profile.available_doors;
         self.payingMember = profile.is_paying_member;
         self.employed = profile.is_employed;
 

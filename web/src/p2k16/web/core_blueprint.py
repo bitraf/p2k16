@@ -203,7 +203,7 @@ def profile_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         json["is_employed"] = Company.is_account_employed(account.id)
 
     if doors:
-        json["available_doors"] = [{door.key: door.name} for door in authz_management.available_doors(account)]
+        json["available_doors"] = [{"key": door.key, "name": door.name} for door in authz_management.available_doors(account)]
 
     return json
 

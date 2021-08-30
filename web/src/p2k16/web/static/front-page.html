@@ -83,32 +83,16 @@
   <section ng-if="ctrl.doorsAvailable">
     <h2>Open a door</h2>
     <div class="row door-buttons">
-      <div class="col-xs-6">
-        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor'])">Frontdoor only</button>
-      </div>
-      <div class="col-xs-6">
+      <div class="col-xs-12 col-md-6">
         <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['frontdoor', '2floor'])">
           Frontdoor and lab / 2nd floor
         </button>
       </div>
     </div>
-    <div class="row door-buttons">
-      <div class="col-xs-6">
-        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3office'])">3rd, office</button>
-      </div>
-      <div class="col-xs-6">
-        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['3workshop'])">3rd, workshop</button>
-      </div>
-    </div>
-    <div class="row door-buttons">
-      <div class="col-xs-12">
-        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['4floor'])">4th floor, office</button>
-      </div>
-    </div>
-    <div class="row door-buttons">
-      <div class="col-xs-12">
-        <button class="btn btn-default btn-block" ng-click="ctrl.openDoors(['bv9-f2-entrance'])">Brenneriveien entrance</button>
-      </div>
+    <div class="door-buttons-flex">
+        <button class="btn btn-default"
+                ng-repeat="door in ctrl.availableDoors | orderBy: name"
+                ng-click="ctrl.openDoors([door.key])">{{door.name}}</button>
     </div>
 
     <section ng-if="ctrl.recent_events.length > 0">

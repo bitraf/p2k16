@@ -15,7 +15,7 @@ def can_haz_door_access(account, doors = []):
 
     # Find all circles needed for these doors
 
-    circles = {circle for door in doors for circle in door.circle}
+    circles = {circle for door in doors for circle in door.circles}
 
     # If you lack access to one of the doors attempted, you cant open anything
     access = True

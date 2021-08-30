@@ -84,10 +84,10 @@ def create_client(cfg: Mapping[str, str]) -> DoorClient:
 # dlock  #####################################################################
 
 class DlockDoor(object):
-    def __init__(self, key, open_time, circle):
+    def __init__(self, key, open_time, circles):
         self.key = key
         self.open_time = open_time
-        self.circle = circle
+        self.circles = circles
 
 class DlockClient(object):
     def __init__(self, cfg: Mapping[str, str]):
@@ -114,10 +114,10 @@ class DlockClient(object):
 # MQTT  ######################################################################
 
 class MqttDoor(object):
-    def __init__(self, key, open_time, circle, topic):
+    def __init__(self, key, open_time, circles, topic):
         self.key = key
         self.open_time = open_time
-        self.circle = circle
+        self.circles = circles
         self.topic = topic
 
 class MqttClient(object):

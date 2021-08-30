@@ -1098,7 +1098,7 @@
      * @param {AuthzService} AuthzService
      * @constructor
      */
-    function UnauthenticatedController($location, $uibModal, P2k16, CoreDataService, AuthzService) {
+    function UnauthenticatedController($location, $window, $uibModal, P2k16, CoreDataService, AuthzService) {
         var self = this;
         self.signupForm = {};
         self.loginForm = {
@@ -1115,7 +1115,7 @@
 
         self.logIn = function () {
             AuthzService.logIn(self.loginForm).then(function () {
-                $location.url("/");
+                $window.location.href = "/";
             });
         };
 

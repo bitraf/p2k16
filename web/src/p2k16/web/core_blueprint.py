@@ -421,6 +421,7 @@ def data_account_summary(account_id):
     if account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
         logger.debug("{} is in circle {}, will add membership and employment info".format(flask_login.current_user.account, admin_circle))
         membership = get_membership(account)
+        paying_member = StripePayment.is_account_paying_member(account.id)
         membership_details = {}
         if membership is not None:
             membership_details['fee'] = membership.fee
@@ -429,6 +430,7 @@ def data_account_summary(account_id):
         else:
             membership_details['fee'] = 0
         summary['membership'] = membership_details
+        summary['paying_member'] = paying_member
         summary['employment'] = Company.is_account_employed(account.id)
 
 

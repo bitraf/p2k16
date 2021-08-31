@@ -1,0 +1,32 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="web" type="PythonConfigurationType" factoryName="Python" singleton="true">
+    <module name="p2k16" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="FLASK_APP" value="p2k16.web.server" />
+      <env name="P2K16_CONFIG" value="infrastructure/config-local.cfg" />
+      <env name="P2K16_LOGGING" value="infrastructure/logging-stdout.yaml" />
+      <env name="STRIPE_WEBHOOK_SECRET" value="whsec_Rr4aEG6kaZWIljjybZxqibta4Yjkakna" />
+      <env name="STRIPE_SECRET_KEY" value="sk_test_JgaPEgWXlT6VkmLcz0bcIkOf" />
+      <env name="STRIPE_PUBLIC_KEY" value="pk_test_hUoh3MEu4Oa8RjVFwZrFge4b" />
+      <env name="SMTP_HOST" value="bite.lan.bitraf.no" />
+      <env name="SMTP_PORT" value="25" />
+    </envs>
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <option name="SCRIPT_NAME" value="env/bin/gunicorn" />
+    <option name="PARAMETERS" value="--config infrastructure/gunicorn-config.py p2k16.web.server:app" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <option name="EMULATE_TERMINAL" value="false" />
+    <option name="MODULE_MODE" value="false" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="INPUT_FILE" value="" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,18 +1,22 @@
 import logging
 import os.path
-from typing import Mapping
+from typing import Mapping, Optional, Any, Dict
 
 import emails.loader
 from jinja2 import Template, Environment
 from jinja2.loaders import PackageLoader
+
+from p2k16.core import P2k16TechnicalException
 from p2k16.core.models import Account
 
 logger = logging.getLogger(__name__)
 
 mail_from = ('Bitraf', 'post@bitraf.no')
-membership_cc = None
+membership_cc: Optional[str] = None
+smtp_settings: Dict[str, Any] = {}
 
-class Templates():
+
+class Templates:
     def __init__(self):
         self.basedir = os.path.dirname(__file__)
         env = Environment()
@@ -43,6 +47,20 @@ def setup(cfg: Mapping[str, str]) -> Templates():
 
     membership_cc = cfg.get('MEMBERSHIP_CC', None)
 
+    host = cfg.get('SMTP_HOST', None)
+    if host is not None:
+        smtp_settings['host'] = host
+
+    port = cfg.get('SMTP_PORT', None)
+    if port is not None:
+        try:
+            smtp_settings['port'] = int(str(port))
+        except ValueError:
+            logger.warning('Invalid port value: {}', port)
+
+    logger.info("Mail settings: membership_cc={}, smtp.host={}, smtp.port={}".
+                format(membership_cc, smtp_settings.get('host', "not set"), smtp_settings.get('port', "not set")))
+
     return get_templates()  # Preload templates
 
 
@@ -51,6 +69,18 @@ def get_templates() -> Templates:
         get_templates.templates = Templates()
 
     return get_templates.templates
+
+
+def _send(m: emails.Message, bcc: Optional[str] = None):
+    m.mail_from = mail_from
+    if bcc is not None:
+        m.bcc = bcc
+
+    r = m.send(smtp=smtp_settings)
+    logger.info("SMTP result: {}".format(r))
+
+    if r.status_code != 250:
+        raise P2k16TechnicalException("Could not send email")
 
 
 def send_password_recovery(account: Account, reset_url: str):
@@ -65,26 +95,20 @@ def send_password_recovery(account: Account, reset_url: str):
 
     m = _templates.send_password_recovery(url=reset_url, account=account)
     m.mail_to = (account.username, account.email)
-    m.mail_from = mail_from
-    m.send()
+    _send(m)
+
 
 def send_new_member(account: Account):
     logger.info("Sending new member email to {}".format(account.email))
 
     m = _templates.new_member(account=account)
     m.mail_to = (account.username, account.email)
-    m.mail_from = mail_from
-    if membership_cc is not None:
-        m.bcc = membership_cc
-    m.send()
+    _send(m, bcc=membership_cc)
+
 
 def send_membership_ended(account: Account):
     logger.info("Sending membership ended email to {}".format(account.email))
 
     m = _templates.membership_ended(account=account)
     m.mail_to = (account.username, account.email)
-    m.mail_from = mail_from
-    if membership_cc is not None:
-        m.bcc = membership_cc
-    m.send()
-
+    _send(m, bcc=membership_cc)

@@ -56,22 +56,21 @@ def hashed_url_for_static_file(endpoint, values):
 
 @app.errorhandler(P2k16TechnicalException)
 def handle_p2k16_technical_exception(error: P2k16TechnicalException):
-    return _handle_p2k16_exception(error.msg, False)
+    return _handle_p2k16_exception(error.msg, error, False)
 
 
 @app.errorhandler(P2k16UserException)
 def handle_p2k16_user_exception(error: P2k16UserException):
-    return _handle_p2k16_exception(error.msg, True)
+    return _handle_p2k16_exception(error.msg, error, True)
 
 
-def _handle_p2k16_exception(msg, is_user):
-    import traceback
-
+def _handle_p2k16_exception(msg, ex, is_user):
     db.session.rollback()
 
-    logger.info("Account error: {}".format(msg))
-    # traceback.print_exc(file=sys.stdout)
-    traceback.print_exc()
+    if is_user:
+        logger.info("User error: {}".format(msg), exc_info=ex)
+    else:
+        logger.info("Internal error: {}".format(msg), exc_info=ex)
 
     response = flask.jsonify({"message": msg})
     response.status_code = 400 if is_user else 500
@@ -80,14 +79,14 @@ def _handle_p2k16_exception(msg, is_user):
 
 
 @app.errorhandler(SQLAlchemyError)
-def handle_sqlalchemy_error(e: SQLAlchemyError):
-    if isinstance(e, NoResultFound):
+def handle_sqlalchemy_error(error: SQLAlchemyError):
+    if isinstance(error, NoResultFound):
         # This happens when Foo.query...one() is called and the object is not found.
         msg = "Object not found"
         status_code = 404
     else:
         # Handle any other SQLAlchemy error as 500 errors
-        logger.warning("Got exception", exc_info=e)
+        logger.warning("Got exception", exc_info=error)
         msg = "Got unexpected error from database. Probably some constraint was broken."
         status_code = 500
 

@@ -161,7 +161,8 @@ def start_reset_password(username: string) -> Optional[Account]:
 
     account.create_new_reset_token()
 
-    url = flask.url_for('core.reset_password_form', reset_token=account.reset_token, _external=True)
+    # Setting scheme to https here is a bit silly, but flask doesn't auto-detect the correct scheme without more work
+    url = flask.url_for('core.reset_password_form', reset_token=account.reset_token, _external=True, _scheme="https")
     logger.info('Reset URL: {}'.format(url))
 
     mail.send_password_recovery(account, url)

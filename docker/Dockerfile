@@ -15,20 +15,26 @@ ENV NODE_VERSION="v14.7.0"
 COPY .nvmrc .
 RUN . "$NVM_DIR/nvm.sh" --no-use && nvm install
 
-RUN virtualenv -p python3 env
-
-COPY requirements.txt .
-RUN env/bin/pip install -r requirements.txt
-
-COPY --chown=p2k16 web web
-RUN env/bin/pip install --trusted-host github.com -e web
-
 COPY bin/package.json \
     bin/package-lock.json \
     bin/npm-tool \
     bin/bower \
     bin/
+RUN . "$NVM_DIR/nvm.sh" && bin/npm-tool
+
+RUN virtualenv -p python3 env
+
+COPY requirements.txt .
+RUN env/bin/pip install -r requirements.txt
+
+COPY --chown=p2k16 \
+    web/bower.json \
+    web/.bowerrc \
+    web/
 RUN . "$NVM_DIR/nvm.sh" && cd web && ../bin/bower install
+
+COPY --chown=p2k16 web web
+RUN env/bin/pip install --trusted-host github.com -e web
 
 COPY infrastructure/gunicorn-config.py \
     infrastructure/config-default.cfg \
@@ -50,3 +56,5 @@ CMD env/bin/gunicorn \
     --config "infrastructure/gunicorn-config.py" \
     --reload \
     p2k16.web.server:app
+
+EXPOSE 5000/tcp

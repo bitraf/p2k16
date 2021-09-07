@@ -89,10 +89,14 @@
         </button>
       </div>
     </div>
-    <div class="door-buttons-flex">
-        <button class="btn btn-default"
-                ng-repeat="door in ctrl.availableDoors | orderBy: name"
-                ng-click="ctrl.openDoors([door.key])">{{door.name}}</button>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="door-buttons-flex">
+          <button class="btn btn-default"
+                  ng-repeat="door in ctrl.availableDoors | orderBy: name"
+                  ng-click="ctrl.openDoors([door.key])">{{door.name}}</button>
+        </div>
+      </div>
     </div>
 
     <section ng-if="ctrl.recent_events.length > 0">

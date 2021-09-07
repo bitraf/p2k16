@@ -24,6 +24,19 @@ div.error-container {
 }
 
 
+.door-buttons-flex {
+  display: flex;
+  column-gap: 30px;
+  flex-wrap: wrap;
+  row-gap: 15px;
+}
+
+.door-buttons-flex .btn {
+  flex-grow: 1;
+}
+
+
+
 /* Avatar on navbar */
 .header-avatar {
     webkit-border-radius: 50%;

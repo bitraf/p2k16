@@ -1,10 +1,14 @@
 import json
 import logging
+from io import BytesIO
 from typing import Mapping
 
+import flask
 import stripe
 from flask import Blueprint, jsonify, request
+
 from p2k16.core.membership_management import parse_stripe_event
+from p2k16.core.reports import stats_chart
 
 logger = logging.getLogger(__name__)
 
@@ -56,3 +60,25 @@ def webhook():
     parse_stripe_event(event)
 
     return 'OK\n', 200
+
+
+@membership.route('/stripe-stats.png', methods=['GET'])
+def stripe_stats():
+    from p2k16.core import models
+
+    with models.db.engine.connect() as con:
+        logger.info("Getting stripe payments")
+        df = stats_chart.query(con)
+        logger.info("Query done, creating picture")
+
+        logger.info("data\n{}".format(df))
+
+        fig = stats_chart.run(df)
+        logger.info("Picture done")
+
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+
+        response = flask.make_response(buf.getvalue())
+        response.headers.set('Content-Type', 'image/png')
+        return response, 200

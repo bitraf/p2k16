@@ -17,6 +17,6 @@ build:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - apk add --no-cache bash git
   script:
-    - bin/p2k16-build -c pull
+    - bin/p2k16-build -c pull || true
     - bin/p2k16-build -c build
     - bin/p2k16-build -c push

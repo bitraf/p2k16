@@ -1,7 +1,7 @@
 import logging
 
-from p2k16.core import account_management, membership_management
-from p2k16.core.models import Circle, Company
+from p2k16.core import account_management
+from p2k16.core.models import Circle, Company, CircleMember, StripePayment
 
 logger = logging.getLogger(__name__)
 
@@ -13,23 +13,25 @@ def can_haz_door_access(account, doors = []):
     # for now, in the future, we probably want to make those dependant on access,
     # so you only see buttons you have access to.
 
-    # Find all circles needed for these doors
 
-    circles = {circle for door in doors for circle in door.circles}
-
-    # If you lack access to one of the doors attempted, you cant open anything
-    access = True
-    for circle in circles:
-        door_circle = Circle.find_by_name(circle)
-        if door_circle is None:
-            access = False
-        elif not account_management.is_account_in_circle(account, door_circle):
-            access = False
-
-    if access and membership_management.active_member(account):
-        return True
-
+    # Employed people have access to all doors for now
     if Company.is_account_employed(account.id):
         return True
 
-    return False
+    # If you aren't a paying member, you have access to no doors
+    # Check paying membership
+    if not StripePayment.is_account_paying_member(account.id):
+        return False
+
+
+    # Find all circles the account is a member of, then iterate the doors and check
+    memberships = {circle.name for circle in
+                   account_management.get_circles_for_account(account.id)}
+
+    for door in doors:
+        if not memberships & door.circles:
+            # No overlap, so we lack access to this door, lets return false
+            return False
+
+    # If we get here, we had access to all doors, so return True
+    return True

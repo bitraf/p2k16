@@ -84,10 +84,14 @@ def create_client(cfg: Mapping[str, str]) -> DoorClient:
 # dlock  #####################################################################
 
 class DlockDoor(object):
-    def __init__(self, key, open_time, circles):
+    def __init__(self, key, open_time, circles, name):
         self.key = key
         self.open_time = open_time
         self.circles = circles
+        if name is None:
+            self.name = "Door: {}".format(key)
+        else:
+            self.name = name
 
 class DlockClient(object):
     def __init__(self, cfg: Mapping[str, str]):
@@ -114,11 +118,15 @@ class DlockClient(object):
 # MQTT  ######################################################################
 
 class MqttDoor(object):
-    def __init__(self, key, open_time, circles, topic):
+    def __init__(self, key, open_time, circles, topic, name):
         self.key = key
         self.open_time = open_time
         self.circles = circles
         self.topic = topic
+        if name is None:
+            self.name = "Door: {}".format(key)
+        else:
+            self.name = name
 
 class MqttClient(object):
     def __init__(self, cfg: Mapping[str, str]):
@@ -151,12 +159,18 @@ class MqttClient(object):
 # Site-specific configuration  ###############################################
 
 _doors = [
-    MqttDoor(   "frontdoor",        10, {"door"}, "frontdoor/open"),
-    MqttDoor(   "2floor",           60, {"door"}, "2floor/open"),
-    MqttDoor(   "3office",          60, {"door"}, "3office/open"),
-    MqttDoor(   "3workshop",        60, {"door"}, "3workshop/open"),
-    MqttDoor(   "4floor",           60, {"door"}, "4floor/open"),
-    DlockDoor(  "bv9-f2-entrance",  10, {"door"}),
+    MqttDoor(   "frontdoor",        name="Frontdoor",
+             open_time=10, circles={"door"}, topic="frontdoor/open"),
+    MqttDoor(   "2floor",           name="2nd floor",
+             open_time=60, circles={"door"}, topic="2floor/open"),
+    MqttDoor(   "3office",          name="3rd floor, office",
+             open_time=60, circles={"door"}, topic="3office/open"),
+    MqttDoor(   "3workshop",        name="3rd floor, workshop",
+             open_time=60, circles={"door"}, topic="3workshop/open"),
+    MqttDoor(   "4floor",           name="4th floor, office",
+             open_time=60, circles={"door"}, topic="4floor/open"),
+    DlockDoor(  "bv9-f2-entrance",  name="BV9: entrance",
+              open_time=10, circles={"door"}),
 ]
 
 doors = {d.key: d for d in _doors}

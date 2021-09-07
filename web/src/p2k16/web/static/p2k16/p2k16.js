@@ -659,6 +659,7 @@
         
         var profile = P2k16.currentProfile();
         self.doorsAvailable = profile.has_door_access;
+        self.availableDoors = profile.available_doors;
         self.payingMember = profile.is_paying_member;
         self.employed = profile.is_employed;
 
@@ -1097,7 +1098,7 @@
      * @param {AuthzService} AuthzService
      * @constructor
      */
-    function UnauthenticatedController($location, $uibModal, P2k16, CoreDataService, AuthzService) {
+    function UnauthenticatedController($location, $window, $uibModal, P2k16, CoreDataService, AuthzService) {
         var self = this;
         self.signupForm = {};
         self.loginForm = {
@@ -1114,7 +1115,7 @@
 
         self.logIn = function () {
             AuthzService.logIn(self.loginForm).then(function () {
-                $location.url("/");
+                $window.location.href = "/";
             });
         };
 

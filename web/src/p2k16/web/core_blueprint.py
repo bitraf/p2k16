@@ -186,7 +186,7 @@ def account_to_json(account: Account):
     }}
 
 
-def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False):
+def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False, doors=False):
     from .badge_blueprint import badge_to_json
     json = {
         "account": account_to_json(account),
@@ -201,6 +201,9 @@ def profile_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         json["has_door_access"] = authz_management.can_haz_door_access(account)
         json["is_paying_member"] = StripePayment.is_account_paying_member(account.id)
         json["is_employed"] = Company.is_account_employed(account.id)
+
+    if doors:
+        json["available_doors"] = [{"key": door.key, "name": door.name} for door in authz_management.available_doors(account)]
 
     return json
 
@@ -649,7 +652,7 @@ def index():
         badges = badge_management.badges_for_account(account.id)
         circles_with_admin_access = account_management.get_circles_with_admin_access(account.id)
 
-        account_json = profile_to_json(account, circles, badges, full=True)
+        account_json = profile_to_json(account, circles, badges, full=True, doors=True)
         circles_with_admin_access_json = [circle_to_json(c) for c in circles_with_admin_access]
 
         kwargs["profile"] = account_json

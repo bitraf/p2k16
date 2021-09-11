@@ -795,7 +795,7 @@ def passwd_php():
 
 @core.route('/core/ldap/users.ldif')
 def core_ldif():
-    from ldif3 import LDIFWriter
+    from ldif import LDIFWriter
     import io
     f = io.BytesIO()
     writer = LDIFWriter(f)

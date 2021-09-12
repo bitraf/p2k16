@@ -159,7 +159,7 @@ class MqttClient(object):
 # Site-specific configuration  ###############################################
 
 _doors = [
-    DlockDoor(  "bv9-f2-entrance",  name="BV9: entrance",
+    DlockDoor(  "bv9-f2-entrance",  name="Entrance",
               open_time=10, circles={"door"}),
 ]
 

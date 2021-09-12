@@ -1,0 +1,25 @@
+dn: cn=p2k16-web,dc=bitraf,dc=no
+cn: p2k16-web
+sn: p2k16
+objectClass: inetOrgPerson
+userPassword: p2k16-web
+
+dn: ou=People,dc=bitraf,dc=no
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Groups,dc=bitraf,dc=no
+objectClass: organizationalUnit
+ou: Groups
+
+# dn: uid=trygvis,ou=People,dc=bitraf,dc=no
+# objectClass: top
+# objectClass: inetOrgPerson
+# objectClass: posixAccount
+# uid: trygvis
+# sn: Laugstol
+# cn: Trygve
+# userPassword: trygvis
+# uidNumber: 1000
+# gidNumber: 1000
+# homeDirectory: /home/trygvis

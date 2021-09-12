@@ -13,6 +13,10 @@
       <env name="STRIPE_PUBLIC_KEY" value="pk_test_hUoh3MEu4Oa8RjVFwZrFge4b" />
       <env name="SMTP_HOST" value="bite.lan.bitraf.no" />
       <env name="SMTP_PORT" value="25" />
+      <env name="LDAP_BASE" value="dc=bitraf,dc=no" />
+      <env name="LDAP_URI" value="ldap://127.0.0.1:16389" />
+      <env name="LDAP_BIND_DN" value="cn=p2k16-web,dc=bitraf,dc=no" />
+      <env name="LDAP_BIND_PASSWORD" value="p2k16-web" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/" />

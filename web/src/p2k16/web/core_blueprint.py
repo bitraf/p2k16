@@ -13,7 +13,7 @@ from p2k16.core import P2k16UserException, auth, account_management, badge_manag
 from p2k16.core.membership_management import member_create_checkout_session, member_customer_portal, \
     get_membership, get_membership_payments, active_member, get_membership_fee
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
-    CircleManagementStyle, Membership, StripePayment
+    CircleManagementStyle, StripePayment
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -186,7 +186,8 @@ def account_to_json(account: Account):
     }}
 
 
-def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False, doors=False):
+def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False,
+                    doors=False):
     from .badge_blueprint import badge_to_json
     json = {
         "account": account_to_json(account),
@@ -203,7 +204,8 @@ def profile_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         json["is_employed"] = Company.is_account_employed(account.id)
 
     if doors:
-        json["available_doors"] = [{"key": door.key, "name": door.name} for door in authz_management.available_doors(account)]
+        json["available_doors"] = [{"key": door.key, "name": door.name} for door in
+                                   authz_management.available_doors(account)]
 
     return json
 
@@ -335,10 +337,12 @@ def register_account():
 def data_profile_summary_list():
     return _data_profile_list(False)
 
+
 # This shouldn't return that much data, it should only return circle ids and badge descriptor ids.
 @registry.route('/data/profile')
 def data_profile_list():
     return _data_profile_list(True)
+
 
 def _data_profile_list(full):
     accounts = {a.id: a for a in Account.all_user_accounts()}  # type:Mapping[int, Account]
@@ -357,7 +361,8 @@ def _data_profile_list(full):
     circles_by_account = {_id: {cm.circle for cm in cms} for _id, cms in
                           cms_by_account}  # type: Mapping[int, Set[Circle]]
 
-    profiles = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, []), full=full) for id, a in
+    profiles = [profile_to_json(a, circles_by_account.get(id, []), badges_by_account.get(id, []), full=full) for id, a
+                in
                 accounts.items()]
 
     return jsonify(profiles)
@@ -422,7 +427,9 @@ def data_account_summary(account_id):
     # Add information about membership if current user is in a circle
     admin_circle = Circle.get_by_name('insight-fee')
     if account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
-        logger.debug("{} is in circle {}, will add membership and employment info".format(flask_login.current_user.account, admin_circle))
+        logger.debug(
+            "{} is in circle {}, will add membership and employment info".format(flask_login.current_user.account,
+                                                                                 admin_circle))
         membership = get_membership(account)
         paying_member = StripePayment.is_account_paying_member(account.id)
         membership_details = {}
@@ -435,8 +442,6 @@ def data_account_summary(account_id):
         summary['membership'] = membership_details
         summary['paying_member'] = paying_member
         summary['employment'] = Company.is_account_employed(account.id)
-
-
 
     return jsonify(summary)
 
@@ -486,6 +491,7 @@ def membership_create_checkout_session():
     price_id = request.json['priceId']
 
     return jsonify(member_create_checkout_session(account, base_url, price_id))
+
 
 @registry.route('/membership/customer-portal', methods=["POST"])
 def membership_customer_portal():
@@ -716,14 +722,16 @@ def service_set_password():
 
     return jsonify({})
 
+
 @registry.route('/service/edit-profile', methods=['POST'])
 @validate_schema(edit_profile_form)
 def service_edit_profile():
-    a = flask_login.current_user.account # type: Account
+    a = flask_login.current_user.account  # type: Account
 
     account_management.edit_profile(a, flask.request.json["phone"])
     db.session.commit()
     return jsonify({})
+
 
 @registry.route('/service/recent-events', methods=['GET'])
 def recent_events():
@@ -797,43 +805,22 @@ def passwd_php():
 def core_ldif():
     from ldif import LDIFWriter
     import io
+    from p2k16.core import ldap_management
+
     f = io.BytesIO()
     writer = LDIFWriter(f)
 
     for a in Account.all_user_accounts():
-        dn = "uid={},ou=People,dc=bitraf,dc=no".format(a.username)
+        dn = ldap_management.account_to_dn(a)
+
+        if dn is None:
+            continue
 
         writer.unparse(dn, {"changetype": ["delete"]})
 
-        object_class = ["top", "inetOrgPerson"]
-
-        d = {
-            "objectClass": object_class,
-            "changetype": ["add"],
-        }
-
-        parts = a.name.split() if a.name is not None else []
-
-        if len(parts) < 1:
-            # bad name
-            continue
-
-        d["cn"] = [a.name]
-        d["sn"] = [parts[-1]]
-        if a.email:
-            d["mail"] = [a.email]
-
-        # posixAccount: http://ldapwiki.com/wiki/PosixAccount
-        object_class.append("posixAccount")
-        d["uid"] = [a.username]
-        d["uidNumber"] = ["1000"]
-        d["gidNumber"] = ["1000"]
-        d["homeDirectory"] = ["/home/{}".format(a.username)]
-        if a.password is not None:
-            d["userPassword"] = [a.password]
-        d["gecos"] = [a.name]
-
-        writer.unparse(dn, d)
+        d = ldap_management.account_to_entry(a)
+        if d is not None:
+            writer.unparse(dn, {**d, "changetype": ["delete"]})
 
     s = f.getvalue()
     print(str(s))

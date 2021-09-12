@@ -5,7 +5,7 @@ import re
 from typing import Optional, List
 
 import flask
-from p2k16.core import P2k16UserException, mail, P2k16TechnicalException
+from p2k16.core import P2k16UserException, P2k16TechnicalException, mail, ldap_management
 from p2k16.core.models import db, Account, Circle, CircleMember, CircleManagementStyle
 from sqlalchemy.orm import aliased
 
@@ -202,6 +202,7 @@ def edit_profile(account: Account, new_phone: str):
 # password before calling this.
 def set_password(account: Account, new_password: str, old_password: Optional[str] = None,
                  reset_token: Optional[str] = None):
+    logger.info('Updating password for account={}'.format(account))
     if reset_token is not None:
         if not account.is_valid_reset_token(reset_token):
             raise P2k16TechnicalException("Invalid reset token")
@@ -212,7 +213,7 @@ def set_password(account: Account, new_password: str, old_password: Optional[str
         raise P2k16TechnicalException("Either old_password or reset_token has to be set.")
 
     account.password = new_password
-    logger.info('Updating password for account={}'.format(account))
+    ldap_management.sync_required(account)
 
 
 def create_circle(name: str, description: str, comment_required_for_membership, management_style: CircleManagementStyle,

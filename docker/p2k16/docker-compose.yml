@@ -1,7 +1,7 @@
 version: "3"
 services:
   pdb:
-    image: postgres:12
+    image: registry.gitlab.com/bitraf/infrastructure/docker-postgres:13
     restart: always
     ports:
       - "2016:5432"
@@ -10,3 +10,22 @@ services:
     environment:
       PGDATA: /data
       POSTGRES_PASSWORD: postgres
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    ports:
+      - "16389:389"
+    volumes:
+      - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    command: --loglevel debug
+    environment:
+      LDAP_ORGANISATION: "Bitraf"
+      LDAP_DOMAIN: bitraf.no
+      LDAP_ADMIN_PASSWORD: admin
+      LDAP_CONFIG_PASSWORD: config
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "false"
+#      DISABLE_CHOWN: "true"
+      LDAP_OPENLDAP_UID: 1000
+      LDAP_OPENLDAP_GID: 1000
+
+      LDAP_LOG_LEVEL: 0xA4

@@ -7,13 +7,14 @@ import flask_bower
 import flask_login
 import werkzeug.exceptions
 from flask.json import JSONEncoder
-from p2k16.core import P2k16UserException, P2k16TechnicalException, membership_management
-from p2k16.core import make_app, auth, door, mail, tool, label
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
+
+from p2k16.core import P2k16UserException, P2k16TechnicalException
+from p2k16.core import make_app, auth, door, mail, tool, label, ldap_management, queue
 from p2k16.core.log import P2k16LoggingFilter
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
 
@@ -233,3 +234,8 @@ if _env == "local":
 flask_bower.Bower(app)
 
 mail.setup(app.config)
+ldap_management.setup(app.config)
+
+ldap_sync_config = queue.QueueConfig(name="ldap-sync", handler=ldap_management.on_ldap_sync)
+t = queue.make_thread_flask(ldap_sync_config, app, db)
+t.start()

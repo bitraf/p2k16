@@ -159,17 +159,7 @@ class MqttClient(object):
 # Site-specific configuration  ###############################################
 
 _doors = [
-    MqttDoor(   "frontdoor",        name="Frontdoor",
-             open_time=10, circles={"door"}, topic="frontdoor/open"),
-    MqttDoor(   "2floor",           name="2nd floor",
-             open_time=60, circles={"door"}, topic="2floor/open"),
-    MqttDoor(   "3office",          name="3rd floor, office",
-             open_time=60, circles={"door"}, topic="3office/open"),
-    MqttDoor(   "3workshop",        name="3rd floor, workshop",
-             open_time=60, circles={"door"}, topic="3workshop/open"),
-    MqttDoor(   "4floor",           name="4th floor, office",
-             open_time=60, circles={"door"}, topic="4floor/open"),
-    DlockDoor(  "bv9-f2-entrance",  name="BV9: entrance",
+    DlockDoor(  "bv9-f2-entrance",  name="Entrance",
               open_time=10, circles={"door"}),
 ]
 

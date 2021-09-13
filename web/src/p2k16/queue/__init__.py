@@ -1,5 +1,3 @@
-from datetime import datetime
-import copy
 import datetime
 import logging
 import select
@@ -7,13 +5,15 @@ import time
 import typing
 from typing import Optional, Callable
 
-import flask
 from sqlalchemy.engine.base import Connection
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'QueueConsumer'
+    'QueueConsumer',
+    'QueueConfig',
+    'Message',
+    'ConnectionProvider',
 ]
 
 
@@ -143,15 +143,3 @@ class QueueConsumer:
                         tx.rollback()
                 except Exception as e:
                     logger.warning("Exception while rolling back transaction", exc_info=e)
-
-
-def make_thread_flask(config: QueueConfig, app: flask.Flask, db):
-    import threading
-
-    def runner():
-        logger.info("Queue thread started")
-        with app.app_context():
-            queue = QueueConsumer(config, db.engine)
-            queue.run()
-
-    return threading.Thread(target=runner, name=f"Q-{config.name}", daemon=True)

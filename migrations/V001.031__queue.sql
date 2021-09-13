@@ -6,8 +6,8 @@ CREATE SEQUENCE q_id_seq START 1000000;
 
 CREATE TABLE q_message
 (
-  id           BIGINT DEFAULT (NEXTVAL('q_id_seq')),
-  created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+  id           BIGINT                            DEFAULT (NEXTVAL('q_id_seq')),
+  created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   processed_at TIMESTAMP WITH TIME ZONE,
 
   queue        VARCHAR(100)             NOT NULL,

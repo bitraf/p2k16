@@ -1,16 +1,13 @@
 import logging
 from typing import Mapping, Optional, Tuple, Dict, Any, List
 
-from ldap.ldapobject import LDAPObject
-
-from p2k16.core.queue import Message
 import ldap
-from ldap.constants import Error
 import ldap.dn
 import ldap.filter
 import ldap.modlist
+from ldap.ldapobject import LDAPObject
 
-from p2k16.core.queue import sqlalchemy_queue
+from p2k16.queue import Message, sqlalchemy_queue
 from .models import db, Account
 
 logger = logging.getLogger(__name__)

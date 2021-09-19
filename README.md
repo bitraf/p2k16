@@ -52,6 +52,29 @@ After checking out the code and creating the database, run `flyway migrate` to m
 If you want to change the schema, create a new file under `migrations/` called `V001.NNN__clever_comment.sql`. If more
 than one person is creating a schema at the same time you will get a conflict when the code is merged.
 
+## LDAP
+
+### LDAP commands
+
+Setup:
+    
+    ldap_bind="-D cn=p2k16-web,dc=bitraf,dc=no -w p2k16-web -x -H ldap://localhost:16389"
+
+Searching for a single user:
+
+    ldapsearch "$ldap_bind -b dc=bitraf,dc=no '(uid=trygvis)'
+
+Requesting the update of a single user:
+
+    psql -U p2k16-web p2k16 -c "
+        insert into q_message (queue, entity_id) values('ldap-sync', (select id from account where username='trygvis')); 
+        select pg_notify('ldap-sync', (select max(id) from q_message)::text)
+    ";
+
+Deleting an entry:
+
+    ldapdelete "$ldap_bind" 'uid=trygvis,ou=People,dc=bitraf,dc=no'
+
 # TODOs (fix at any time)
 
 * Add word completion to Add Badge text field.

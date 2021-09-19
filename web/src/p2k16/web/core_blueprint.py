@@ -801,32 +801,6 @@ def passwd_php():
     return r
 
 
-@core.route('/core/ldap/users.ldif')
-def core_ldif():
-    from ldif import LDIFWriter
-    import io
-    from p2k16.core import ldap_management
-
-    f = io.BytesIO()
-    writer = LDIFWriter(f)
-
-    for a in Account.all_user_accounts():
-        dn = ldap_management.account_to_dn(a)
-
-        if dn is None:
-            continue
-
-        writer.unparse(dn, {"changetype": ["delete"]})
-
-        d = ldap_management.account_to_entry(a)
-        if d is not None:
-            writer.unparse(dn, {**d, "changetype": ["delete"]})
-
-    s = f.getvalue()
-    print(str(s))
-    return s
-
-
 @core.route("/core-data-service.js")
 def core_service():
     content = core_service.content

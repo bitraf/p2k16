@@ -34,6 +34,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 jsonschema==3.2.0
 kiwisolver==1.3.2
+ldap3==2.9.1
 ldif==4.1.1
 lxml==4.6.3
 MarkupSafe==1.1.1
@@ -55,7 +56,6 @@ pyparsing==2.4.7
 pyrsistent==0.17.3
 pytest==6.2.5
 python-dateutil==2.8.1
-python-ldap==3.3.1
 pytz==2021.1
 PyYAML==5.4
 requests==2.26.0

@@ -1,31 +1,31 @@
 import logging
-from typing import Mapping, Optional, Tuple, Dict, Any, List
+from typing import Mapping, Optional, Tuple, Dict, Any
 
-import ldap
-import ldap.dn
-import ldap.filter
-import ldap.modlist
-from ldap.ldapobject import LDAPObject
+import ldap3
+from ldap3.core.connection import Server, Connection
+from ldap3.utils import dn, uri, conv
 
 from p2k16.queue import Message, sqlalchemy_queue
+from . import P2k16TechnicalException
 from .models import db, Account
 
 logger = logging.getLogger(__name__)
 
+server = None  # type: Optional[Server]
 ldap_uri = None  # type: Optional[str]
-ldap_base = None  # type: Optional[List[List[Tuple[str, str, int]]]]
-ldap_base_str = None  # type: Optional[str]
+ldap_base = None  # type: Optional[str]
 ldap_bind_dn = None  # type: Optional[str]
 ldap_bind_password = None  # type: Optional[str]
 
 
 def account_to_dn(a: Account) -> str:
-    dn = [[('uid', a.username, 1)], [('ou', 'People', 1)]] + ldap_base
-    return ldap.dn.dn2str(dn)
+    return dn.parse_dn(f"uid={dn.escape_rdn(a.username)},ou=People," + ldap_base)
 
 
-def account_to_entry(a: Account) -> Optional[Dict[str, Any]]:
-    object_class = ["top", "inetOrgPerson"]
+# (error, objectClass, entry)
+def account_to_entry(a: Account) -> Tuple[Optional[str], Optional[str], Optional[Dict[str, Any]]]:
+    structural_object_class = "inetOrgPerson"
+    object_class = ["top", structural_object_class]
 
     d = {
         "objectClass": object_class,
@@ -35,7 +35,7 @@ def account_to_entry(a: Account) -> Optional[Dict[str, Any]]:
 
     if len(parts) < 1:
         # bad name
-        return None
+        return "bad name", None, None
 
     d["cn"] = [a.name]
     d["sn"] = [parts[-1]]
@@ -52,7 +52,7 @@ def account_to_entry(a: Account) -> Optional[Dict[str, Any]]:
         d["userPassword"] = [a.password]
     d["gecos"] = [str(a.name).replace("æ", "a").replace("ø", "o").replace("å", "a")]
 
-    return d
+    return None, structural_object_class, d
 
 
 def sync_required(account: Account):
@@ -67,51 +67,39 @@ def on_ldap_sync(message: Message):
 def update_account(account: Account):
     logger.info(f"Updating Account record for {account.username}")
 
-    dn = account_to_dn(account)
-    if dn is None:
+    dn_ = account_to_dn(account)
+    if dn_ is None:
         logger.warning(f"Could not create DN from account: {account.username}")
         return
 
-    entry = account_to_entry(account)
-    if entry is None:
-        logger.warning(f"Could not make LDAP entry from account: {account.username}")
+    err, object_class, entry = account_to_entry(account)
+    if err is not None:
+        logger.warning(f"Could not make LDAP entry from account. username={account.username}: {err}")
         return
 
-    # fuck up all values
-    byte_entry = {}
-    for key, value in entry.items():
-        byte_entry[key] = [s.encode('utf-8') for s in value]
-    logger.info(f"byte_entry={byte_entry}")
+    with Connection(server=server, user=ldap_bind_dn, password=ldap_bind_password) as con:
+        dn_str = ",".join([f"{a}={v}" for a, v, _ in dn_], )
+        search_filter = f"(objectClass=*)"
+        found = con.search(dn_str, search_filter, attributes=ldap3.ALL_ATTRIBUTES)
 
-    con = ldap.initialize(ldap_uri)  # type: LDAPObject
-    try:
-        if ldap_bind_dn is not None:
-            ret = con.simple_bind_s(ldap_bind_dn, ldap_bind_password)
-            logger.info(f"bind ret={ret}")
-
-        try:
-            res = con.read_s(dn)
-            logger.info(f"search={res}")
-        except ldap.NO_SUCH_OBJECT:
-            res = None
-
-        if res is None:
+        if not found:
             logger.info("Adding new entry")
-            res = con.add_s(dn, ldap.modlist.addModlist(byte_entry))
+            if not con.add(dn_str, object_class, entry):
+                raise P2k16TechnicalException(f"Could not add LDAP entry: {con.last_error}")
         else:
+            old_entry = con.entries[0]
             logger.info("Updating existing entry")
-            modifications = ldap.modlist.modifyModlist(res, byte_entry)
+            to_remove = {e: [(ldap3.MODIFY_REPLACE, [])] for e in old_entry.entry_attributes if e not in entry.keys()}
+            to_update = {}
+            for key, value in entry.items():
+                v = value if isinstance(value, list) else [value]
+                to_update[key] = [(ldap3.MODIFY_REPLACE, v)]
+
+            modifications = {**to_remove, **to_update}
             logger.warning(f"modifications: {modifications}")
 
-            res = con.modify_s(dn, modifications)
-
-        logger.warning(f"change result: {res}")
-    finally:
-        # noinspection PyBroadException
-        try:
-            con.unbind_s()
-        except Exception:
-            pass
+            if not con.modify(dn_str, modifications):
+                raise P2k16TechnicalException(f"Could not modify LDAP entry: {con.last_error}")
 
 
 def initialized() -> bool:
@@ -119,14 +107,17 @@ def initialized() -> bool:
 
 
 def setup(cfg: Mapping[str, str]):
-    global ldap_uri, ldap_base, ldap_base_str
+    global ldap_uri, ldap_base
     ldap_uri = cfg.get('LDAP_URI', None)
 
-    ldap_base_str = cfg.get('LDAP_BASE', None)
-    if ldap_base_str is not None:
-        ldap_base = ldap.dn.str2dn(ldap_base_str)
-        logger.info(f"LDAP BASE={ldap_base_str}")
+    ldap_base = cfg.get('LDAP_BASE', None)
+    logger.info(f"LDAP BASE={ldap_base}")
 
     global ldap_bind_dn, ldap_bind_password
     ldap_bind_dn = cfg.get('LDAP_BIND_DN', None)
     ldap_bind_password = cfg.get('LDAP_BIND_PASSWORD', None)
+
+    uri_ = uri.parse_uri(ldap_uri)
+
+    global server
+    server = Server(host=uri_['host'], port=uri_['port'], use_ssl=uri_['ssl'])

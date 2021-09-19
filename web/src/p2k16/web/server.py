@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from p2k16.core import P2k16UserException, P2k16TechnicalException
 from p2k16.core import make_app, auth, door, mail, tool, label, ldap_management
 from p2k16 import queue
+from p2k16.queue import flask_queue
 from p2k16.core.log import P2k16LoggingFilter
 from p2k16.core.models import db, model_support, P2k16Mixin
 from p2k16.web import utils
@@ -238,5 +239,5 @@ mail.setup(app.config)
 ldap_management.setup(app.config)
 
 ldap_sync_config = queue.QueueConfig(name="ldap-sync", handler=ldap_management.on_ldap_sync)
-t = queue.make_thread_flask(ldap_sync_config, app, db)
+t = flask_queue.make_thread(ldap_sync_config, app, db)
 t.start()

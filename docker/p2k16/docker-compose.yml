@@ -29,3 +29,26 @@ services:
       LDAP_OPENLDAP_GID: 1000
 
       LDAP_LOG_LEVEL: 0xA4
+
+  # You probably don't want to run this image
+  p2k16:
+    image: p2k16
+    restart: unless-stopped
+#    stop_signal: SIGINT
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../../infrastructure/:/p2k16/infrastructure
+    environment:
+      FLASK_APP: "p2k16.web.server"
+      P2K16_CONFIG: "infrastructure/config-local.cfg"
+      P2K16_LOGGING: "infrastructure/logging-stdout.yaml"
+      STRIPE_WEBHOOK_SECRET: "whsec_Rr4aEG6kaZWIljjybZxqibta4Yjkakna"
+      STRIPE_SECRET_KEY: "sk_test_JgaPEgWXlT6VkmLcz0bcIkOf"
+      STRIPE_PUBLIC_KEY: "pk_test_hUoh3MEu4Oa8RjVFwZrFge4b"
+#      SMTP_HOST: "bite.lan.bitraf.no"
+#      SMTP_PORT: "25"
+      LDAP_BASE: "dc=bitraf,dc=no"
+      LDAP_URI: "ldap://ldap:389"
+      LDAP_BIND_DN: "cn=p2k16-web,dc=bitraf,dc=no"
+      LDAP_BIND_PASSWORD: "p2k16-web"

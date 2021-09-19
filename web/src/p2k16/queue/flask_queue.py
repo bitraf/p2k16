@@ -7,7 +7,7 @@ from . import *
 logger = logging.getLogger(__name__)
 
 
-def make_thread_flask(config: QueueConfig, app: flask.Flask, db):
+def make_thread(config: QueueConfig, app: flask.Flask, db):
     def runner():
         logger.info("Queue thread started")
         with app.app_context():

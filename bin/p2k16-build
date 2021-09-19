@@ -21,7 +21,7 @@ EOF
 }
 
 do_build() {
-  local cmd=(docker build -t "$tag" --cache-from "$tag" -f docker/Dockerfile "$basedir")
+  local cmd=(docker build -t latest -t "$tag" --cache-from "$tag" -f docker/Dockerfile "$basedir")
 
   echo "Running: ${cmd[@]}"
   "${cmd[@]}"

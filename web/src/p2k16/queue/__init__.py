@@ -6,6 +6,7 @@ import typing
 from typing import Optional, Callable
 
 from sqlalchemy.engine.base import Connection
+from . import sql
 
 logger = logging.getLogger(__name__)
 
@@ -48,23 +49,22 @@ class QueueConsumer:
         self.con = None  # type: Optional[Connection]
 
     @staticmethod
-    def find_messages(con, message_ids) -> typing.List[Message]:
+    def find_unprocessed_messages(con, message_ids, limit: Optional[int] = None) -> typing.List[Message]:
         c = con.cursor()
-        c.execute("SELECT id, created_at, processed_at, queue, entity_id "
-                  "FROM q_message "
-                  "WHERE id = ANY(%s) "
-                  "FOR UPDATE "
-                  "SKIP LOCKED", [message_ids])
+        q = "SELECT id, created_at, processed_at, queue, entity_id " \
+            "FROM q_message " \
+            "WHERE processed_at IS NULL AND id = ANY(%s) " \
+            "FOR UPDATE " \
+            "SKIP LOCKED"
+
+        if limit is not None:
+            q += f" LIMIT {limit}"
+
+        c.execute(q, [message_ids])
         messages = [Message(t[0], t[1], t[2], t[3], t[4]) for t in c.fetchall()]
         c.close()
 
         return messages
-
-    @staticmethod
-    def mark_message_processed(con, _id):
-        c = con.cursor()
-        c.execute("UPDATE q_message SET processed_at=CURRENT_TIMESTAMP WHERE id=%s", [_id])
-        c.close()
 
     def close(self):
         c = self.con
@@ -113,6 +113,7 @@ class QueueConsumer:
             logger.info(f"notifies={underlying.notifies}")
 
             payloads = [int(n.payload) for n in underlying.notifies]
+            underlying.notifies = []
 
             self.process_messages(payloads)
 
@@ -124,17 +125,13 @@ class QueueConsumer:
             try:
                 underlying = con.connection.connection
 
-                messages = self.find_messages(underlying, payloads)
-                # for n in underlying.notifies:
-                #     channel = n.channel
-                #     payload = n.payload
-                #     logger.info(f"Got notification: {channel}={payload}")
-                #     self.config.handler(payload)
+                messages = self.find_unprocessed_messages(underlying, payloads)
+
                 for m in messages:
-                    logger.info(f"m: {m}")
+                    logger.info(f"Processing: queue={m.queue}, id={m.id}, entity_id={m.entity_id}")
                     _id = m.id
                     self.config.handler(m)
-                    self.mark_message_processed(underlying, _id)
+                    sql.set_processed(underlying, _id)
                 tx.commit()
                 tx = None
             finally:

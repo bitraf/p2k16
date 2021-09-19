@@ -58,3 +58,5 @@ CMD env/bin/gunicorn \
     p2k16.web.server:app
 
 EXPOSE 5000/tcp
+
+#STOPSIGNAL SIGINT

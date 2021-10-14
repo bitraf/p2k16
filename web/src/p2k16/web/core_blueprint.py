@@ -13,7 +13,9 @@ from p2k16.core import P2k16UserException, auth, account_management, badge_manag
 from p2k16.core.membership_management import member_create_checkout_session, member_customer_portal, \
     get_membership, get_membership_payments, active_member, get_membership_fee
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
-    CircleManagementStyle, Membership, StripePayment
+    CircleManagementStyle, Membership, StripePayment, \
+    AccountKeyType, AccountKey
+
 from p2k16.core.models import AccountBadge
 from p2k16.core.models import db
 from p2k16.web.utils import validate_schema, require_circle_membership, DataServiceTool, ResourcesTool
@@ -26,6 +28,8 @@ string_type = {"type": "string"}
 bool_type = {"type": "boolean"}
 management_style_type = {"enum": ["ADMIN_CIRCLE", "SELF_ADMIN"]}
 stripe_pubkey = None
+# also specified in models.py
+account_key_type = {"enum": ["SSH", "WIREGUARD"]}
 
 register_account_form = {
     "type": "object",
@@ -124,6 +128,19 @@ single_company_form = {
     "required": ["name", "contact"]
 }
 
+add_account_key_form = {
+    "type": "object",
+    "properties": {
+        "comment": nonempty_string,
+        "publicKey": nonempty_string,
+        "keyType": account_key_type,
+    },
+    "required": [
+        "comment",
+        "publicKey",
+        "keyType",
+    ]
+}
 
 def model_to_json(obj) -> dict:
     d = {}
@@ -185,6 +202,15 @@ def account_to_json(account: Account):
         "phone": account.phone,
     }}
 
+def account_key_to_json(ak: AccountKey):
+    return {**model_to_json(ak), **{
+        "id": ak.id,
+        "account_id": ak.account.id,
+        "account_username": ak.account.username,
+        "comment": ak.comment,
+        "public_key": ak.public_key,
+        "key_type": ak.key_type.name,
+    }}
 
 def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False, doors=False):
     from .badge_blueprint import badge_to_json
@@ -473,6 +499,51 @@ def _manage_circle_membership(create: bool):
 
     db.session.commit()
     return jsonify(circle_to_json(circle, include_members=True))
+
+###############################################################################
+# AccountKey
+
+def _return_account_key(account):
+    keys = AccountKey.find_by_account(account)
+    logger.info("keys: {}" % keys)
+    ret = [account_key_to_json(ak) for ak in
+                keys]
+
+    return jsonify(ret)
+@registry.route('/data/account/key', methods=["GET"])
+def data_account_keys():
+    account = flask_login.current_user.account
+
+    return _return_account_key(account)
+
+@registry.route('/data/account/key', methods=["POST"])
+@validate_schema(add_account_key_form)
+def service_add_account_key():
+    account = flask_login.current_user.account
+    comment = request.json.get('comment')
+    public_key = request.json.get('publicKey')
+    key_type = AccountKeyType[request.json.get('keyType')]
+
+    key = AccountKey(account, comment, public_key, key_type)
+    db.session.add(key)
+    db.session.commit();
+
+    return _return_account_key(account)
+
+@registry.route('/data/account/key/<int:key_id>', methods=["DELETE"])
+def service_remove_account_key(key_id):
+    account = flask_login.current_user.account
+    key = AccountKey.find_by_id(key_id)
+
+    if key is None:
+        abort(404)
+
+    if key.account.id != account.id:
+        raise P2k16UserException("Key not owned by logged in user: {}".format(account.id))
+
+    db.session.delete(key)
+    db.session.commit()
+    return _return_account_key(account)
 
 
 ###############################################################################

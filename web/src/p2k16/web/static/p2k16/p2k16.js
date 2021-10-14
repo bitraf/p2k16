@@ -41,7 +41,8 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.my_profile_html,
             resolve: {
-                badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions
+                badgeDescriptions: BadgeDataServiceResolvers.badge_descriptions,
+                accountKeys: CoreDataServiceResolvers.data_account_keys
             }
         }).when("/tool", {
             controller: ToolFrontPageController,
@@ -690,7 +691,7 @@
      * @param {LabelService} LabelService
      * @constructor
      */
-    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions, LabelService) {
+    function MyProfileController($scope, P2k16, CoreDataService, badgeDescriptions, LabelService, accountKeys) {
         var self = this;
 
         P2k16.accountListeners.add($scope, function (newValue) {
@@ -729,18 +730,39 @@
             });
         }
 
+        function addAccountKey() {
+            CoreDataService.service_add_account_key(self.newAccountKeyForm).then(function (res) {
+                var msg = res.message || "Key added to account";
+                P2k16.addInfos(msg);
+                // update client data
+                self.accountKeys = res.data;
+            });
+        }
+
+        function removeAccountKey(key) {
+            CoreDataService.service_remove_account_key(key.id).then(function (res) {
+                var msg = res.message || "Key removed from account";
+                P2k16.addInfos(msg);
+                self.accountKeys = res.data;
+            });
+        }
+
+
         self.badges = [];
         self.circles = [];
         self.newBadge = {};
         self.descriptions = badgeDescriptions;
+        self.accountKeys = accountKeys;
         self.changePasswordForm = {};
         self.changePassword = changePassword;
         self.printBoxLabel = printBoxLabel;
-
+        self.addAccountKey = addAccountKey;
+        self.removeAccountKey = removeAccountKey;
         self.saveProfile = saveProfile;
         self.profileForm = {
             phone: P2k16.currentProfile().account.phone
         };
+        self.newAccountKeyForm = {};
 
         updateBadges(P2k16.currentProfile());
         updateCircles(P2k16.currentProfile());

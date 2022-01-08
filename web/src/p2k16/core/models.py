@@ -421,7 +421,7 @@ class StripePayment(DefaultMixin, db.Model):
     __tablename__ = 'stripe_payment'
     __versioned__ = {}
 
-    stripe_id = Column("stripe_id", String(50), unique=True, nullable=False)
+    stripe_id = Column("stripe_id", String(50), unique=False, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     amount = Column(Numeric(8, 2), nullable=False)

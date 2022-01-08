@@ -1,0 +1,1 @@
+ALTER TABLE stripe_payment DROP CONSTRAINT membership_payment_stripe_id_key;

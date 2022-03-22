@@ -63,19 +63,13 @@
     </div>
   </div>
 
-  <section ng-if="ctrl.payingMember && !ctrl.doorsAvailable">
-    <div class="row">
-      <div class="col-xs-12">
-        <div class="bs-callout bs-callout-info">
-          <h4>Gain access to bitraf</h4>
-          <p>Since you are an active, paying member of Bitraf you can get key access to
-            Bitraf. To gain this access you need to visit Bitraf in person and get someone
-            to add you to the door circle, which grants access to opening the
-            doors. One of the regular build-night is a good time to go.</p>
-
-          <p>Once you have been granted door access by a door admin, revisiting this page
-            will allow you to open the doors from eg your mobile phone</p>
-        </div>
+  <section ng-if="!ctrl.doorsAvailable">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h4 class="panel-title">Gain access to bitraf</h4>
+      </div>
+      <div class="panel-body">
+        <a class="btn btn-primary" href="https://bitraf.no/apne-doren/">Visit this page to learn how to get access</a>
       </div>
     </div>
   </section>

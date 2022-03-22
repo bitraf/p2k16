@@ -61,7 +61,7 @@ cd "$basedir"
 
 cmd=
 git_branch=$(git rev-parse --abbrev-ref HEAD)
-branch=${CI_COMMIT_BRANCH-$git_branch}
+branch=${CI_COMMIT_SLUG-$git_branch}
 tag="p2k16:$branch"
 remote_tag=registry.gitlab.com/bitraf/p2k16/$tag
 while getopts :c: opt

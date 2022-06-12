@@ -6,14 +6,14 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand" href="#">P2k16</a>
+    <a class="navbar-brand" href="#">P2K16</a>
   </div>
   <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
     <ul class="nav navbar-nav">
-      <li ng-class="{'front-page': 'active'}[active]"><a href="#">Home</a></li>
-      <li ng-class="{'badges': 'active'}[active]"><a href="#!badges">Badges</a></li>
+      <li ng-class="{'front-page': 'active'}[active]"><a href="#">Doors</a></li>
       <li ng-class="{'tool': 'active'}[active]"><a href="#!tool">Tools</a></li>
-      <li><a ng-click="header.manageBilling()">Membership</a></li>
+      <li ng-class="{'badges': 'active'}[active]"><a href="#!badges">Badges</a></li>
+      <li><a ng-click="header.manageBilling()">Membership (via Stripe)</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">
@@ -21,7 +21,7 @@
 
       <li uib-dropdown ng-show="header.currentProfile()">
         <a href uib-dropdown-toggle>
-          <img ng-src="{{ header.currentProfile().avatar }}?s=30" class="header-avatar">
+          <img ng-src="{{ header.currentProfile().avatar }}?s=30&d=mp" class="header-avatar">
           {{ header.currentAccount().username }}
           <span class="caret"></span>
         </a>

@@ -1,23 +1,18 @@
 <p2k16-header active="front-page"></p2k16-header>
 
-<div class="container">
+<div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
   <section ng-if="!ctrl.employed && !ctrl.payingMember">
-    <div class="panel panel-info">
-      <div class="panel-heading">
-        <h4 class="panel-title">Become a paying Bitraf member</h4>
-      </div>
-      <div class="panel-body">
-        <p>You will receive access to open the door 24/7 and access machines at Bitraf.</p>
+      <h2 class="text-center">Pick membership type</h2>
+      <br>
         <div class="row text-center align-items-end">
-
-          <div class="col-lg-4 mb-5 mb-lg-0">
-            <div class="panel panel-primary p-5 rounded-lg shadow">
-              <h1 class="h6 text-uppercase font-weight-bold mb-4">Normal member</h1>
-              <h2 class="h1 font-weight-bold"> 500 kr <span class="text-small font-weight-normal ml-2">/ month</span></h2>
-
+          <div class="col-lg-6 mb-5 mb-lg-0">
+            <div class="panel panel-info p-5 rounded-lg shadow panel-clickable" ng-click="ctrl.signup(500)">
+              <br>
+              <h5 class="text-uppercase font-weight-bold mb-4 text-primary">Standard member</h5>
+              <h2 class="h1 font-weight-bold text-primary">500 kr</h2>
+              <h4 class="text-small font-weight-normal ml-2 text-primary">monthly</h4>
+              <br>
               <div class="my-4 mx-auto primary"></div>
-
-              <!-- Needs CSS! -->
               <ul class="my-5 text-small text-left">
                 <li class="mb-3">
                   <i class="mr-2 text-primary"></i> Access to Bitraf 24/7 </li>
@@ -28,82 +23,91 @@
                 <li class="mb-3">
                   <i class="mr-2 text-primary"></i> Personal box for storage</li>
                 <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Cancel anytime</li>
+                  <i class="mr-2 text-primary"></i> Cancel any time</li>
                 <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Support Bitraf!</li>
+                  <i class="mr-2 text-primary"></i> Support Bitraf</li>
                 <p></p>
                 <b>Bitraf is funded by its members!</b>
-
               </ul>
-              <button ng-click="ctrl.signup(500)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Sign up</button>
+              <br>
+              <button ng-click="ctrl.signup(500)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Proceed to payment</button>
             </div>
           </div>
-          <!-- END -->
-          <div class="col-lg-4 mb-5 mb-lg-0">
-            <div class="panel panel-primary p-5 rounded-lg shadow">
-              <h1 class="h6 text-uppercase font-weight-bold mb-4">Supporting member</h1>
-              <h2 class="h1 font-weight-bold"> 300 kr <span class="text-small font-weight-normal ml-2">/ month</span></h2>
-
+          <div class="col-lg-6 mb-5 mb-lg-0">
+            <div class="panel panel-info p-5 rounded-lg shadow panel-clickable" ng-click="ctrl.signup(300)">
+              <br>
+              <h5 class="text-uppercase font-weight-bold mb-4">Supporting member</h5>
+              <h2 class="h1 font-weight-bold">300 kr</h2>
+              <h4 class="text-small font-weight-normal ml-2">monthly</h4>
+              <br>
               <div class="my-4 mx-auto primary"></div>
-
-              <!-- Needs CSS! -->
               <ul class="my-5 text-small text-left">
                 <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Same access as normal members </li>
+                  <i class="mr-2 text-primary"></i><em>For students</em></li>
                 <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> For students, unemployed or others who cannot afford a full membership</li>
+                  <i class="mr-2 text-primary"></i><em>For the unemployed</em></li>
+                <li class="mb-3">
+                  <i class="mr-2 text-primary"></i><em>For those who cannot afford the full fee</em></li>
+                <li class="mb-3">
+                  <i class="mr-2 text-primary bold"></i>Same benefits as standard members</li>
+                <li class="mb-3">
+                  <i class="mr-2 text-primary"></i> Cancel any time</li>
+                <li class="mb-3">
+                  <i class="mr-2 text-primary"></i> Support Bitraf</li>
                 <p></p>
                 <b>Bitraf is funded by its members!</b>
-
               </ul>
-              <button ng-click="ctrl.signup(300)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Sign up</button>
+              <br>
+              <button ng-click="ctrl.signup(300)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Proceed to payment</button>
             </div>
           </div>
-          <!-- END -->
         </div>
-      </div>
-    </div>
   </section>
 
   <section ng-if="!ctrl.doorsAvailable">
+    <br>
     <div class="panel panel-info">
-      <div class="panel-heading">
-        <h4 class="panel-title">Gain access to Bitraf</h4>
+      <div class="panel-heading text-center">
+        <h4 class="panel-title">Bitraf is open 24/7</h4>
       </div>
-      <div class="panel-body">
-        <a class="btn btn-primary" href="https://bitraf.no/apne-doren/">Visit this page to learn how to get access</a>
+      <div class="panel-body text-center">
+        <a class="btn btn-primary" href="https://bitraf.no/apne-doren/">Learn how to get door access</a>
       </div>
     </div>
   </section>
 
-  <section ng-if="ctrl.doorsAvailable">
-    <h2>Open a door</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="door-buttons-flex">
-          <button class="btn btn-default"
-                  ng-repeat="door in ctrl.availableDoors | orderBy: name"
-                  ng-click="ctrl.openDoors([door.key])">{{door.name}}</button>
-        </div>
-      </div>
-    </div>
 
-    <section ng-if="ctrl.recent_events.length > 0">
+  <section ng-if="ctrl.doorsAvailable">
+    <h2 class="text-center">Open a door</h2>
+    <form class="form-horizontal">
+      <div class="row">
+          <div class="door-buttons-flex">
+            <button class="btn btn-primary"
+                    ng-repeat="door in ctrl.availableDoors | orderBy: name"
+                    ng-click="ctrl.openDoors([door.key])">{{door.name}}</button>
+          </div>
+      </div>
+    </form>
+  </section>
+
+  <div class="col-sm-12"><hr></div>
+
+  <section ng-if="ctrl.recent_events.length > 0">
     <h3>Recent events</h3>
-    <ul>
+    <ul class="no-padding">
       <li ng-repeat="e in ctrl.recent_events">
         <span ng-switch="e.domain + '-' + e.name">
           <span ng-switch-when="door-open">
-            <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a>
-            opened {{ e.door }} at {{ e.created_at | date:'shortTime' }}
+            {{ e.created_at | date:'shortTime' }} - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> opened <em style="color: gray;">{{ e.door }}</em>
           </span>
           <span ng-switch-when="badge-awarded">
-            <a href="#!/user/{{ e.account_badge.account_id }}">{{ e.account_badge.account_username }}</a>
-            got the <span class="label label-default">{{ e.badge_description.title }}</span> badge<span ng-if="e.account_badge.account_id !== e.created_by"> awarded by {{ e.created_by_username }}</span>!
+            <span class="label label-default">{{ e.badge_description.title }}</span> awarded to <a href="#!/user/{{ e.account_badge.account_id }}">{{ e.account_badge.account_username }}</a> <span ng-if="e.account_badge.account_id !== e.created_by">by <em style="color: gray;">{{ e.created_by_username }}</em></span>
           </span>
         </span>
       </li>
     </ul>
-    </section>
   </section>
+
+  <div class="col-sm-12"><hr></div>
+
 </div>

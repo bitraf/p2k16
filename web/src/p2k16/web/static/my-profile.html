@@ -1,80 +1,110 @@
 <p2k16-header active="membership"></p2k16-header>
 
-<div class="container">
-  <h1>My profile</h1>
-
+<div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
+  <h2 class="text-center">Change password</h2>
+  <br>
   <form class="form-horizontal">
     <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">Old password</label>
-      <div class="col-sm-4">
+      <!-- <label for="name" class="col-sm-3 control-label">Old password</label> -->
+      <div class="col-sm-6 col-sm-offset-3">
         <input class="form-control" type="password" name="oldPassword" id="oldPassword"
-               ng-model="ctrl.changePasswordForm.oldPassword"/>
+               ng-model="ctrl.changePasswordForm.oldPassword" placeholder="Old password"/>
       </div>
     </div>
     <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">New password</label>
-      <div class="col-sm-4">
+      <!-- <label for="name" class="col-sm-3 control-label">New password</label> -->
+      <div class="col-sm-6 col-sm-offset-3">
         <input class="form-control" type="password" name="newPassword" id="newPassword"
-               ng-model="ctrl.changePasswordForm.newPassword"/>
+               ng-model="ctrl.changePasswordForm.newPassword" placeholder="New password"/>
       </div>
     </div>
-    <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">New password</label>
-      <div class="col-sm-4">
-        <button class="btn btn-default" ng-click="ctrl.changePassword()">Change password</button>
+    <div class="form-group text-center">
+      <!-- <label for="name" class="col-sm-3 control-label">New password</label> -->
+      <div class="col-sm-6 col-sm-offset-3">
+        <button class="btn btn-primary" ng-click="ctrl.changePassword()">Change password</button>
       </div>
     </div>
   </form>
 
+  <div class="col-sm-12"><hr></div>
 
-  <h3>Edit profile details</h3>
+  <h2 class="text-center">Edit profile details</h2>
+  <br>
   <form class="form-horizontal">
     <div class="form-group">
-      <label for="phone" class="col-sm-3 control-label">Phone number</label>
-      <div class="col-sm-4">
+      <!-- <label for="phone" class="col-sm-3 control-label">Phone number</label> -->
+      <div class="col-sm-6 col-sm-offset-3">
         <input class="form-control"
                type="text"
                name="phone"
                id="phone"
-               placeholder="Phone #"
+               placeholder="Phone"
                ng-model="ctrl.profileForm.phone"
                autocomplete="phone" />
       </div>
+      <div class="col-sm-6 col-sm-offset-3 text-center">
+        <small style="color: gray"><br>Current phone: {{ ctrl.profileForm.phone }}</small>
+      </div>
     </div>
-    <div class="form-group">
-      <div class="col-sm-4 col-sm-offset-3">
-        <button class="btn btn-default" ng-click="ctrl.saveProfile()">Save profile</button>
+    <div class="form-group text-center">
+      <div class="col-sm-6 col-sm-offset-3">
+        <button class="btn btn-primary" ng-click="ctrl.saveProfile()">Save changes</button>
       </div>
     </div>
   </form>
 
-  <h1>Badges</h1>
+  <div class="col-sm-12"><hr></div>
 
-  <ul ng-show="ctrl.badges.length" class="list-inline">
-    <li ng-repeat="b in ctrl.badges" ng-init="bd=ctrl.descriptions[b.description_id]">
-      <span class="label label-default">{{ bd.title }}</span>
-    </li>
-  </ul>
-  <p ng-hide="ctrl.badges.length">
-      Aaw, you don't have any badges yet.
-  </p>
-
-  <h1>Circles</h1>
-  <ul ng-if="ctrl.circles.length" class="list-inline">
-      <li ng-repeat="c in ctrl.circles">
-          <a href="#!/admin/circle/{{c.id}}"><span class="label label-default" >{{ c.name }}</span></a>
-      </li>
-  </ul>
-
-  <h1>Box label</h1>
-  <div class="row">
-    <div class="col-xs-12">
-        <p>Boxes in the member storage area are for paying members only, and they
-        should all have a label with a QR code and basic contact information. Press
-        here to have a label printed near Bitmart on the second floor, and stick it
-        on your box today</p>
-        <button class="btn btn-default" ng-click="ctrl.printBoxLabel()">Print box label</button>
+  <h2 class="text-center">Print box label</h2>
+  <br>
+  <form class="form-horizontal col-sm-10 col-sm-offset-1">
+    <div class="panel panel-info">
+      <div class="panel-heading text-center">
+        <h4 class="panel-title">Instructions</h4>
+      </div>
+      <div class="panel-body">
+        <ul>
+          <li>Boxes in the member storage area are for paying members only.</li>
+          <li>All boxes should have a label with a QR code and basic contact information.</li>
+          <li>You can easily print your label here and collect it at Bitraf.</li>
+          <li>The label printer is located in the lab (main sitting area).</li>
+        </ul>
+      </div>
     </div>
+
+    <div class="text-center">
+      <button class="btn btn-primary" ng-click="ctrl.printBoxLabel()">Print label</button>
+    </div>
+
+  </form>
+
+  <div class="col-sm-12"><hr></div>
+
+  <h2 class="text-center">Awarded badges</h2>
+  <br>
+  <div class="col-sm-8 col-sm-offset-2">
+    <ul ng-show="ctrl.badges.length" class="list-inline list-inline-badges">
+      <li ng-repeat="b in ctrl.badges" ng-init="bd=ctrl.descriptions[b.description_id]">
+        <span class="label label-default">{{ bd.title }}</span>
+      </li>
+    </ul>
+    <p ng-hide="ctrl.badges.length">
+        Aaw, you don't have any badges yet.
+    </p>
   </div>
+
+  <div class="col-sm-12"><hr></div>
+
+  <h2 class="text-center">Joined circles</h2>
+  <br>
+  <div class="col-sm-8 col-sm-offset-2">
+    <ul ng-if="ctrl.circles.length" class="list-inline list-inline-badges">
+        <li ng-repeat="c in ctrl.circles">
+            <a href="#!/admin/circle/{{c.id}}"><span class="label label-default" >{{ c.name }}</span></a>
+        </li>
+    </ul>
+  </div>
+
+  <div class="col-sm-12"><hr></div>
 
 </div>

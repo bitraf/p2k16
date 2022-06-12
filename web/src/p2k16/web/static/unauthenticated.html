@@ -1,96 +1,137 @@
-<div class="container">
-  <h1>Log in</h1>
-  <form class="form-horizontal">
-    <div class="form-group">
-      <label for="login-username" class="col-sm-2">Username</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="text" name="email" id="login-username" placeholder="username"
-               autocomplete="username" autocapitalize="off"
-               ng-model="ctrl.loginForm.username"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="login-password" class="col-sm-2">Password</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="password" name="password" id="login-password" placeholder="Password"
-               autocomplete="current-password"
-               ng-model="ctrl.loginForm.password"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="col-sm-4 col-sm-offset-2">
-        <button class="btn btn-default" ng-click="ctrl.logIn()">Log in</button>
-        <a ng-click="ctrl.resetPassword()">I've lost my password!</a>
-      </div>
-    </div>
-  </form>
-  <hr/>
-  <h1>Sign up</h1>
-  <form class="form-horizontal">
-    <div class="form-group">
-      <label for="name" class="col-sm-2">Full Name</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="text" name="name" id="name" placeholder="Full Name"
-               autocomplete="name"
-               ng-model="ctrl.signupForm.name"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="email" class="col-sm-2">Email</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="text" name="email" id="email" placeholder="Email"
-               autocomplete="email"
-               ng-model="ctrl.signupForm.email"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="username" class="col-sm-2">Username</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="text" name="username" id="username" placeholder="Username"
-               autocomplete="username" autocapitalize="off"
-               ng-model="ctrl.signupForm.username"/>
-      </div>
-      <div class="col-sm-4 form-control-static">
-        <a ng-click="ctrl.signupForm.username = ctrl.signupForm.email">use email as username</a>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="phone" class="col-sm-2">Phone</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="text" name="phone" id="phone" placeholder="Phone #"
-               autocomplete="phone"
-               ng-model="ctrl.signupForm.phone"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="password" class="col-sm-2">Password</label>
-      <div class="col-sm-4">
-        <input class="form-control" type="password" name="password" id="password" placeholder="Password"
-               autocomplete="new-password"
-               ng-model="ctrl.signupForm.password"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="col-sm-4 col-sm-offset-2">
-        <button class="btn btn-default" ng-click="ctrl.registerAccount()">Sign up</button>
-      </div>
-    </div>
-  </form>
+<div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
 
-  <hr>
-  <p style="font-weight: bold; ">Signing up for an account does not automatically start a membership at Bitraf. You do this by logging in and setting a credit card and membership level on the membership page which can be changed at any time.</p>
+  <br>
+  <br>
+  <br>
+
+  <h1 class="text-center">P2K16</h1>
+  <h3 class="text-center">Welcome to Bitraf</h3>
+
+  <br>
+  <br>
+
+  <div class="row text-center">
+    <div>
+      <button class="btn btn-sm" ng-click="ctrl.toggleSignupForm()" ng-class="!ctrl.showSignUpForm ? 'underline-button' : 'btn-secondary'">Already a member</button>
+      <button class="btn btn-sm" ng-click="ctrl.toggleSignupForm()" ng-class="ctrl.showSignUpForm ? 'underline-button' : 'btn-secondary'">Become a member</button>
+    </div>
+  </div>
+
+  <br>
+  <br>
+
+  <div ng-hide="ctrl.showSignUpForm">
+
+    <form class="form-horizontal">
+      <div class="form-group">
+        <!-- <label for="login-username" class="col-sm-2 col-sm-offset-3">Username</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="text" name="email" id="login-username" placeholder="Username"
+                 autocomplete="username" autocapitalize="off"
+                 ng-model="ctrl.loginForm.username"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <!-- <label for="login-password" class="col-sm-2">Password</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="password" name="password" id="login-password" placeholder="Password"
+                 autocomplete="current-password"
+                 ng-model="ctrl.loginForm.password"/>
+        </div>
+      </div>
+      <div class="form-group text-center">
+        <div class="col-sm-6 col-sm-offset-3">
+          <button class="btn btn-default btn-primary" ng-click="ctrl.logIn()">Log in</button>
+        </div>
+      </div>
+      <div class="form-group text-center">
+        <div class="col-sm-6 col-sm-offset-3">
+          <button class="btn btn-sm btn-secondary" ng-click="ctrl.resetPassword()">Forgot password</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+  <div ng-show="ctrl.showSignUpForm">
+
+    <form class="form-horizontal">
+      <div class="form-group">
+        <!-- <label for="name" class="col-sm-2">Full Name</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="text" name="name" id="name" placeholder="Full name"
+                 autocomplete="name"
+                 ng-model="ctrl.signupForm.name"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <!-- <label for="email" class="col-sm-2">Email</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="text" name="email" id="email" placeholder="Email"
+                 autocomplete="email"
+                 ng-model="ctrl.signupForm.email"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <!-- <label for="username" class="col-sm-2">Username</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="text" name="username" id="username" placeholder="Username"
+                 autocomplete="username" autocapitalize="off"
+                 ng-model="ctrl.signupForm.username"/>
+        </div>
+        <!-- <div class="col-sm-4 form-control-static">
+          <a ng-click="ctrl.signupForm.username = ctrl.signupForm.email">use email as username</a>
+        </div> -->
+      </div>
+      <div class="form-group">
+        <!-- <label for="phone" class="col-sm-2">Phone</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="text" name="phone" id="phone" placeholder="Phone"
+                 autocomplete="phone"
+                 ng-model="ctrl.signupForm.phone"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <!-- <label for="password" class="col-sm-2">Password</label> -->
+        <div class="col-sm-6 col-sm-offset-3">
+          <input class="form-control" type="password" name="password" id="password" placeholder="Password"
+                 autocomplete="new-password"
+                 ng-model="ctrl.signupForm.password"/>
+        </div>
+      </div>
+      <div class="form-group text-center">
+        <div class="col-sm-6 col-sm-offset-3">
+          <button class="btn btn-default btn-primary" ng-click="ctrl.registerAccount()">Sign up</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="panel panel-info">
+      <div class="panel-heading text-center">
+        <h4 class="panel-title">There are more steps!</h4>
+      </div>
+      <div class="panel-body">
+        <ul>
+          <li>Signing up for an account does not automatically start a membership at Bitraf.</li>
+          <li>You can complete becoming a member by logging in, choosing a membership level, and setting up a credit card.</li>
+          <li>You can always change or cancel your memebership at any time.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script type="text/ng-template" id="unauthenticated/reset-password-modal.html">
   <div class="modal-header">
-    <h3 class="modal-title" id="modal-title">Recover password</h3>
+    <h3 class="modal-title text-center" id="modal-title">Recover password</h3>
   </div>
 
   <div class="modal-body" id="modal-body">
     <form class="form-horizontal">
+      <div class="form-group"></div>
       <div class="form-group">
-        <label for="username" class="col-sm-2">Username</label>
-        <div class="col-sm-4">
+        <div class="col-sm-6 col-sm-offset-3">
           <input class="form-control" type="text" name="username" id="username" placeholder="Username"
                  autocomplete="username" autocapitalize="off"
                  ng-model="ctrl.username"/>
@@ -100,8 +141,8 @@
   </div>
 
   <div class="modal-footer" ng-hide="ctrl.message">
-    <a ng-click="ctrl.cancel()">Cancel</a>
-    <button class="btn btn-default" type="button" ng-click="ctrl.ok()">Send recovery email</button>
+    <button class="btn btn-secondary" ng-click="ctrl.cancel()">Cancel</button>
+    <button class="btn btn-primary" type="button" ng-click="ctrl.ok()">Send recovery email</button>
   </div>
   <div class="modal-footer" ng-show="ctrl.message">
     <p>{{ ctrl.message }}</p>

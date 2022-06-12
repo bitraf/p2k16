@@ -1105,6 +1105,7 @@
             'username': null,
             'password': null
         };
+        self.showSignUpForm = false;
 
         self.registerAccount = function () {
             CoreDataService.register_account(self.signupForm).then(function () {
@@ -1118,6 +1119,10 @@
                 $window.location.href = "/";
             });
         };
+
+        self.toggleSignupForm = function () {
+            self.showSignUpForm = !self.showSignUpForm;
+        }
 
         self.resetPassword = function () {
             var username = self.loginForm.username;

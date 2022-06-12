@@ -1,14 +1,19 @@
 <p2k16-header></p2k16-header>
 
-<div class="container">
-  <h1>About P2k16</h1>
+<div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
+  <h2 class="text-center">About P2K16</h2>
 
-  <p>
-    P2k16 is <a href="https://bitraf.no">Bitraf's</a> self-serve system. The code is available on
+  <br>
+
+  <p class="text-center">
+    P2k16 is <a href="https://bitraf.no">Bitraf's</a> self-serve system.<br>The code is available on
     <a href="https://github.com/bitraf/p2k16">Github</a>.
   </p>
 
-  <section ng-show="ctrl.gitRevision || true">
+  <!-- ================================================= -->
+  <!-- The following block is kept in case of future use -->
+
+  <!-- <section ng-show="ctrl.gitRevision || true">
     <p>
       Currently running version's git hash:
       <a href="https://github.com/bitraf/p2k16/commit/{{ ctrl.gitRevision }}"><code>{{ ctrl.gitRevision }}</code></a>.
@@ -16,5 +21,7 @@
       <a href="https://github.com/bitraf/p2k16/compare/{{ ctrl.gitRevision }}...master">
         <code>{{ ctrl.gitRevision }}...master</code></a>.
     </p>
-  </section>
+  </section> -->
+  <!-- ================================================= -->
+
 </div>

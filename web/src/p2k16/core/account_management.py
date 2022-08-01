@@ -131,7 +131,7 @@ def add_account_to_circle(account: Account, circle: Circle, admin: Account, comm
     _assert_can_admin_circle(admin, circle)
 
     if is_account_in_circle(account, circle):
-        raise P2k16UserException("Account is already a member of the cirlce, cannot be added again")
+        raise P2k16UserException("Account is already a member of the circle, cannot be added again")
 
     circle.add_member(account, comment)
 

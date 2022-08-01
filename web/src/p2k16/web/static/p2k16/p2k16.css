@@ -29,10 +29,15 @@ div.error-container {
   column-gap: 30px;
   flex-wrap: wrap;
   row-gap: 15px;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
 }
 
 .door-buttons-flex .btn {
-  flex-grow: 1;
+  width: 100%;
+  max-width: 300px;
 }
 
 
@@ -179,3 +184,55 @@ div.error-container {
 }
 
 
+ul {
+  line-height: 2.5rem;
+}
+
+ul li::marker {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+ul.no-padding {
+  padding-left: 0;
+}
+
+hr {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.btn:focus {
+  outline: none !important;
+}
+
+.underline-button {
+  border-bottom: 2px solid #428bca;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.tools-buttons-table > tbody > tr > td {
+  border-top: none;
+  max-width: 100px;
+}
+
+.tools-buttons-table .btn {
+  line-height: 2rem;
+
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.list-inline-badges > li {
+  margin-bottom: 15px;
+}
+
+.panel-clickable:hover {
+  cursor: pointer;
+  background-color: #bce8f120;
+}

@@ -1,14 +1,25 @@
 # Getting started
 
-Install:
+Before you start, make sure to install:
 
-- virtualenv
+- python virtualenv
 - docker
+- [nvm](https://github.com/nvm-sh/nvm)
+- postgres client
+```
+sudo apt install postgresql-client-common
+sudo apt install postgresql-client
+sudo apt install libpq-dev
+```
+- java
+```
+sudo apt install default-jre
+```
 
 We have a collection of tools available under `bin/`. Some are utilities, other are wrappers around other tools to
 make sure that you have the correct versions.
 
-Before running any commands, you have to source our setup script:
+**IMPORTANT** - Before running any commands, you have to source our setup script:
 
     # . .settings.sh
 
@@ -23,9 +34,12 @@ The root user in the database is `postgres`, it's password is also `postgres`.
 
 Running the application:
 
+    # python3 -m venv env
     # p2k16-run-web
 
-This will fail unless you have the required applications installed.
+This will fail unless you have the required applications installed. You may need to adjust `requirements.txt` manually if installation complains about version numbers. Running `p2k16-update-requirements` may also help (but not guaranteed).
+
+If run successfully, the application should be accessible at `http://localhost:5000/`.
 
 You can log into p2k16 with the user 'super', password 'super'.
 

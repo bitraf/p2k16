@@ -1,63 +1,68 @@
 <p2k16-header active="badges"></p2k16-header>
 
-<div class="container">
-
-  <div class="row">
-    <div class="col-md-6">
-      <h2>Recently issued badges</h2>
-      <ul>
-        <li ng-repeat="b in ctrl.recentBadges" ng-init="bd = ctrl.badgeDescriptions[b.description_id]">
-          <span class="label label-success">{{ bd.title }}</span> was awarded to
-          <a ng-href="#!/user/{{ b.account_id }}">{{ b.account_username }}</a><span
-             ng-if="b.awarded_by_id != b.account_id">, awarded by {{ b.awarded_by_username }}</span>
-        </li>
-      </ul>
+<div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
+  <h2 class="text-center">Award a badge</h2>
+  <br>
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="panel panel-info">
+      <div class="panel-heading text-center">
+        <h4 class="panel-title">Instructions</h4>
+      </div>
+      <div class="panel-body">
+        <ul>
+          <li>You can give yourself almost any badge you want.</li>
+          <li>Some badges are reserved and have to be assigned by someone other than yourself.</li>
+        </ul>
+      </div>
     </div>
-    <div class="col-md-6">
-      <h2>Badges</h2>
-      <ul>
-        <li ng-repeat="bd in ctrl.badgeDescriptions">
-          <span class="label label-success">{{ bd.title }}</span>
-          <span ng-if="bd.description">{{ bd.description }}</span>
-          <!--<span ng-if="!bd.description">Boo, missing description :'(</span>-->
-        </li>
-      </ul>
-    </div>
+    <br>
   </div>
-
-  <h2>Award a badge</h2>
 
   <form class="form-horizontal">
     <div class="form-group">
-      <label for="title" class="col-sm-2">Badge</label>
-      <div class="col-sm-4">
-        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.title">
+      <div class="col-sm-6 col-sm-offset-3">
+        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.title" placeholder="Badge (free text)">
       </div>
     </div>
     <div class="form-group">
-      <label for="title" class="col-sm-2">Recipient</label>
-      <div class="col-sm-4">
-        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.recipient">
+      <div class="col-sm-6 col-sm-offset-3">
+        <input type="text" class="form-control" id="title" ng-model="ctrl.newBadge.recipient" placeholder="Recipient (username)">
       </div>
-      <div class="col-sm-6">
-        Leave blank to assign to yourself.
+      <div class="col-sm-6 col-sm-offset-3 text-center">
+        <small style="color: gray"><br>Leave "Recipient" blank to assign to yourself</small>
       </div>
     </div>
-    <div class="form-group">
-      <div class="col-sm-offset-2 col-sm-4">
-        <button type="submit" class="btn btn-default" ng-click="ctrl.createBadge()">Add badge</button>
+    <div class="form-group text-center">
+      <div class="col-sm-6 col-sm-offset-3">
+        <button type="submit" class="btn btn-primary" ng-click="ctrl.createBadge()">Award badge</button>
       </div>
     </div>
   </form>
 
-  <div class="bs-callout bs-callout-info">
-    <p>
-      You can give yourself almost any badge you want. Take those that you feel that you're entitled to.
-    </p>
+  <div class="col-sm-12"><hr></div>
 
-    <p>
-      Some badges are reserved and has to assigned by someone else.
-    </p>
-  </div>
+  <section class="col-md-6" ng-if="ctrl.recentBadges.length > 0">
+    <h3>Recent events</h3>
+    <ul class="no-padding">
+      <li ng-repeat="b in ctrl.recentBadges" ng-init="bd = ctrl.badgeDescriptions[b.description_id]">
+        <span class="label label-success">{{ bd.title }}</span> awarded to
+        <a ng-href="#!/user/{{ b.account_id }}">{{ b.account_username }}</a><span
+           ng-if="b.awarded_by_id != b.account_id"> by <em style="color: gray;">{{ b.awarded_by_username }}</em></span>
+      </li>
+    </ul>
+    <div class="col-sm-12"><hr></div>
+  </section>
+
+  <section class="col-md-6">
+    <h3>Catalog</h3>
+    <ul class="no-padding">
+      <li ng-repeat="bd in ctrl.badgeDescriptions">
+        <span class="label label-success">{{ bd.title }}</span>
+        <span ng-if="bd.description">{{ bd.description }}</span>
+        <!--<span ng-if="!bd.description">Boo, missing description :'(</span>-->
+      </li>
+    </ul>
+    <div class="col-sm-12"><hr></div>
+  </section>
 
 </div>

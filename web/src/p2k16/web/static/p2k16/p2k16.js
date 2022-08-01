@@ -85,7 +85,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_account_list_html,
             resolve: {
-                profiles: CoreDataServiceResolvers.data_profile_list
+                profiles: CoreDataServiceResolvers.data_profile_summary_list
             }
         }).when("/admin/account/:account_id", {
             controller: AdminAccountDetailController,

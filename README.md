@@ -2,7 +2,7 @@
 
 Before you start, make sure to install:
 
-- python virtualenv
+- python virtualenv, e.g. `pip3 install virtualenv`
 - docker
 - [nvm](https://github.com/nvm-sh/nvm)
 - postgres client
@@ -34,7 +34,6 @@ The root user in the database is `postgres`, it's password is also `postgres`.
 
 Running the application:
 
-    # python3 -m venv env
     # p2k16-run-web
 
 This will fail unless you have the required applications installed. You may need to adjust `requirements.txt` manually if installation complains about version numbers. Running `p2k16-update-requirements` may also help (but not guaranteed).

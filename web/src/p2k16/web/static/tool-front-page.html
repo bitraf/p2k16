@@ -23,7 +23,7 @@
     <table class="table tools-buttons-table">
       <tr ng-repeat="tool in ctrl.tools">
         <td class="text-center">
-          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-default btn-block btn-danger disabled" id="{{tool.name}} isMine">
+          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-default btn-block btn-danger" id="{{tool.name}} isMine">
             <span>{{tool.description}}</span>
             <br>
             <small class="text-center">{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
@@ -50,9 +50,9 @@
     <ul class="no-padding">
       <li ng-repeat="e in ctrl.recent_events">
         <span ng-switch="e.domain + '-' + e.name">
-          <span ng-switch-when="tool-checkout">{{ e.created_at | date:'short' }} - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked out <em style="color: red">{{ e.tool_name }}</em>
+          <span ng-switch-when="tool-checkout">{{ e.created_at | date:'short' }} - <em style="color: red">{{ e.tool_name }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked out
           </span>
-          <span ng-switch-when="tool-checkin">{{ e.created_at | date:'short' }} - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked in <em style="color: green">{{ e.tool_name }}</em>
+          <span ng-switch-when="tool-checkin">{{ e.created_at | date:'short' }} - <em style="color: green">{{ e.tool_name }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked in
           </span>
         </span>
       </li>
@@ -60,29 +60,5 @@
   </section>
 
   <div class="col-sm-12"><hr></div>
-
-  <!-- ================================================= -->
-  <!-- The following block is kept in case of future use -->
-
-  <!-- <section ng-if="ctrl.my_tools.length">
-    <h2 class="text-center">Currently checked out by me</h2>
-    <p class="text-center">Click a tool to return it</p>
-    <form class="form-horizontal">
-      <table class="table tools-buttons-table">
-        <tr ng-repeat="tool in ctrl.tools" ng-if="tool.checkout.active">
-          <td class="text-center">
-            <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default btn-block btn-danger" ng-click="ctrl.checkinTool(tool)">
-              <strong>{{tool.description}}</strong>
-              <span ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account">
-                <br>
-                <small class="text-center">Checked out since {{tool.checkout.started | date:'short'}}</small>
-              </span>
-            </button>
-          </td>
-        </tr>
-      </table>
-    </form>
-  </section> -->
-  <!-- ================================================= -->
 
 </div>

@@ -23,7 +23,12 @@
     <table class="table tools-buttons-table">
       <tr ng-repeat="tool in ctrl.tools">
         <td class="text-center">
-          <button ng-if="tool.checkout.active" type="submit" class="btn btn-default btn-block btn-danger" ng-click="ctrl.checkinTool(tool)" id="{{tool.name}}">
+          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-block btn-danger" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}}">
+            <strong>{{tool.description}}</strong>
+            <br>
+            <small class="text-center">{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
+          </button>
+          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default btn-block" ng-click="ctrl.checkinTool(tool)" id="{{tool.name}}">
             <strong>{{tool.description}}</strong>
             <br>
             <small class="text-center">{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>

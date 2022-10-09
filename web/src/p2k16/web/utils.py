@@ -5,9 +5,10 @@ from functools import wraps
 from symtable import Function
 
 import flask
+from flask.json import dumps
 import flask_login
 import jsonschema as js
-from flask import abort
+from flask import abort, make_response
 from p2k16.core import P2k16UserException
 from p2k16.core.auth import AuthenticatedAccount
 
@@ -24,7 +25,10 @@ def require_circle_membership(circle_name):
                 abort(401)
 
             if not user.is_in_circle(circle_name):
-                abort(403)
+                error_message = dumps({"message": "You are not a member of circle `{}`, permission denied".format(circle_name)})
+                res = make_response(error_message, 403)
+                res.headers["content-type"] = "application/vnd.error+json"
+                abort(res)
 
             return f(*args, **kwargs)
 

@@ -108,6 +108,10 @@ def data_tool_add():
 @require_circle_membership("despot")
 def _data_tool_save():
     circle_name = request.json["circle"]
+
+    if not circle_name:
+        raise P2k16UserException("A tool needs a circle")
+
     circle = Circle.find_by_name(circle_name)
 
     if not circle:

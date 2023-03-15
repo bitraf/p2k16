@@ -1,4 +1,3 @@
-import json
 import logging
 
 import flask
@@ -15,8 +14,22 @@ webhook_secret = None
 
 api = Blueprint("api", __name__, template_folder="templates")
 
+
 @api.route('/api/memberinfo', methods=['GET'])
 def memberinfo():
+    a = flask.request.authorization
+
+    if a is None:
+        return "Authorization required", 401
+
+    account = Account.find_account_by_username(a.username)
+
+    if account is None:
+        return "Unauthorized", 403
+
+    if not account.valid_password(a.password):
+        return "Unauthorized", 403
+
     username = request.args.get("username")
 
     account = Account.find_account_by_username(username)

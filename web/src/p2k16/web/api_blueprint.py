@@ -20,15 +20,15 @@ def memberinfo():
     a = flask.request.authorization
 
     if a is None:
-        return "Authorization required", 401
+        abort(401)
 
     account = Account.find_account_by_username(a.username)
 
     if account is None:
-        return "Unauthorized", 403
+        abort(403)
 
     if not account.valid_password(a.password):
-        return "Unauthorized", 403
+        abort(403)
 
     username = request.args.get("username")
 

@@ -3,10 +3,11 @@ import logging
 import flask
 from flask import Blueprint, jsonify, request, abort
 
+from p2k16.core import account_management
 from p2k16.core.membership_management import \
     get_membership, get_membership_month_count
 from p2k16.core.models import Account, Company, \
-    StripePayment
+    StripePayment, Circle
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,10 @@ def memberinfo():
 
     if not account.valid_password(a.password):
         abort(403)
+
+    circle = Circle.get_by_name('api')
+    if not account_management.is_account_in_circle(account, circle):
+        return abort(403)
 
     username = request.args.get("username")
 

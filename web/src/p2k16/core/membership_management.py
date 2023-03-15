@@ -67,6 +67,8 @@ def get_stripe_customer(account: Account):
 def get_membership_payments(account: Account):
     return StripePayment.query.filter(StripePayment.created_by_id == account.id).all()
 
+def get_membership_month_count(account: Account):
+    return StripePayment.query.filter(StripePayment.created_by_id == account.id).count()
 
 def find_account_from_stripe_customer(stripe_customer_id) -> Optional[Account]:
     """

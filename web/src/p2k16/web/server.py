@@ -197,7 +197,7 @@ app.config.door_client = door.create_client(app.config)
 app.config.tool_client = tool.create_client(app.config)
 app.config.label_client = label.create_client(app.config)
 
-from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, tool_blueprint, membership_blueprint, label_blueprint
+from p2k16.web import badge_blueprint, core_blueprint, door_blueprint, tool_blueprint, membership_blueprint, label_blueprint, api_blueprint
 
 # Inject stripe config parameters
 membership_blueprint.setup_stripe(app.config)
@@ -209,6 +209,7 @@ app.register_blueprint(door_blueprint.door)
 app.register_blueprint(tool_blueprint.tool)
 app.register_blueprint(label_blueprint.label)
 app.register_blueprint(membership_blueprint.membership)
+app.register_blueprint(api_blueprint.api)
 
 _env = app.config.get("P2K16_ENV", None)
 

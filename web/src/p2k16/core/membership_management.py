@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import DefaultDict, Optional
 
 import stripe
 from p2k16.core import P2k16UserException, mail
 from p2k16.core.models import db, Account, StripePayment, model_support, Membership, StripeCustomer, Company
+from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
 
@@ -117,12 +118,15 @@ def handle_payment_success(event):
     with model_support.run_as(account):
         invoice_id = event.data.object.id
         timestamp = datetime.fromtimestamp(event.data.object.created)
-        items = event.data.object.lines.data[0]
 
-        payment = StripePayment(invoice_id, datetime.fromtimestamp(items.period.start),
-                                datetime.fromtimestamp(items.period.end), items.amount / 100, timestamp)
+        # Stripe checkout uses prorations, meaning subscriptions can change in the middle of month
+        # This means negative amounts and multiple lines for each membership period
+        for item in event.data.object.lines:
+            # Add payment for new membership period
+            payment = StripePayment(invoice_id, datetime.fromtimestamp(item.period.start),
+                            datetime.fromtimestamp(item.period.end), item.amount / 100, timestamp)
+            db.session.add(payment)
 
-        db.session.add(payment)
         db.session.commit()
 
 def handle_payment_failed(event):

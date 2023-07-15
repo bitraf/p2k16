@@ -8,7 +8,7 @@ from p2k16.core.models import db, Account, StripePayment, model_support, Members
 from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
-
+membership_tiers = []
 
 def paid_members():
     return Account.query. \
@@ -169,36 +169,38 @@ def handle_payment_method_updated(event):
             stripe.Invoice.pay(invoice.id)
 
 def member_get_tiers():
-    tiers = []
+    # Use in-memory cached tiers to avoid stripe delay
+    if len(membership_tiers) > 0:
+        return membership_tiers
 
     try:
         products = stripe.Product.list(active=True)
 
         for product in products.data:
-            t = {} # Membership tier
+            tier = {} # Membership tier
 
-            t['priceId'] = product.default_price
-            t['name'] = product.name
+            tier['priceId'] = product.default_price
+            tier['name'] = product.name
 
             # Get actual price of product
             stripe_price = stripe.Price.retrieve(product.default_price)
 
-            t['price'] = stripe_price.unit_amount / 100
+            tier['price'] = stripe_price.unit_amount / 100
 
             # Get product features. New line for every $
-            t['features'] = []
+            tier['features'] = []
             if hasattr(product.metadata, 'product_features'):
-                t['features'] = product.metadata.product_features.split('$')
+                tier['features'] = product.metadata.product_features.split('$')
 
-            tiers.append(t)
+            membership_tiers.append(tier)
 
     except stripe.error.StripeError:
         raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
 
     # Return the tiers in descending price order
-    tiers.sort(key=lambda x: x.get('price'), reverse=True)
+    membership_tiers.sort(key=lambda x: x.get('price'), reverse=True)
 
-    return tiers
+    return membership_tiers
 
 def member_get_details(account):
     # Get mapping from account to stripe_id

@@ -168,6 +168,37 @@ def handle_payment_method_updated(event):
         for invoice in invoices.data:
             stripe.Invoice.pay(invoice.id)
 
+def member_get_tiers():
+    tiers = []
+
+    try:
+        products = stripe.Product.list(active=True)
+
+        for product in products.data:
+            t = {} # Membership tier
+
+            t['priceId'] = product.default_price
+            t['name'] = product.name
+
+            # Get actual price of product
+            stripe_price = stripe.Price.retrieve(product.default_price)
+
+            t['price'] = stripe_price.unit_amount / 100
+
+            # Get product features. New line for every $
+            t['features'] = []
+            if hasattr(product.metadata, 'product_features'):
+                t['features'] = product.metadata.product_features.split('$')
+
+            tiers.append(t)
+
+    except stripe.error.StripeError:
+        raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
+
+    # Return the tiers in descending price order
+    tiers.sort(key=lambda x: x.get('price'), reverse=True)
+
+    return tiers
 
 def member_get_details(account):
     # Get mapping from account to stripe_id
@@ -289,7 +320,6 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
         checkout_session = stripe.checkout.Session.create(
             success_url=success_url,
             cancel_url=cancel_url,
-            payment_method_types=["card"],
             mode="subscription",
             line_items=[
                 {

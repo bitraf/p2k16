@@ -5,60 +5,25 @@
       <h2 class="text-center">Pick membership type</h2>
       <br>
         <div class="row text-center align-items-end">
-          <div class="col-lg-6 mb-5 mb-lg-0">
-            <div class="panel panel-info p-5 rounded-lg shadow panel-clickable" ng-click="ctrl.signup(500)">
+          <div ng-repeat="tier in ctrl.membership_tiers" class="col-lg-6 mb-5 mb-lg-0">
+            <div class="panel panel-info p-5 rounded-lg shadow panel-clickable" ng-click="ctrl.signup(tier)">
               <br>
-              <h5 class="text-uppercase font-weight-bold mb-4 text-primary">Standard member</h5>
-              <h2 class="h1 font-weight-bold text-primary">500 kr</h2>
+              <h5 class="text-uppercase font-weight-bold mb-4 text-primary"> {{ tier.name | uppercase }} </h5>
+              <h2 class="h1 font-weight-bold text-primary"> {{ tier.price }} kr</h2>
               <h4 class="text-small font-weight-normal ml-2 text-primary">monthly</h4>
               <br>
               <div class="my-4 mx-auto primary"></div>
+
               <ul class="my-5 text-small text-left">
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Access to Bitraf 24/7 </li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Open all doors and use all tools </li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Join safety courses</li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Personal box for storage</li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Cancel any time</li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Support Bitraf</li>
+                <li ng-repeat="feature in tier.features" class="mb-3">
+                  <i class="mr-2 text-primary"></i> {{ feature }} </li>
+                </li>
+
                 <p></p>
                 <b>Bitraf is funded by its members!</b>
               </ul>
               <br>
-              <button ng-click="ctrl.signup(500)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Proceed to payment</button>
-            </div>
-          </div>
-          <div class="col-lg-6 mb-5 mb-lg-0">
-            <div class="panel panel-info p-5 rounded-lg shadow panel-clickable" ng-click="ctrl.signup(300)">
-              <br>
-              <h5 class="text-uppercase font-weight-bold mb-4">Supporting member</h5>
-              <h2 class="h1 font-weight-bold">300 kr</h2>
-              <h4 class="text-small font-weight-normal ml-2">monthly</h4>
-              <br>
-              <div class="my-4 mx-auto primary"></div>
-              <ul class="my-5 text-small text-left">
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i><em>For students</em></li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i><em>For the unemployed</em></li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i><em>For those who cannot afford the full fee</em></li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary bold"></i>Same benefits as standard members</li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Cancel any time</li>
-                <li class="mb-3">
-                  <i class="mr-2 text-primary"></i> Support Bitraf</li>
-                <p></p>
-                <b>Bitraf is funded by its members!</b>
-              </ul>
-              <br>
-              <button ng-click="ctrl.signup(300)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Proceed to payment</button>
+              <button ng-click="ctrl.signup(tier)" class="btn btn-primary btn-block p-2 shadow rounded-pill">Proceed to payment</button>
             </div>
           </div>
         </div>

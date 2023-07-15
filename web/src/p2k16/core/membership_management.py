@@ -56,13 +56,17 @@ def get_membership_fee(account: Account):
         return membership.fee
 
 
-def get_stripe_customer(account: Account):
+def get_stripe_customer_id(account: Account):
     """
     Get stripe customer for account
     :param account:
-    :return: StripeCustomer model
+    :return: Stripe customer id
     """
-    return StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
+    customer = StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
+    if customer is None:
+        return None
+    else:
+        return customer.stripe_id
 
 
 def get_membership_payments(account: Account):
@@ -142,10 +146,10 @@ def handle_session_completed(event):
 
     account = Account.find_account_by_id(event.data.object.metadata.accountId)
 
-    stripe_customer = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     # Customer not registered with p2k16
-    if stripe_customer is None:
+    if stripe_customer_id is None:
         with model_support.run_as(account):
             stripe_customer = StripeCustomer(customer_id)
             db.session.add(stripe_customer)
@@ -165,8 +169,14 @@ def handle_payment_method_updated(event):
     if stripe_customer_id is not None:
         invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
 
+        # Get the customers's card
+        pm = stripe.Customer.list_payment_methods(stripe_customer_id)
+
+        if len(pm.data) == 0:
+            return  # No valid card
+
         for invoice in invoices.data:
-            stripe.Invoice.pay(invoice.id)
+            stripe.Invoice.pay(invoice.id, payment_method=pm.data[0].id)
 
 def member_get_tiers():
     # Use in-memory cached tiers to avoid stripe delay
@@ -202,9 +212,65 @@ def member_get_tiers():
 
     return membership_tiers
 
+
+    """
+    Get payment status at stripe
+    :return:
+    """
+def member_get_status(account):
+    status = {}
+    status['unpaid_invoice'] = False
+    status['subscription_active'] = False
+    status['p2k16_paying_member'] = StripePayment.is_account_paying_member(account.id)
+
+    # Get mapping from account to stripe_id
+    stripe_customer_id = get_stripe_customer_id(account)
+
+    if stripe_customer_id is None:
+        # No stripe customer, no unpaid invoices
+        return status
+
+    # Check subscriptions
+    subscriptions = stripe.Subscription.list(customer=stripe_customer_id)
+    if len(subscriptions) > 0:
+        status['subscription_active'] = True
+
+    # Get unpaid invoices
+    invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
+
+    if len(invoices) > 0:
+        status['unpaid_invoice'] = True
+
+    return status
+
+
+    """
+    Try to charge unpaid invoices.
+    This allows a member to openm doors/use tools right away
+    instead of waiting for a smart retry (a few days)
+    :return:
+    """
+def member_retry_payment(account):
+    stripe_customer_id = get_stripe_customer_id(account)
+
+    status = False
+
+    if stripe_customer_id is not None:
+        invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
+
+        # Get the customers's card
+        pm = stripe.Customer.list_payment_methods(stripe_customer_id)
+        if len(pm.data) == 0:
+            raise P2k16UserException('No active credit card')
+
+        for invoice in invoices.data:
+            stripe.Invoice.pay(invoice.id, payment_method=pm.data[0].id)
+
+    return status
+
 def member_get_details(account):
     # Get mapping from account to stripe_id
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     details = {}
 
@@ -217,7 +283,7 @@ def member_get_details(account):
 
         if stripe_customer_id is not None:
             # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=['sources', 'subscriptions'])
+            cu = stripe.Customer.retrieve(stripe_customer_id, expand=['sources', 'subscriptions'])
 
             if len(cu.sources.data) > 0:
                 card = cu.sources.data[0]
@@ -264,7 +330,7 @@ def member_customer_portal(account: Account, base_url: str):
     :param base_url:
     :return: customer portalUrl
     """
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     if stripe_customer_id is None:
         raise P2k16UserException('No billing information available. Create a subscription first.')
@@ -292,12 +358,12 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
     :param price_id:
     :return: checkout sessionId
     """
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     # Existing customers should only use this flow if they have no subscriptions.
     if stripe_customer_id is not None:
           # Get customer object
-        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=[
+        cu = stripe.Customer.retrieve(stripe_customer_id, expand=[
                'subscriptions'])
 
         if len(cu.subscriptions.data) > 0:

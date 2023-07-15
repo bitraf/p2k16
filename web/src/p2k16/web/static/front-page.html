@@ -1,7 +1,7 @@
 <p2k16-header active="front-page"></p2k16-header>
 
 <div class="container col-xs-10 col-xs-offset-1 col-sm-6 col-sm-offset-3">
-  <section ng-if="!ctrl.employed && !ctrl.payingMember">
+  <section ng-if="!ctrl.employed && !ctrl.payingMember && !ctrl.pendingPayment">
       <h2 class="text-center">Pick membership type</h2>
       <br>
         <div class="row text-center align-items-end">
@@ -27,6 +27,20 @@
             </div>
           </div>
         </div>
+  </section>
+
+  <section ng-if="!ctrl.employed && ctrl.pendingPayment">
+      <h2 class="text-center">Missing payment</h2>
+      <br>
+    <div class="panel panel-danger">
+      <div class="panel-heading text-center">
+        <h4 class="panel-title">Your membership is active, but we are missing a payment</h4>
+      </div>
+      <div class="panel-body text-center">
+        <a class="btn btn-primary" ng-click="ctrl.retryPayment()">Retry payment</a>
+        <a class="btn btn-primary" ng-click="ctrl.manageBilling()">Manage you membership</a>
+      </div>
+    </div>
   </section>
 
   <section ng-if="!ctrl.doorsAvailable">

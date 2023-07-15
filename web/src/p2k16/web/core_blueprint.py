@@ -11,7 +11,7 @@ from flask import current_app, abort, Blueprint, render_template, jsonify, reque
 from p2k16.core import P2k16UserException, auth, account_management, badge_management, models, event_management, \
     authz_management
 from p2k16.core.membership_management import member_create_checkout_session, member_customer_portal, \
-    get_membership, get_membership_payments, active_member, get_membership_fee, member_get_tiers
+    get_membership, get_membership_payments, active_member, get_membership_fee, member_get_status, member_get_tiers, member_retry_payment
 from p2k16.core.models import Account, Circle, Company, CompanyEmployee, CircleMember, BadgeDescription, \
     CircleManagementStyle, Membership, StripePayment
 from p2k16.core.models import AccountBadge
@@ -497,6 +497,17 @@ def membership_customer_portal():
 @registry.route('/membership/tiers')
 def membership_tiers():
     return jsonify(member_get_tiers())
+
+@registry.route('/membership/status')
+def membership_status():
+    account = flask_login.current_user.account
+    return jsonify(member_get_status(account))
+
+@registry.route('/membership/retry-payment', methods=["POST"])
+def membership_retry_payment():
+    account = flask_login.current_user.account
+
+    return jsonify(member_retry_payment(account))
 
 ###############################################################################
 # Circle

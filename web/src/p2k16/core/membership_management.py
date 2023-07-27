@@ -157,9 +157,10 @@ def handle_session_completed(event):
 
     mail.send_new_member(account)
 
+
     """
     Try to charge unpaid invoices if payment method updated
-    This allows a member to openm doors/use tools right away
+    This allows a member to open doors/use tools right away
     instead of waiting for a smart retry (a few days)
     :return:
     """
@@ -170,13 +171,14 @@ def handle_payment_method_updated(event):
         invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
 
         # Get the customers's card
-        pm = stripe.Customer.list_payment_methods(stripe_customer_id)
+        payment_methods = stripe.Customer.list_payment_methods(stripe_customer_id)
 
-        if len(pm.data) == 0:
-            return  # No valid card
-
+        # Try to pay open invoices with all available cards
         for invoice in invoices.data:
-            stripe.Invoice.pay(invoice.id, payment_method=pm.data[0].id)
+            for pm in payment_methods.data:
+                invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                if invoice.paid:
+                    break
 
 def member_get_tiers():
     # Use in-memory cached tiers to avoid stripe delay
@@ -258,13 +260,26 @@ def member_retry_payment(account):
     if stripe_customer_id is not None:
         invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
 
+        if len(invoices.data) == 0:
+            raise P2k16UserException("No open invoices found.")
+
         # Get the customers's card
-        pm = stripe.Customer.list_payment_methods(stripe_customer_id)
-        if len(pm.data) == 0:
+        payment_methods = stripe.Customer.list_payment_methods(stripe_customer_id)
+
+        if len(payment_methods.data) == 0:
             raise P2k16UserException('No active credit card')
 
+        # Try to pay open invoices with all available cards
         for invoice in invoices.data:
-            stripe.Invoice.pay(invoice.id, payment_method=pm.data[0].id)
+            for pm in payment_methods.data:
+                invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+
+                if invoice.paid == True:
+                    status = True
+                    break
+
+    if status == False:
+        raise P2k16UserException("Card declined or no valid payment methods defined.")
 
     return status
 

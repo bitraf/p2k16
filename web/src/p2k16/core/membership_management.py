@@ -176,7 +176,12 @@ def handle_payment_method_updated(event):
         # Try to pay open invoices with all available cards
         for invoice in invoices.data:
             for pm in payment_methods.data:
-                invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                try:
+                    invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                except stripe.error.StripeError:
+                    # Unable to pay with this card.
+                    pass
+
                 if invoice.paid:
                     break
 
@@ -272,13 +277,18 @@ def member_retry_payment(account):
         # Try to pay open invoices with all available cards
         for invoice in invoices.data:
             for pm in payment_methods.data:
-                invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                try:
+                    invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                except stripe.error.StripeError:
+                    # Unable to pay with this card.
+                    pass
 
                 if invoice.paid == True:
                     status = True
                     break
 
     if status == False:
+        # We cannot reveal the reason for payment failure
         raise P2k16UserException("Card declined or no valid payment methods defined.")
 
     return status

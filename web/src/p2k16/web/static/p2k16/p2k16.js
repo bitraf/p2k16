@@ -30,7 +30,8 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.front_page_html,
             resolve: {
-                recent_events: CoreDataServiceResolvers.recent_events
+                recent_events: CoreDataServiceResolvers.recent_events,
+                membership_tiers: CoreDataServiceResolvers.membership_tiers
             }
         }).when("/about", {
             controller: AboutController,
@@ -639,8 +640,9 @@
      * @param {DoorDataService} DoorDataService
      * @param {P2k16} P2k16
      * @param recent_events
+     * @param membership_tiers
      */
-    function FrontPageController(DoorDataService, P2k16, recent_events, CoreDataService) {
+    function FrontPageController(DoorDataService, P2k16, recent_events, membership_tiers, CoreDataService) {
         var self = this;
 
         self.openDoors = function (doors) {
@@ -650,36 +652,52 @@
             });
         };
         
-        self.signup = function (price) {
-            priceId = 'medlem' + price;
+        self.signup = function (tier) {
+            priceId = tier.priceId;
+
             CoreDataService.membership_create_checkout_session({baseUrl: window.location.origin, priceId:priceId}).then(function (res) {
                 window.stripe.redirectToCheckout(res.data);
             });
         };
-        
+
+        self.manageBilling = function () {
+            CoreDataService.membership_customer_portal({ baseUrl: window.location.origin }).then(function (res) {
+                window.location.href = res.data.portalUrl;
+            });
+        };
+
+        self.retryPayment = function () {
+            CoreDataService.membership_retry_payment().then(function (res) {
+                setTimeout(function(){
+                    window.location.reload();
+                 }, 2000);
+            });
+        };
+
         var profile = P2k16.currentProfile();
         self.doorsAvailable = profile.has_door_access;
         self.availableDoors = profile.available_doors;
         self.payingMember = profile.is_paying_member;
         self.employed = profile.is_employed;
 
+        self.membership_tiers = membership_tiers;
         self.recent_events = recent_events;
+
+        self.pendingPayment = false;
+        if (!profile.is_paying_member) {
+            // For non-paying members, we should check if the user has unpaid invoices / an active subscription
+            // This can happen if credit expires or unsufficient funds.
+            // In this case, the signup should not be shown.
+            CoreDataService.membership_status().then(function(res) {
+                self.pendingPayment = res.data.subscription_active;
+            });
+        }
     }
 
     function AboutController() {
         var self = this;
 
         self.gitRevision = window.gitRevision;
-    }
-
-    function getMembershipTypes() {
-        // TODO: Move this to model
-        return [
-            {plan: 'medlem1500', name: 'Filantropmedlemskap (1500 kr)', price: 1500},
-            {plan: 'medlem500', name: 'Vanlig medlemskap (500 kr)', price: 500},
-            {plan: 'medlem300', name: 'Støttemedlemskap (300 kr)', price: 300},
-            {plan: 'none', name: 'Inaktiv (0 kr)', price: 0}
-        ];
     }
 
     /**

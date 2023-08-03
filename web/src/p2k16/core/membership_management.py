@@ -8,7 +8,7 @@ from p2k16.core.models import db, Account, StripePayment, model_support, Members
 from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
-
+membership_tiers = []
 
 def paid_members():
     return Account.query. \
@@ -56,13 +56,17 @@ def get_membership_fee(account: Account):
         return membership.fee
 
 
-def get_stripe_customer(account: Account):
+def get_stripe_customer_id(account: Account):
     """
     Get stripe customer for account
     :param account:
-    :return: StripeCustomer model
+    :return: Stripe customer id
     """
-    return StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
+    customer = StripeCustomer.query.filter(StripeCustomer.created_by_id == account.id).one_or_none()
+    if customer is None:
+        return None
+    else:
+        return customer.stripe_id
 
 
 def get_membership_payments(account: Account):
@@ -142,10 +146,10 @@ def handle_session_completed(event):
 
     account = Account.find_account_by_id(event.data.object.metadata.accountId)
 
-    stripe_customer = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     # Customer not registered with p2k16
-    if stripe_customer is None:
+    if stripe_customer_id is None:
         with model_support.run_as(account):
             stripe_customer = StripeCustomer(customer_id)
             db.session.add(stripe_customer)
@@ -153,9 +157,10 @@ def handle_session_completed(event):
 
     mail.send_new_member(account)
 
+
     """
     Try to charge unpaid invoices if payment method updated
-    This allows a member to openm doors/use tools right away
+    This allows a member to open doors/use tools right away
     instead of waiting for a smart retry (a few days)
     :return:
     """
@@ -165,13 +170,132 @@ def handle_payment_method_updated(event):
     if stripe_customer_id is not None:
         invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
 
-        for invoice in invoices.data:
-            stripe.Invoice.pay(invoice.id)
+        # Get the customers's card
+        payment_methods = stripe.Customer.list_payment_methods(stripe_customer_id)
 
+        # Try to pay open invoices with all available cards
+        for invoice in invoices.data:
+            for pm in payment_methods.data:
+                try:
+                    invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                except stripe.error.StripeError:
+                    # Unable to pay with this card.
+                    pass
+
+                if invoice.paid:
+                    break
+
+def member_get_tiers():
+    # Use in-memory cached tiers to avoid stripe delay
+    if len(membership_tiers) > 0:
+        return membership_tiers
+
+    try:
+        products = stripe.Product.list(active=True)
+
+        for product in products.data:
+            tier = {} # Membership tier
+
+            tier['priceId'] = product.default_price
+            tier['name'] = product.name
+
+            # Get actual price of product
+            stripe_price = stripe.Price.retrieve(product.default_price)
+
+            tier['price'] = stripe_price.unit_amount / 100
+
+            # Get product features. New line for every $
+            tier['features'] = []
+            if hasattr(product.metadata, 'product_features'):
+                tier['features'] = product.metadata.product_features.split('$')
+
+            membership_tiers.append(tier)
+
+    except stripe.error.StripeError:
+        raise P2k16UserException("Error reading data from Stripe. Contact kasserer@bitraf.no if the problem persists.")
+
+    # Return the tiers in descending price order
+    membership_tiers.sort(key=lambda x: x.get('price'), reverse=True)
+
+    return membership_tiers
+
+
+    """
+    Get payment status at stripe
+    :return:
+    """
+def member_get_status(account):
+    status = {}
+    status['unpaid_invoice'] = False
+    status['subscription_active'] = False
+    status['p2k16_paying_member'] = StripePayment.is_account_paying_member(account.id)
+
+    # Get mapping from account to stripe_id
+    stripe_customer_id = get_stripe_customer_id(account)
+
+    if stripe_customer_id is None:
+        # No stripe customer, no unpaid invoices
+        return status
+
+    # Check subscriptions
+    subscriptions = stripe.Subscription.list(customer=stripe_customer_id)
+    if len(subscriptions) > 0:
+        status['subscription_active'] = True
+
+    # Get unpaid invoices
+    invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
+
+    if len(invoices) > 0:
+        status['unpaid_invoice'] = True
+
+    return status
+
+
+    """
+    Try to charge unpaid invoices.
+    This allows a member to openm doors/use tools right away
+    instead of waiting for a smart retry (a few days)
+    :return:
+    """
+def member_retry_payment(account):
+    stripe_customer_id = get_stripe_customer_id(account)
+
+    status = False
+
+    if stripe_customer_id is not None:
+        invoices = stripe.Invoice.list(customer=stripe_customer_id, status='open')
+
+        if len(invoices.data) == 0:
+            raise P2k16UserException("No open invoices found.")
+
+        # Get the customers's card
+        payment_methods = stripe.Customer.list_payment_methods(stripe_customer_id)
+
+        if len(payment_methods.data) == 0:
+            raise P2k16UserException('No active credit card')
+
+        # Try to pay open invoices with all available cards
+        for invoice in invoices.data:
+            for pm in payment_methods.data:
+                try:
+                    invoice = stripe.Invoice.pay(invoice.id, payment_method=pm.id)
+                except stripe.error.StripeError:
+                    # Unable to pay with this card.
+                    pass
+
+                if invoice.paid == True:
+                    status = True
+                    break
+
+    if status == False:
+        # We cannot reveal the reason for payment failure
+        raise P2k16UserException("Card declined or no valid payment methods defined.")
+
+    return status
 
 def member_get_details(account):
     # Get mapping from account to stripe_id
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     details = {}
 
@@ -184,7 +308,7 @@ def member_get_details(account):
 
         if stripe_customer_id is not None:
             # Get customer object
-            cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=['sources', 'subscriptions'])
+            cu = stripe.Customer.retrieve(stripe_customer_id, expand=['sources', 'subscriptions'])
 
             if len(cu.sources.data) > 0:
                 card = cu.sources.data[0]
@@ -231,7 +355,7 @@ def member_customer_portal(account: Account, base_url: str):
     :param base_url:
     :return: customer portalUrl
     """
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     if stripe_customer_id is None:
         raise P2k16UserException('No billing information available. Create a subscription first.')
@@ -259,12 +383,12 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
     :param price_id:
     :return: checkout sessionId
     """
-    stripe_customer_id = get_stripe_customer(account)
+    stripe_customer_id = get_stripe_customer_id(account)
 
     # Existing customers should only use this flow if they have no subscriptions.
     if stripe_customer_id is not None:
           # Get customer object
-        cu = stripe.Customer.retrieve(stripe_customer_id.stripe_id, expand=[
+        cu = stripe.Customer.retrieve(stripe_customer_id, expand=[
                'subscriptions'])
 
         if len(cu.subscriptions.data) > 0:
@@ -289,7 +413,6 @@ def member_create_checkout_session(account: Account, base_url: str, price_id: in
         checkout_session = stripe.checkout.Session.create(
             success_url=success_url,
             cancel_url=cancel_url,
-            payment_method_types=["card"],
             mode="subscription",
             line_items=[
                 {

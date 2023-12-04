@@ -40,7 +40,15 @@ This will fail unless you have the required applications installed. You may need
 
 If run successfully, the application should be accessible at `http://localhost:5000/`.
 
-You can log into p2k16 with the user 'super', password 'super'.
+You can log into p2k16 with the user 'super', password 'super', or 'foo',
+password 'foo' for a user with fewer circles.
+
+To make an account paying, you can manually insert a payment like this, for
+a given account-id (2 in the example below, replace it with you userid):
+
+    insert into stripe_payment(created_at, created_by, updated_at, updated_by, stripe_id, start_date, end_date, amount, payment_date)
+    values(now(), 2, now(), 2, 'fake-stripe-id-2', now(), now() + interval '10 years', 500.00, now());
+
 
 # Development
 

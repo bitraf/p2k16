@@ -49,6 +49,7 @@ def memberinfo():
         "username": username,
         "paying_member": paying_member,
         "month_count": month_count,
+        "email": account.email,
     }
 
     membership = get_membership(account)

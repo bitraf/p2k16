@@ -62,7 +62,7 @@ def tool_to_json(tool: ToolDescription):
         checkout_model = {
             "active": True,
             "started": checkout.started,
-            "account": checkout.account,
+            "account": checkout.account.id,
             "username": checkout.account.username,
         }
     else:
@@ -72,7 +72,7 @@ def tool_to_json(tool: ToolDescription):
 
 
     return {**model_to_json(tool), **{
-        "name": tool.name, 
+        "name": tool.name,
         "description": tool.description,
         "circle": tool.circle.name,
         "checkout": checkout_model,

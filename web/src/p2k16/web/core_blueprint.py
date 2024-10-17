@@ -420,8 +420,8 @@ def data_account_summary(account_id):
     }
 
     # Add information about membership if current user is in a circle
-    admin_circle = Circle.get_by_name('insight-fee')
-    if account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
+    admin_circle = Circle.find_by_name('insight-fee')
+    if admin_circle is not None and account_management.is_account_in_circle(flask_login.current_user.account, admin_circle):
         logger.debug("{} is in circle {}, will add membership and employment info".format(flask_login.current_user.account, admin_circle))
         membership = get_membership(account)
         paying_member = StripePayment.is_account_paying_member(account.id)

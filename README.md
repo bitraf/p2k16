@@ -21,7 +21,7 @@ make sure that you have the correct versions.
 
 **IMPORTANT** - Before running any commands, you have to source our setup script:
 
-    # . .settings.sh
+    # source .settings.sh
 
 Creating the database:
 

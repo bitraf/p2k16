@@ -36,6 +36,21 @@
                ng-model="ctrl.tool.circle"/>
       </div>
     </div>
+    <div class="form-group" ng-if="ctrl.tool.id">
+      <label for="disabled" class="col-sm-2">
+        Disabled
+      </label>
+      <div class="col-sm-10">
+        <input type="checkbox" name="disabled" id="disabled"
+               ng-model="ctrl.tool.disabled"/>
+        <span ng-if="ctrl.tool.disabled" class="label label-warning">Disabled</span>
+        <span ng-if="!ctrl.tool.disabled" class="label label-success">Active</span>
+        <span class="help-block">Check to disable this tool</span>
+        <p ng-if="ctrl.tool.updatedBy" class="text-muted">
+          Last updated by {{ ctrl.tool.updatedBy }} at {{ ctrl.tool.updatedAt | date:'short' }}
+        </p>
+      </div>
+    </div>
     <div class="form-group">
       <div class="col-sm-12 text-right">
         <button class="btn btn-success" ng-click="ctrl.save()">

@@ -13,16 +13,25 @@
     <thead>
     <tr>
       <th class="col-sm-2">Name</th>
-      <th class="col-sm-4">Description</th>
-      <th class="col-sm-3">Circle</th>
+      <th class="col-sm-3">Description</th>
+      <th class="col-sm-2">Circle</th>
+      <th class="col-sm-2">Status</th>
+      <th class="col-sm-3">Last Edit</th>
       <th class="col-sm-1">Actions</th>
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="c in ctrl.tools">
+    <tr ng-repeat="c in ctrl.tools" ng-class="{'text-muted': c.disabled}">
       <td>{{ c.name }}</td>
       <td>{{ c.description }}</td>
       <td>{{ c.circle }}</td>
+      <td style="vertical-align: middle;">
+        <span ng-if="c.disabled" class="label label-warning">Disabled</span>
+        <span ng-if="!c.disabled" class="label label-success">Active</span>
+      </td>
+      <td class="text-muted small">
+          {{ c.updatedBy }} at {{ c.updatedAt | date:'short' }}
+      </td>
       <td>
         <a href="#!/admin/tool/{{ c.id }}">edit</a>
       </td>

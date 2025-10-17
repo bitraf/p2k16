@@ -130,6 +130,25 @@ class UpdatedByMixin(object):
         super().__init__()
         self.updated_by_id = None
 
+class DisabledMixin(object):
+    disabled = Column(Boolean, nullable=False, default=False)
+
+    def mark_disabled(self):
+        self.disabled = True
+
+    def mark_active(self):
+        self.disabled = False
+
+    def is_disabled(self) -> bool:
+        return self.disabled
+    
+    @classmethod
+    def get_active(cls):
+        return cls.query.filter(cls.disabled == False).all()
+    
+    @classmethod
+    def get_all_including_disabled(cls):
+        return cls.query.all()
 
 # This is probably the mixin you should use
 class DefaultMixin(P2k16Mixin, CreatedAtMixin, CreatedByMixin, UpdatedAtMixin, UpdatedByMixin):
@@ -582,7 +601,7 @@ class AccountBadge(DefaultMixin, db.Model):
 #
 # Tools
 #
-class ToolDescription(DefaultMixin, db.Model):
+class ToolDescription(DefaultMixin, DisabledMixin, db.Model):
     __tablename__ = 'tool_description'
     __versioned__ = {}
 

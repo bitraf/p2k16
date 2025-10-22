@@ -149,7 +149,7 @@
             controllerAs: 'ctrl',
             templateUrl: p2k16_resources.admin_tool_list_html,
             resolve: {
-                tools: ToolDataServiceResolvers.data_tool_list
+                tools: ToolDataServiceResolvers.data_tool_list_all
             }
         }).when("/admin/tool/new", {
             controller: AdminToolDetailController,

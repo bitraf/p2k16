@@ -1,0 +1,5 @@
+ALTER TABLE tool_description
+    ADD COLUMN disabled BOOLEAN DEFAULT FALSE NOT NULL;
+
+ALTER TABLE tool_description_version
+    ADD COLUMN disabled BOOLEAN DEFAULT FALSE NOT NULL;

@@ -76,11 +76,20 @@ def tool_to_json(tool: ToolDescription):
         "description": tool.description,
         "circle": tool.circle.name,
         "checkout": checkout_model,
+        "disabled": tool.is_disabled(),
     }}
 
 @registry.route('/data/tool')
 def data_tool_list():
-    tools = ToolDescription.query.all()
+    tools = ToolDescription.get_active()
+
+    return jsonify([tool_to_json(tool) for tool in tools])
+
+
+@registry.route('/data/tool/all')
+@require_circle_membership("despot")
+def data_tool_list_all():
+    tools = ToolDescription.get_all_including_disabled()
 
     return jsonify([tool_to_json(tool) for tool in tools])
 
@@ -129,6 +138,12 @@ def _data_tool_save():
         tool.name = request.json["name"]
         tool.circle = circle
         tool.description = request.json["description"]
+        
+        if request.json.get("disabled", False):
+            tool.mark_disabled()
+        else:
+            if tool.is_disabled():
+                tool.mark_active()
     else:
         logger.info("Creating new tooldescription: {}".format(request.json["name"]))
         tool = ToolDescription(request.json["name"], request.json["description"], circle)

@@ -39,7 +39,6 @@
             <small style="color: green">Available</small>
           </button>
         </td>
-      </div>
     </table>
   </form>
 
@@ -50,9 +49,9 @@
     <ul class="no-padding">
       <li ng-repeat="e in ctrl.recent_events">
         <span ng-switch="e.domain + '-' + e.name">
-          <span ng-switch-when="tool-checkout">{{ e.created_at | date:'short' }} - <em style="color: red">{{ e.tool_name }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked out
+          <span ng-switch-when="tool-checkout">{{ e.created_at | date:'short' }} - <em style="color: red">{{ e.tool_description }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked out
           </span>
-          <span ng-switch-when="tool-checkin">{{ e.created_at | date:'short' }} - <em style="color: green">{{ e.tool_name }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked in
+          <span ng-switch-when="tool-checkin">{{ e.created_at | date:'short' }} - <em style="color: green">{{ e.tool_description }}</em> - <a href="#!/user/{{ e.created_by }}">{{ e.created_by_username }}</a> checked in
           </span>
         </span>
       </li>

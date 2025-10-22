@@ -3,6 +3,7 @@ import hashlib
 import io
 import logging
 import os
+import re
 from typing import List, Optional, Mapping, Iterable, Set, Any, Dict
 
 import flask
@@ -185,6 +186,11 @@ def account_to_json(account: Account):
         "phone": account.phone,
     }}
 
+def is_valid_phone_number(phone_number):
+    if not phone_number:
+        return False
+    number_validator = re.compile(r'\+?\d{8,}')
+    return number_validator.match(phone_number) is not None
 
 def profile_to_json(account: Account, circles: List[Circle], badges: Optional[List[AccountBadge]], full=False, doors=False):
     from .badge_blueprint import badge_to_json
@@ -201,6 +207,7 @@ def profile_to_json(account: Account, circles: List[Circle], badges: Optional[Li
         json["has_door_access"] = authz_management.can_haz_door_access(account)
         json["is_paying_member"] = StripePayment.is_account_paying_member(account.id)
         json["is_employed"] = Company.is_account_employed(account.id)
+        json["has_valid_phone_number"] = is_valid_phone_number(account.phone)
 
     if doors:
         json["available_doors"] = [{"key": door.key, "name": door.name} for door in authz_management.available_doors(account)]

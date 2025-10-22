@@ -6,7 +6,7 @@ import flask
 import flask_bower
 import flask_login
 import werkzeug.exceptions
-from flask.json import JSONEncoder
+from json import JSONEncoder
 from p2k16.core import P2k16UserException, P2k16TechnicalException, membership_management
 from p2k16.core import make_app, auth, door, mail, tool, label
 from p2k16.core.log import P2k16LoggingFilter

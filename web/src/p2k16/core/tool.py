@@ -14,6 +14,23 @@ class DummyClient(object):
     pass
 
 
+def tool_event_to_json(event: Event):
+    if type(event) is ToolCheckoutEvent:
+        return {**model_to_json(event), **{
+            "domain": event.domain,
+            "name": event.name,
+            "int1": event.int1,
+            "created_at": event.created_at
+        }}
+    elif type(event) is ToolCheckinEvent:
+        return {**model_to_json(event), **{
+            "domain": event.domain,
+            "name": event.name,
+            "int1": event.int1,
+            "created_at": event.created_at
+        }}
+
+
 @event_management.converter_for("tool", "checkout")
 class ToolCheckoutEvent(object):
     def __init__(self, tool_name: str, created_at: Optional[datetime] = None, created_by: Optional[Account] = None):
@@ -31,7 +48,7 @@ class ToolCheckoutEvent(object):
     def to_dict(self):
         return {**event_management.base_dict(self), **{
             "created_at": self.created_at,
-            "created_by": self.created_by,
+            "created_by": self.created_by.id,
             "created_by_username": self.created_by.username,
             "tool_name": self.tool_name
         }}
@@ -54,7 +71,7 @@ class ToolCheckinEvent(object):
     def to_dict(self):
         return {**event_management.base_dict(self), **{
             "created_at": self.created_at,
-            "created_by": self.created_by,
+            "created_by": self.created_by.id,
             "created_by_username": self.created_by.username,
             "tool_name": self.tool_name
         }}

@@ -641,6 +641,7 @@
      * @param {P2k16} P2k16
      * @param recent_events
      * @param membership_tiers
+     * @param {CoreDataService} CoreDataService
      */
     function FrontPageController(DoorDataService, P2k16, recent_events, membership_tiers, CoreDataService) {
         var self = this;
@@ -667,7 +668,7 @@
         };
 
         self.retryPayment = function () {
-            CoreDataService.membership_retry_payment().then(function (res) {
+            CoreDataService.membership_retry_payment().then(function (_res) {
                 setTimeout(function(){
                     window.location.reload();
                  }, 2000);
@@ -779,19 +780,25 @@
         self.my_account = P2k16.currentAccount().id;
 
         function isMyTool(tool) {
-            return tool.checkout.account == self.my_account;
+            return tool.checkout.account === self.my_account;
         }
 
         function update(data) {
             self.tools = data;
             self.my_tools = self.tools.filter(isMyTool);
+            self.available_tools = self.tools.filter((tool) =>
+                !isMyTool(tool) && !tool.checkout.account
+            );
+            self.others_tools = self.tools.filter((tool)=>
+                tool.checkout.account && tool.checkout.account !== self.my_account
+            )
         }
 
         update(tools);
 
         self.checkoutToolConfirm = function (tool) {
             console.log('ask for checkout of ', tool);
-            if (window.confirm("Do you really want to checkout " + tool.name + "? This may destroy a job in progress!")) {
+            if (window.confirm(`Do you really want to checkout ${tool.description} (${tool.name})? This may destroy a job in progress!`)) {
                 self.checkoutTool(tool);
             }
         };
@@ -808,6 +815,10 @@
                 console.log('checkin succeded', tool);
                 update(res.data);
             })
+        };
+
+        self.descriptionToLowerCase = function (tool) {
+            return tool.description ? tool.description.toLowerCase() : '';
         };
     }
 
@@ -994,7 +1005,7 @@
                 controllerAs: 'ctrl'
             }).result.then(function (circle) {
                 console.log("Removing circle", circle);
-                CoreDataService.remove_circle(circle.id).then(function (res) {
+                CoreDataService.remove_circle(circle.id).then(function (_res) {
                     circles.remove(circle);
                     $location.url("/admin/circle");
                 });
@@ -1110,6 +1121,7 @@
 
     /**
      * @param $location
+     * @param $window
      * @param $uibModal
      * @param {P2k16} P2k16
      * @param {CoreDataService} CoreDataService

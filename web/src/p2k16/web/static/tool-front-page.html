@@ -20,27 +20,61 @@
   </div>
 
   <form class="form-horizontal">
-    <table class="table tools-buttons-table">
-      <tr ng-repeat="tool in ctrl.tools">
-        <td class="text-center">
-          <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-block btn-danger" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}}">
-            <strong>{{tool.description}}</strong>
-            <br>
-            <small class="text-center">{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
-          </button>
-          <button ng-if="tool.checkout.active && tool.checkout.account == ctrl.my_account" type="submit" class="btn btn-default btn-block" ng-click="ctrl.checkinTool(tool)" id="{{tool.name}}">
-            <strong>{{tool.description}}</strong>
-            <br>
-            <small class="text-center">{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
-          </button>
-          <button ng-if="!tool.checkout.active" type="submit" class="btn btn-default btn-block" ng-click="ctrl.checkoutTool(tool)" id="{{tool.name}}">
-            <span>{{tool.description}}</span>
-            <br>
-            <small style="color: green">Available</small>
-          </button>
-        </td>
+    <div class="row">
+      <div class="col-sm-12">
+        <h3 class="text-center">Available Tools</h3>
+        <div ng-if="ctrl.available_tools.length === 0" class="text-center text-muted">
+          No tools available.
+        </div>
+        <div class="tools-buttons-table">
+          <div class="mb-2" ng-repeat="tool in ctrl.available_tools | orderBy:ctrl.descriptionToLowerCase">
+            <button type="submit" class="btn btn-block btn-default"
+                    ng-click="ctrl.checkoutTool(tool)"
+                    id="{{tool.name}}_available">
+              <strong>{{tool.description}}</strong>
+              <br>
+              <small style="color: green">Available</small>
+            </button>
+          </div>
+        </div>
       </div>
-    </table>
+
+      <div class="col-sm-12" >
+        <h3 class="text-center">My checked out Tools</h3>
+        <div ng-if="ctrl.my_tools.length === 0" class="text-center text-muted">
+          No tools currently checked out.
+        </div>
+        <div class="tools-buttons-table">
+          <div class="mb-2" ng-repeat="tool in ctrl.my_tools | orderBy:ctrl.descriptionToLowerCase">
+            <button type="submit" class="btn btn-block btn-warning"
+                    ng-click="ctrl.checkinTool(tool)"
+                    id="{{tool.name}}_my">
+              <strong>{{tool.description}}</strong>
+              <br>
+              <small>{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-12">
+        <h3 class="text-center">Tools checked out by others</h3>
+        <div ng-if="ctrl.others_tools.length === 0" class="text-center text-muted">
+          No tools checked out by others.
+        </div>
+        <div class="tools-buttons-table">
+          <div class="mb-2" ng-repeat="tool in ctrl.others_tools | orderBy:ctrl.descriptionToLowerCase">
+            <button type="button" class="btn btn-block btn-danger"
+                    ng-click="ctrl.checkoutToolConfirm(tool)"
+                    id="{{tool.name}}_others">
+              <strong>{{tool.description}}</strong>
+              <br>
+              <small>{{tool.checkout.username}} - {{tool.checkout.started | date:'short'}}</small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </form>
 
   <div class="col-sm-12"><hr></div>

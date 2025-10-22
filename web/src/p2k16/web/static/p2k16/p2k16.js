@@ -679,6 +679,7 @@
         self.availableDoors = profile.available_doors;
         self.payingMember = profile.is_paying_member;
         self.employed = profile.is_employed;
+        self.hasValidPhoneNumber = profile.has_valid_phone_number;
 
         self.membership_tiers = membership_tiers;
         self.recent_events = recent_events;

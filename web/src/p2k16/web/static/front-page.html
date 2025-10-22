@@ -55,6 +55,10 @@
     </div>
   </section>
 
+  <div
+    ng-if="!ctrl.hasValidPhoneNumber" class="alert alert-warning text-center" role="alert">
+    <strong>Please add a valid phone number to your <a href="#!/my-profile">profile</a></strong>
+  </div>
 
   <section ng-if="ctrl.doorsAvailable">
     <h2 class="text-center">Open a door</h2>

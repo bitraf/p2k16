@@ -21,7 +21,7 @@
 
   <form class="form-horizontal">
     <table class="table tools-buttons-table">
-      <tr ng-repeat="tool in ctrl.tools">
+      <tr ng-repeat="tool in ctrl.tools | orderBy:'description'">
         <td class="text-center">
           <button ng-if="tool.checkout.active && tool.checkout.account != ctrl.my_account" type="submit" class="btn btn-block btn-danger" ng-click="ctrl.checkoutToolConfirm(tool)" id="{{tool.name}}">
             <strong>{{tool.description}}</strong>

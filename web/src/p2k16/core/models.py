@@ -12,7 +12,7 @@ from p2k16.core import P2k16TechnicalException, P2k16UserException
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 logger = logging.getLogger(__name__)
 
@@ -471,7 +471,7 @@ class Company(DefaultMixin, db.Model):
     contact_id = Column("contact", Integer, ForeignKey('account.id'), nullable=False)
     contact = relationship("Account", foreign_keys=[contact_id])
 
-    employees = relationship("CompanyEmployee")  # type: Iterable[CompanyEmployee]
+    employees: Mapped[List["CompanyEmployee"]] = relationship(back_populates="company")
 
     def __init__(self, name, contact: Account, active: bool):
         super().__init__()
@@ -511,10 +511,10 @@ class CompanyEmployee(DefaultMixin, db.Model):
     __tablename__ = 'company_employee'
     __versioned__ = {}
 
-    company_id = Column("company", Integer, ForeignKey('company.id'), nullable=False)
-    company = relationship("Company", foreign_keys=[company_id])
-    account_id = Column("account", Integer, ForeignKey('account.id'), nullable=False)
-    account = relationship("Account", foreign_keys=[account_id])
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), name="company", primary_key=True)
+    company: Mapped["Company"] = relationship(back_populates="employees")
+    account_id: Mapped[int] = mapped_column(primary_key=True, name="account")
+    # account: Mapped["Account"] = relationship(back_populates="employees")
 
     def __init__(self, company: Company, account: Account):
         super().__init__()

@@ -44,7 +44,7 @@ div.error-container {
 
 /* Avatar on navbar */
 .header-avatar {
-    webkit-border-radius: 50%;
+    -webkit-border-radius: 50%;
     border-radius: 50%;
     padding-right: 2px;
 }
@@ -226,6 +226,12 @@ hr {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.tools-buttons-table{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .list-inline-badges > li {

@@ -26,7 +26,7 @@ make sure that you have the correct versions.
 Creating the database:
 
     # cd docker/p2k16
-    # docker-compose up -d
+    # docker compose up -d
     # cd -
     # psql -U postgres -f database-setup.sql
 

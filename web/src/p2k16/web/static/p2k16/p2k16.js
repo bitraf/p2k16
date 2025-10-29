@@ -551,7 +551,7 @@
             };
 
             self.manageBilling = function () {
-                CoreDataService.membership_customer_portal({ baseUrl: window.location.origin }).then(function (res) {
+                CoreDataService.membership_customer_portal({baseUrl: window.location.origin}).then(function (res) {
                     window.location.href = res.data.portalUrl;
                 });
             };
@@ -651,26 +651,29 @@
                 P2k16.addInfos(msg);
             });
         };
-        
+
         self.signup = function (tier) {
             priceId = tier.priceId;
 
-            CoreDataService.membership_create_checkout_session({baseUrl: window.location.origin, priceId:priceId}).then(function (res) {
+            CoreDataService.membership_create_checkout_session({
+                baseUrl: window.location.origin,
+                priceId: priceId
+            }).then(function (res) {
                 window.stripe.redirectToCheckout(res.data);
             });
         };
 
         self.manageBilling = function () {
-            CoreDataService.membership_customer_portal({ baseUrl: window.location.origin }).then(function (res) {
+            CoreDataService.membership_customer_portal({baseUrl: window.location.origin}).then(function (res) {
                 window.location.href = res.data.portalUrl;
             });
         };
 
         self.retryPayment = function () {
             CoreDataService.membership_retry_payment().then(function (res) {
-                setTimeout(function(){
+                setTimeout(function () {
                     window.location.reload();
-                 }, 2000);
+                }, 2000);
             });
         };
 
@@ -688,7 +691,7 @@
             // For non-paying members, we should check if the user has unpaid invoices / an active subscription
             // This can happen if credit expires or unsufficient funds.
             // In this case, the signup should not be shown.
-            CoreDataService.membership_status().then(function(res) {
+            CoreDataService.membership_status().then(function (res) {
                 self.pendingPayment = res.data.subscription_active;
             });
         }

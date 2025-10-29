@@ -519,6 +519,12 @@ def data_circle(circle_id):
     return jsonify(circle_to_json(circle, include_members=True))
 
 
+@registry.route('/data/circle-by-name/<string:circle_name>')
+def find_circle_by_name(circle_name):
+    circle = Circle.get_by_name(circle_name)
+    return jsonify(circle_to_json(circle, include_members=False))
+
+
 @registry.route('/data/circle/<int:circle_id>', methods=["DELETE"])
 def remove_circle(circle_id):
     admin = flask_login.current_user.account

@@ -9,7 +9,7 @@ from typing import Optional, List, Iterable
 import flask_bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from p2k16.core import P2k16TechnicalException, P2k16UserException
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, event, func
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Numeric, Boolean, Sequence, Table, event, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -442,8 +442,8 @@ class StripePayment(DefaultMixin, db.Model):
     @staticmethod
     def is_account_paying_member(account_id):
         return StripePayment.query. \
-                   filter(StripePayment.created_by_id == account_id,
-                          StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0
+            filter(StripePayment.created_by_id == account_id,
+                   StripePayment.end_date >= (datetime.utcnow() - timedelta(days=1))).count() > 0
 
 
 class StripeCustomer(DefaultMixin, db.Model):
@@ -501,10 +501,10 @@ class Company(DefaultMixin, db.Model):
     @staticmethod
     def is_account_employed(account_id: int) -> bool:
         return Company.query. \
-                   join(Company.employees). \
-                   filter(Company.active). \
-                   filter(CompanyEmployee.account_id == account_id) \
-                   .count() > 0
+            join(Company.employees). \
+            filter(Company.active). \
+            filter(CompanyEmployee.account_id == account_id) \
+            .count() > 0
 
 
 class CompanyEmployee(DefaultMixin, db.Model):
@@ -514,6 +514,7 @@ class CompanyEmployee(DefaultMixin, db.Model):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), name="company", primary_key=True)
     company: Mapped["Company"] = relationship(back_populates="employees")
     account_id: Mapped[int] = mapped_column(primary_key=True, name="account")
+
     # account: Mapped["Account"] = relationship(back_populates="employees")
 
     def __init__(self, company: Company, account: Account):
@@ -588,18 +589,25 @@ class ToolDescription(DefaultMixin, db.Model):
 
     name = Column(String(50), nullable=False)
     description = Column(String(1000))
-    circle_id = Column("circle", Integer, ForeignKey("circle.id"))
-    circle = relationship("Circle", remote_side="Circle.id")  # type: Optional[Circle]
+    circles: Mapped[List[Circle]] = relationship("Circle", secondary="tool_circle_requirement", lazy="selectin",
+                                                 viewonly=False, cascade="")
 
-    def __init__(self, name: str, description: str, circle: Circle):
+    def __init__(self, name: str, description: str):
         super().__init__()
         self.name = name
         self.description = description
-        self.circle_id = circle.id
 
     @staticmethod
     def find_by_id(_id) -> Optional['ToolDescription']:
         return ToolDescription.query.filter(ToolDescription.id == _id).one_or_none()
+
+
+tool_circle_requirement: Table = Table(
+    "tool_circle_requirement",
+    db.metadata,
+    Column("tool_id", ForeignKey("tool_description.id"), primary_key=True),
+    Column("circle_id", ForeignKey("circle.id"), primary_key=True),
+)
 
 
 class ToolCheckout(DefaultMixin, db.Model):

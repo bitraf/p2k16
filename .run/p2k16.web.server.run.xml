@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="p2k16.web.server" type="PythonConfigurationType" factoryName="Python">
     <module name="p2k16" />
+    <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -14,6 +15,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <option name="RUN_TOOL" value="" />
     <option name="SCRIPT_NAME" value="env/bin/gunicorn" />
     <option name="PARAMETERS" value="--config infrastructure/gunicorn-config.py p2k16.web.server:app" />
     <option name="SHOW_COMMAND_LINE" value="false" />
@@ -25,6 +27,7 @@
   </configuration>
   <configuration default="false" name="p2k16.web.server" type="PythonConfigurationType" factoryName="Python">
     <module name="p2k16" />
+    <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -37,10 +40,11 @@
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/env/bin/python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <option name="RUN_TOOL" value="" />
     <option name="SCRIPT_NAME" value="env/bin/gunicorn" />
     <option name="PARAMETERS" value="--config infrastructure/gunicorn-config.py p2k16.web.server:app" />
     <option name="SHOW_COMMAND_LINE" value="false" />

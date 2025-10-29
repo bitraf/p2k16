@@ -2,13 +2,14 @@ import logging
 
 import flask
 import flask_login
+
 import p2k16.core.door
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from p2k16.core import P2k16UserException, event_management
 from p2k16.core.door import DoorClient
 from p2k16.core.models import db, ToolDescription, ToolCheckout, Circle
 from p2k16.web.utils import validate_schema, DataServiceTool, require_circle_membership
-from p2k16.web.core_blueprint import model_to_json
+from p2k16.web.core_blueprint import model_to_json, circle_to_json
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ def checkin_tool():
     db.session.commit()
     return data_tool_list()
 
+
 def tool_to_json(tool: ToolDescription):
     checkout = ToolCheckout.find_by_tool(tool)
 
@@ -70,13 +72,13 @@ def tool_to_json(tool: ToolDescription):
             "active": False,
         }
 
-
     return {**model_to_json(tool), **{
         "name": tool.name,
         "description": tool.description,
-        "circle": tool.circle.name,
+        "circles": [circle_to_json(c, include_members=False) for c in tool.circles],
         "checkout": checkout_model,
     }}
+
 
 @registry.route('/data/tool')
 def data_tool_list():
@@ -107,16 +109,6 @@ def data_tool_add():
 
 @require_circle_membership("despot")
 def _data_tool_save():
-    circle_name = request.json["circle"]
-
-    if not circle_name:
-        raise P2k16UserException("A tool needs a circle")
-
-    circle = Circle.find_by_name(circle_name)
-
-    if not circle:
-        raise P2k16UserException("No such circle: {}".format(circle_name))
-
     _id = request.json.get("id", None)
 
     if _id:
@@ -127,16 +119,64 @@ def _data_tool_save():
 
         logger.info("Updating tool: {}".format(tool))
         tool.name = request.json["name"]
-        tool.circle = circle
         tool.description = request.json["description"]
     else:
-        logger.info("Creating new tooldescription: {}".format(request.json["name"]))
-        tool = ToolDescription(request.json["name"], request.json["description"], circle)
+        logger.info("New tool: {}".format(request.json["name"]))
+        tool = ToolDescription(request.json["name"], request.json["description"])
+
+    circles = request.json["circles"]
+    if not circles:
+        circles = []
+
+    logger.info("Resolving circles")
+    for c in circles:
+        obj = Circle.find_by_id(c["id"])
+        logger.info("circle={}".format(obj))
+        if obj is None:
+            raise P2k16UserException("No such circle: {}".format(c.id))
+        tool.circles.append(obj)
 
     db.session.add(tool)
     db.session.commit()
     db.session.flush()
     logger.info("Update tool: {}".format(tool.name))
+
+    return jsonify(tool_to_json(tool))
+
+
+@registry.route('/data/tool/<int:tool_id>/circle-requirements/<int:circle_id>', methods=["POST"])
+@require_circle_membership("despot")
+def add_tool_circle_requirement(tool_id: int, circle_id: int):
+    tool = ToolDescription.find_by_id(tool_id)
+    circle = Circle.find_by_id(circle_id)
+    logger.info("Adding circle requirement to tool: {}, {}".format(tool, circle))
+
+    # for c in tool.circles:
+    #     logger.info("Circle requirement on tool: {}, {}".format(c, circle))
+    #     if c.id == circle_
+    tool.circles.append(circle)
+
+    db.session.add(tool)
+    db.session.commit()
+
+    return jsonify(tool_to_json(tool))
+
+
+@registry.route('/data/tool/<int:tool_id>/circle-requirements/<int:circle_id>', methods=["DELETE"])
+@require_circle_membership("despot")
+def remove_tool_circle_requirement(tool_id: int, circle_id: int):
+    tool = ToolDescription.find_by_id(tool_id)
+    circle = Circle.find_by_id(circle_id)
+    logger.info("Removing circle requirement from tool: {}, {}".format(tool, circle))
+    #
+    # for c in tool.circles:
+    #     logger.info("Circle requirement on tool: {}, {}".format(c, circle))
+    #     if c.id == circle_
+
+    tool.circles = [c for c in tool.circles if c.id != circle_id]
+
+    db.session.add(tool)
+    db.session.commit()
 
     return jsonify(tool_to_json(tool))
 

@@ -1081,8 +1081,10 @@
 
     /**
      * @constructor
+     * @param {CoreDataService} CoreDataService
+     * @param {ToolDataService} ToolDataService
      */
-    function AdminToolDetailController($location, ToolDataService, tools, tool) {
+    function AdminToolDetailController($location, CoreDataService, ToolDataService, tools, tool) {
         var self = this;
 
         self.isNew = !tool.id;
@@ -1109,6 +1111,22 @@
                 }
             });
         };
+
+        self.removeCircle = function (circle_id) {
+            console.log("circle_id", circle_id);
+            ToolDataService.remove_tool_circle_requirement(self.tool.id, circle_id).then(function (res) {
+                self.tool = res.data
+            })
+        }
+
+        self.addCircle = function (name) {
+            CoreDataService.find_circle_by_name(name).then(function (res) {
+                let circle_id = res.data.id;
+                ToolDataService.add_tool_circle_requirement(self.tool.id, circle_id).then(function (res) {
+                    self.tool = res.data
+                })
+            })
+        }
     }
 
     /**

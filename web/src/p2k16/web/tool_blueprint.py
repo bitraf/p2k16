@@ -142,14 +142,14 @@ def _data_tool_save():
 
 
 @registry.route('/tool-data-service.js')
-def door_service():
-    content = door_service.content
+def tool_service():
+    content = tool_service.content
 
     if not content:
         content = registry.generate()
-        door_service.content = content
+        tool_service.content = content
 
     return content, {'Content-Type': 'application/javascript'}
 
 
-door_service.content = None
+tool_service.content = None
